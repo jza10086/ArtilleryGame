@@ -28,6 +28,22 @@ func _initialize() -> void:
 	verify(terrain.solid_at(center + Vector2(0, 42)), "cavity retains its floor")
 	verify(terrain.surface_y(330) == original_surface, "internal cavity does not flatten height-map")
 	verify(not terrain.is_settling(), "connected overhang does not collapse")
+	# HD contour reconstruction and collision must use the same field, including
+	# a newly carved interior cavity, not just the original island surface.
+	var agreement := true
+	var continuous := true
+	var maximum_shift := 0.0
+	for i in 144:
+		var a := float(i) * TAU / 144.0
+		var p := center + Vector2.from_angle(a) * 27.0
+		var field: float = terrain.signed_distance_at(p)
+		agreement = agreement and terrain.solid_at(p) == (field >= 0.0)
+		var tiny: float = terrain.signed_distance_at(p + Vector2(0.001, 0.001))
+		continuous = continuous and absf(tiny - field) < 0.01
+		maximum_shift = maxf(maximum_shift, absf(field))
+	verify(agreement, "HD crater contour and collision use the identical continuous field")
+	verify(continuous, "subpixel contour samples have no cell-sized discontinuities")
+	verify(maximum_shift < 3.0, "smooth crater boundary stays within one topology cell")
 	verify(terrain.carve(Vector2(720, 100), 20) == 0, "empty-air carve has no effect")
 	terrain.generate(1)
 	# A circular chain of overlapping blasts isolates an interior disk.

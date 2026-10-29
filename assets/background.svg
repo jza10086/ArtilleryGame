@@ -1,44 +1,40 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+<svg xmlns="http://www.w3.org/2000/svg" width="2880" height="1800" viewBox="0 0 1440 900">
   <defs>
-    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#699caa"/><stop offset=".57" stop-color="#c6d3be"/><stop offset="1" stop-color="#f8d79c"/></linearGradient>
-    <linearGradient id="haze" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#e8ddb4" stop-opacity="0"/><stop offset="1" stop-color="#f2d59f" stop-opacity=".9"/></linearGradient>
-    <linearGradient id="ocean" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#5c9f9c"/><stop offset="1" stop-color="#205467"/></linearGradient>
-    <linearGradient id="light" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff0bb" stop-opacity=".3"/><stop offset="1" stop-color="#b7e5c7" stop-opacity="0"/></linearGradient>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#78aebc"/><stop offset=".46" stop-color="#b6d4cd"/><stop offset="1" stop-color="#f8e1b2"/></linearGradient>
+    <radialGradient id="sunhalo"><stop stop-color="#ffe7b4" stop-opacity=".55"/><stop offset=".65" stop-color="#ffe7b4" stop-opacity=".2"/><stop offset="1" stop-color="#ffe7b4" stop-opacity="0"/></radialGradient>
+    <linearGradient id="sun" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#fff3c6"/><stop offset="1" stop-color="#ffda93"/></linearGradient>
+    <linearGradient id="cloud" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f5f0d7"/><stop offset="1" stop-color="#e5e9d3"/></linearGradient>
+    <linearGradient id="far" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#a5c5b7"/><stop offset="1" stop-color="#d1d4b5"/></linearGradient>
+    <linearGradient id="near" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#82b2a8"/><stop offset="1" stop-color="#6fa6a0"/></linearGradient>
+    <linearGradient id="ocean" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#6eb1aa"/><stop offset="1" stop-color="#286a7a"/></linearGradient>
+    <linearGradient id="light" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#e5e9bb" stop-opacity=".32"/><stop offset="1" stop-color="#cee9cf" stop-opacity="0"/></linearGradient>
   </defs>
   <path fill="url(#sky)" d="M0 0h1440v900H0z"/>
-  <!-- The sun and broad halo are quiet, painted layers rather than a hard glow. -->
-  <circle cx="1110" cy="190" r="122" fill="#f5e5b0" opacity=".13"/>
-  <circle cx="1110" cy="190" r="95" fill="#fae9b7" opacity=".2"/>
-  <circle cx="1110" cy="190" r="67" fill="#ffe9ab"/>
-  <path fill="#fff1ca" opacity=".38" d="M1051 158a67 67 0 0 1 125 25c-27-8-78-12-125-25z"/>
-  <!-- Sparse long clouds leave the main aiming area open. -->
-  <g fill="#e4e7cd" opacity=".59">
-    <path d="M60 159c17-11 34-11 52-5 9-20 27-27 43-23 18 3 27 14 33 25 14-6 30-5 43 1 4-15 17-25 32-22 13 3 22 13 25 26 15-3 31 2 43 13H59c-7-5-6-10 1-15z"/>
-    <path d="M644 112c15-11 33-12 47-4 11-18 28-24 42-17 11 5 16 14 19 23 13-5 28-3 38 7H641c-6-2-4-5 3-9z"/>
-    <path d="M1268 299c20-15 43-16 66-6 12-18 33-24 51-15 10 6 15 14 18 23 12-2 26 2 37 9v16h-194c-3-8 5-18 22-27z"/>
+  <circle cx="1110" cy="190" r="190" fill="url(#sunhalo)"/>
+  <circle cx="1110" cy="190" r="67" fill="url(#sun)"/>
+  <path fill="#fff6d7" opacity=".35" d="M1061 145c23-26 63-30 89-10-30-12-62-7-89 10z"/>
+  <!-- Smooth, sunlit clouds leave a large clean aiming area. -->
+  <g fill="url(#cloud)" opacity=".82">
+    <path d="M57 169c0-11 14-22 31-22 8 0 15 2 22 5 7-18 23-29 41-29 22 0 37 12 44 29 8-5 16-7 26-5 8-15 20-23 35-21 21 2 34 18 34 36 18-1 32 6 40 14-84 4-180 4-270 0-2-2-3-4-3-7z"/>
+    <path d="M640 115c6-10 21-15 35-11 7-18 22-27 38-25 17 2 29 14 33 29 16-8 34-2 44 11-47 5-97 5-150 1z"/>
+    <path d="M1249 314c1-14 16-28 37-29 13-1 23 4 31 9 8-20 25-33 45-32 24 1 41 18 44 38 12-5 26-3 34 4v25c-65 3-129 3-191-2z"/>
   </g>
-  <g fill="#f9e5ba" opacity=".4">
-    <path d="M369 274c29-4 84-4 119 0l48 7H330z"/>
-    <path d="M866 351c40-5 91-4 123 0l61 7H837z"/>
+  <g fill="#f7edcf" opacity=".53">
+    <path d="M329 280c49-9 104-11 157-4 22 3 38 6 48 9-60 2-143 2-205-5z"/>
+    <path d="M838 353c48-11 100-10 149-5 26 3 46 7 64 13-71 1-151-1-213-8z"/>
   </g>
-  <!-- Three receding island planes. -->
-  <path fill="#9db8ac" d="M0 618l41-11 56-53 47-13 32-25 29 3 48 51 52 14 41 26 69-35 41-45 54-5 47-49 32 1 27 26 33 53 50 18 67-5 38 25 45 44 86-31 33-46 28-13 22-30 37-2 56 66 46 8 47 42 48-3 41-20 66-14 38 19 36 5L1440 618V800H0z"/>
-  <path fill="#8daaa3" d="M126 599l52-68 27-12 48 51 52 14 41 26-61-5-32-19-39-10-22-22-30 42zm407-34 38-32 26-7 47 49 50 18-34 14-36-25-27-36-28 9zm500 56 43-63 28-13 22-30 37-2 56 66 46 8 28 25-68-14-45-46-23-12-19 31-34 10-32 43z"/>
-  <path fill="url(#haze)" d="M0 535h1440v200H0z"/>
-  <path fill="#78a59d" d="M0 677l51-29 47-8 48-51 40-7 25-29 23 5 34 52 47 10 43 34 46 17 68-5 47-29 53-1 47 17 46-7 52-27 62-5 36 14 41 39 49 3 51-28 45-11 30-40 39-9 28-38 34 4 47 76 45 10 40 34 43 4 45-31 35 10L1440 677V820H0z"/>
-  <path fill="#6b9895" d="M83 651l63-62 40-7 25-29 23 5 34 52 47 10 43 34 46 17-65-5-50-25-42-13-34-39-22 16-35 2-40 40zm918 18 45-11 30-40 39-9 28-38 34 4 47 76 45 10 40 34-62-13-42-12-37-52-20-12-13 26-36 12-31 28z"/>
-  <path fill="#e8d4a2" opacity=".35" d="M0 708c156-15 260-5 396 4s292-12 437-5 340-15 607-5v44H0z"/>
+  <!-- Rounded coastal forms and soft tonal planes; no faceted or pixel motifs. -->
+  <path fill="url(#far)" d="M0 629C48 620 73 598 105 568s47-50 73-52c41-3 55 48 91 67s72 26 112 10 55-63 85-69c34-7 53 19 76 13s23-49 49-52c38-4 52 74 94 101 41 27 72 12 110 20s57 36 85 35c49-1 70-46 98-74 25-25 44-24 61-42 18-20 35-26 53-19 32 13 47 61 80 76 32 15 65 6 100 25 26 14 48 28 79 17 36-13 67-16 99-6v182H0z"/>
+  <path fill="#94b6ab" opacity=".62" d="M125 561c29-29 40-47 58-43 23 5 43 44 66 59 28 19 55 25 73 34-35-4-68-12-97-30-25-16-40-42-53-41-15 0-26 13-47 21zm409-19c24-2 31-54 58-57 36-4 53 74 92 100 21 14 47 18 63 19-38 4-69-2-90-23-25-24-41-66-60-69-16-2-27 22-41 27-8 3-14 4-22 3zm482 29c24-15 34-46 61-60 19-10 38-3 53 13 21 21 28 48 49 59 21 12 38 11 57 14-33 4-59-1-80-19-18-16-30-42-48-44-24-3-38 35-64 39-10 2-20 1-28-2z"/>
+  <path fill="url(#near)" d="M0 690c46-6 74-27 110-44 37-18 43-61 77-69 34-8 48 43 78 53 36 12 59 24 91 40 34 17 65 7 98-4 38-14 69-13 107-2s58 11 90-3c36-17 62-26 93-18 39 10 45 37 79 40 40 3 64-21 95-30 35-10 44-42 68-49 25-7 42 5 61-14 17-18 26-38 45-37 37 2 47 74 78 91 30 17 55 8 83 31 24 20 49 15 80-2 27-16 55-11 77 4L1440 677V820H0z"/>
+  <path fill="#659b98" opacity=".38" d="M108 650c36-18 48-62 80-70 21-5 35 17 49 36-22-11-29-15-39-10-14 8-19 26-37 34-17 8-37 7-53 10zm889-45c21-7 33 5 52-16 17-18 26-38 44-35 27 4 39 40 51 65 13 25 27 28 52 32-33 4-55-8-72-29-14-18-21-40-33-41-14-2-21 18-34 24-16 8-34 2-60 0z"/>
+  <path fill="#d8ddba" opacity=".25" d="M0 706c156-15 260-5 396 4s292-12 437-5 340-15 607-5v44H0z"/>
   <path fill="url(#ocean)" d="M0 725c159-4 337 2 489 0s315-6 469-2 311-3 482 0v177H0z"/>
-  <path fill="url(#light)" d="M1068 725h83l184 175H877z"/>
+  <path fill="url(#light)" d="M1076 725c-20 35-43 46-80 69-46 28-58 63-83 106h409c-29-45-55-83-102-112-31-19-49-41-60-63z"/>
   <g fill="none" stroke-linecap="round">
-    <path stroke="#b6ccb0" stroke-width="3" opacity=".7" d="M0 732h155m78 0h204m103-1h169m91 0h89m89-1h124m74 1h184"/>
-    <path stroke="#c5d8b5" stroke-width="2" opacity=".33" d="M70 758h111m98 8h85m298-10h125m342-5h114m-215 34h192m-272 30h251"/>
-    <path stroke="#89b9ad" stroke-width="2" opacity=".38" d="M18 812h82m85 25h79m197-29h117m147 21h56m403 25h73m88-57h82M13 880h180m149-15h72m279 17h121m130-24h87"/>
+    <path stroke="#c7dec3" stroke-width="2.5" opacity=".62" d="M0 732c45-2 103-2 155 0m78 0c64-2 132-2 204 0m103-1c54-2 111-2 169 0m91 0h89m89-1c42-2 82-2 124 0m74 1c53-2 115-2 184 0"/>
+    <path stroke="#dce7c3" stroke-width="2" opacity=".33" d="M70 758c34-2 73-2 111 0m98 8h85m298-10c41-2 84-2 125 0m342-5h114m-215 34c61-3 130-3 192 0m-272 30c81-3 169-3 251 0"/>
+    <path stroke="#a0cfc0" stroke-width="2" opacity=".34" d="M18 812h82m85 25h79m197-29h117m147 21h56m403 25h73m88-57h82M13 880h180m149-15h72m279 17h121m130-24h87"/>
   </g>
-  <!-- Small gulls give the distant scale without stealing attention. -->
-  <g fill="none" stroke="#657e7f" stroke-width="2.2" stroke-linecap="round" opacity=".72">
-    <path d="M907 247q8-7 16 0 8-7 16 0"/>
-    <path d="M945 266q5-4 10 0 5-4 10 0"/>
-    <path d="M299 389q6-5 12 0 6-5 12 0"/>
-  </g>
+  <g fill="none" stroke="#71908e" stroke-width="2.2" stroke-linecap="round" opacity=".64"><path d="M907 247q8-7 16 0 8-7 16 0"/><path d="M945 266q5-4 10 0 5-4 10 0"/><path d="M299 389q6-5 12 0 6-5 12 0"/></g>
 </svg>

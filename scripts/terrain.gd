@@ -1,7 +1,8 @@
 class_name IslandTerrain
 extends Node2D
 ## Original bitmap terrain. Connected ground keeps caves and overhangs; only
-## genuinely disconnected islands fall. Rendering and collision share one mask.
+## genuinely disconnected islands fall. Edge rendering and collision share a
+## continuously reconstructed distance field derived from the topology mask.
 
 const CELL_SIZE := 3
 const GRID_WIDTH := 480
@@ -12,7 +13,13 @@ const FALL_ACCELERATION := 310.0 # cells / second squared
 const MAX_FALL_SPEED := 160.0
 
 var _mask := PackedByteArray()
-var _pixels := PackedByteArray()
+# Signed distance in grid cells. Its zero contour is reconstructed continuously
+# for both collision and HD rendering; the byte mask remains the topology source.
+const FIELD_RADIUS := 16.0
+const SQRT_2 := 1.41421356237
+const HD_SHADER = preload("res://shaders/terrain.gdshader")
+var _distance := PackedFloat32Array()
+var _render_field := PackedFloat32Array()
 var _texture: ImageTexture
 var _fragments: Array[Dictionary] = []
 var _count := 0
@@ -21,13 +28,19 @@ var _surface := PackedInt32Array()
 
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	var hd_material := ShaderMaterial.new()
+	hd_material.shader = HD_SHADER
+	if _texture != null: hd_material.set_shader_parameter("terrain_field", _texture)
+	material = hd_material
 
 func generate(seed_value: int = 1) -> void:
 	_seed = seed_value
 	_mask.resize(GRID_WIDTH * GRID_HEIGHT)
 	_mask.fill(0)
-	_pixels.resize(GRID_WIDTH * GRID_HEIGHT * 4)
-	_pixels.fill(0)
+	_distance.resize(GRID_WIDTH * GRID_HEIGHT)
+	_distance.fill(-FIELD_RADIUS)
+	_render_field.resize(GRID_WIDTH * GRID_HEIGHT * 3)
+	_render_field.fill(0.0)
 	_surface.resize(GRID_WIDTH)
 	_fragments.clear()
 	_count = 0
@@ -53,7 +66,13 @@ func generate(seed_value: int = 1) -> void:
 func solid_at(world: Vector2) -> bool:
 	if world.x < 0.0 or world.y < 0.0 or world.x >= WORLD_SIZE.x or world.y >= WORLD_SIZE.y:
 		return false
-	return _mask[int(world.y / CELL_SIZE) * GRID_WIDTH + int(world.x / CELL_SIZE)] != 0 if not _mask.is_empty() else false
+	if _mask.is_empty():
+		return false
+	var index := int(world.y / CELL_SIZE) * GRID_WIDTH + int(world.x / CELL_SIZE)
+	# Away from the edge, topology and the continuous field always agree.
+	if absf(_distance[index]) > 2.0:
+		return _mask[index] != 0
+	return signed_distance_at(world) >= 0.0
 
 func surface_y(x: float) -> float:
 	if x < 0.0 or x >= WORLD_SIZE.x or _surface.is_empty():
@@ -225,55 +244,98 @@ func _refresh_surface() -> Rect2i:
 	return dirty
 
 func _redraw_region(region: Rect2i) -> void:
-	var rect := region.intersection(Rect2i(0, 0, GRID_WIDTH, GRID_HEIGHT))
+	# The visual field is rebuilt only near changed geometry, never every frame.
+	# Extra padding makes the bounded chamfer transform identical at the edge to
+	# a full rebuild, up to FIELD_RADIUS, while keeping impact latency modest.
+	var rect := region.grow(int(FIELD_RADIUS) + 2).intersection(Rect2i(0, 0, GRID_WIDTH, GRID_HEIGHT))
 	for y in range(rect.position.y, rect.end.y):
 		for x in range(rect.position.x, rect.end.x):
 			var index := y * GRID_WIDTH + x
-			var pixel := index * 4
-			if _mask[index] == 0:
-				_pixels[pixel + 3] = 0
-				continue
-			var depth := y - _surface[x]
-			var color: Color
-			var noise_value := posmod(x * 17 + y * 53 + x * y * 3 + _seed, 23)
-			var band := sin(float(y) * 0.13 + sin(float(x) * 0.036) * 0.9)
-			var shade := float(noise_value) / 350.0
-			if depth == 0:
-				color = Color(0.78 + shade, 0.87 + shade * 0.5, 0.40)
-			elif depth <= 2:
-				color = Color(0.48 + shade, 0.66 + shade * 0.5, 0.25)
-			elif depth <= 4:
-				color = Color(0.28 + shade, 0.44 + shade, 0.23)
-			else:
-				color = Color(0.57 + band * 0.035 + shade, 0.31 + band * 0.04 + shade, 0.23 + band * 0.025 + shade * 0.6)
-				if y > 233:
-					color = color.lerp(Color(0.30, 0.29, 0.31), clampf(float(y - 233) / 90.0, 0.0, 0.65))
-				var edge := (x == 0 or x == GRID_WIDTH - 1 or y == 0 or y == GRID_HEIGHT - 1)
-				if not edge:
-					edge = _mask[index - 1] == 0 or _mask[index + 1] == 0 or _mask[index - GRID_WIDTH] == 0 or _mask[index + GRID_WIDTH] == 0
-				if edge:
-					color = Color(0.30, 0.22, 0.22)
-				elif posmod(x * 73 + y * 29, 197) < 2:
-					color = color.lightened(0.16)
-			_pixels[pixel] = int(color.r * 255.0)
-			_pixels[pixel + 1] = int(color.g * 255.0)
-			_pixels[pixel + 2] = int(color.b * 255.0)
-			_pixels[pixel + 3] = 255
-	var image := Image.create_from_data(GRID_WIDTH, GRID_HEIGHT, false, Image.FORMAT_RGBA8, _pixels)
+			var inside := _mask[index] != 0
+			var boundary := false
+			for next in [index - GRID_WIDTH if y > 0 else -1, index + GRID_WIDTH if y < GRID_HEIGHT - 1 else -1, index - 1 if x > 0 else -1, index + 1 if x < GRID_WIDTH - 1 else -1]:
+				if (next >= 0 and (_mask[next] != 0) != inside) or (next < 0 and inside):
+					boundary = true
+					break
+			_distance[index] = 0.5 if boundary else FIELD_RADIUS
+	for y in range(rect.position.y, rect.end.y):
+		for x in range(rect.position.x, rect.end.x):
+			var index := y * GRID_WIDTH + x
+			var value := _distance[index]
+			if x > rect.position.x: value = minf(value, _distance[index - 1] + 1.0)
+			if y > rect.position.y:
+				value = minf(value, _distance[index - GRID_WIDTH] + 1.0)
+				if x > rect.position.x: value = minf(value, _distance[index - GRID_WIDTH - 1] + SQRT_2)
+				if x < rect.end.x - 1: value = minf(value, _distance[index - GRID_WIDTH + 1] + SQRT_2)
+			_distance[index] = value
+	for y in range(rect.end.y - 1, rect.position.y - 1, -1):
+		for x in range(rect.end.x - 1, rect.position.x - 1, -1):
+			var index := y * GRID_WIDTH + x
+			var value := _distance[index]
+			if x < rect.end.x - 1: value = minf(value, _distance[index + 1] + 1.0)
+			if y < rect.end.y - 1:
+				value = minf(value, _distance[index + GRID_WIDTH] + 1.0)
+				if x > rect.position.x: value = minf(value, _distance[index + GRID_WIDTH - 1] + SQRT_2)
+				if x < rect.end.x - 1: value = minf(value, _distance[index + GRID_WIDTH + 1] + SQRT_2)
+			_distance[index] = value
+	for y in range(rect.position.y, rect.end.y):
+		for x in range(rect.position.x, rect.end.x):
+			var index := y * GRID_WIDTH + x
+			_distance[index] *= 1.0 if _mask[index] != 0 else -1.0
+	# A compact separable Gaussian removes topology-grid waviness before cubic
+	# reconstruction. Collision queries use this same smoothed distance field.
+	var horizontal := _distance.duplicate()
+	for y in range(rect.position.y, rect.end.y):
+		for x in range(rect.position.x, rect.end.x):
+			var index := y * GRID_WIDTH + x
+			horizontal[index] = (_distance[y * GRID_WIDTH + maxi(0, x - 1)] + _distance[y * GRID_WIDTH + mini(GRID_WIDTH - 1, x + 1)]) * 0.25 + _distance[index] * 0.5
+	for y in range(rect.position.y, rect.end.y):
+		for x in range(rect.position.x, rect.end.x):
+			var index := y * GRID_WIDTH + x
+			_distance[index] = (horizontal[maxi(0, y - 1) * GRID_WIDTH + x] + horizontal[mini(GRID_HEIGHT - 1, y + 1) * GRID_WIDTH + x]) * 0.25 + horizontal[index] * 0.5
+	# Broad normals are independent of screen derivatives. This avoids little
+	# alternating green/orange teeth when rendering above the topology resolution.
+	for y in range(rect.position.y, rect.end.y):
+		for x in range(rect.position.x, rect.end.x):
+			var index := y * GRID_WIDTH + x
+			var gradient := Vector2(_distance[y * GRID_WIDTH + mini(GRID_WIDTH - 1, x + 3)] - _distance[y * GRID_WIDTH + maxi(0, x - 3)],
+				_distance[mini(GRID_HEIGHT - 1, y + 3) * GRID_WIDTH + x] - _distance[maxi(0, y - 3) * GRID_WIDTH + x]).normalized()
+			_render_field[index * 3] = _distance[index]
+			_render_field[index * 3 + 1] = gradient.x
+			_render_field[index * 3 + 2] = gradient.y
+	var image := Image.create_from_data(GRID_WIDTH, GRID_HEIGHT, false, Image.FORMAT_RGBF, _render_field.to_byte_array())
 	if _texture == null:
 		_texture = ImageTexture.create_from_image(image)
 	else:
 		_texture.update(image)
+	if material != null: material.set_shader_parameter("terrain_field", _texture)
 	queue_redraw()
+
+func signed_distance_at(world: Vector2) -> float:
+	## Same cubic B-spline reconstruction as the shader, in world pixels.
+	if _distance.is_empty():
+		return -FIELD_RADIUS * CELL_SIZE
+	var cell := world / float(CELL_SIZE) - Vector2(0.5, 0.5)
+	var base := Vector2i(int(floor(cell.x)), int(floor(cell.y)))
+	var fraction := cell - Vector2(base)
+	var wx := _cubic_weights(fraction.x)
+	var wy := _cubic_weights(fraction.y)
+	var result := 0.0
+	for j in 4:
+		var row := clampi(base.y + j - 1, 0, GRID_HEIGHT - 1) * GRID_WIDTH
+		for i in 4:
+			result += _distance[row + clampi(base.x + i - 1, 0, GRID_WIDTH - 1)] * wx[i] * wy[j]
+	return result * CELL_SIZE
+
+func _cubic_weights(fraction: float) -> PackedFloat32Array:
+	var inverse := 1.0 - fraction
+	var square := fraction * fraction
+	var cube := square * fraction
+	return PackedFloat32Array([inverse * inverse * inverse / 6.0,
+		(3.0 * cube - 6.0 * square + 4.0) / 6.0,
+		(-3.0 * cube + 3.0 * square + 3.0 * fraction + 1.0) / 6.0,
+		cube / 6.0])
 
 func _draw() -> void:
 	if _texture != null:
 		draw_texture_rect(_texture, Rect2(Vector2.ZERO, WORLD_SIZE), false)
-	# Sparse meadow tufts break the mask silhouette without hiding collisions.
-	for x in range(31, GRID_WIDTH - 30, 9):
-		if _surface.is_empty() or _surface[x] >= 258:
-			continue
-		var base := Vector2(float(x * CELL_SIZE), float(_surface[x] * CELL_SIZE + 2))
-		var height := 4.0 + float(posmod(x * 17, 6))
-		draw_line(base, base + Vector2(-3, -height), Color(0.68, 0.79, 0.35), 2.0, true)
-		draw_line(base + Vector2(2, 0), base + Vector2(4, -height - 1), Color(0.73, 0.84, 0.38), 2.0, true)

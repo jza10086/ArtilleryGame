@@ -1,6 +1,7 @@
 extends SceneTree
 ## Native viewport capture of actual gameplay (no fake projectile or terrain states).
 var game: Node2D
+var render_view: SubViewport
 var frame := 0
 var elapsed := 0.0
 var aim_wait := 0.0
@@ -21,8 +22,21 @@ func setup() -> void:
 		quit(1)
 		return
 	DirAccess.make_dir_recursive_absolute(output.path_join("frames"))
+	# Render native 1080p pixels even on cloud desktops with a smaller display.
+	# This is a real high-resolution viewport, never an enlarged screenshot.
+	render_view = SubViewport.new()
+	render_view.size = Vector2i(1920, 1080)
+	render_view.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	root.add_child(render_view)
+	render_view.canvas_transform = Transform2D(0.0, Vector2(1.2, 1.2), 0.0, Vector2.ZERO)
+	var preview := Sprite2D.new()
+	preview.texture = render_view.get_texture()
+	preview.centered = false
+	preview.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	preview.scale = Vector2(1600.0 / 1920.0, 900.0 / 1080.0)
+	root.add_child(preview)
 	game = load("res://scripts/game.gd").new()
-	root.add_child(game)
+	render_view.add_child(game)
 	game.begin_match(54672)
 	game.menu = false
 	game.phase = "aim"
@@ -70,10 +84,10 @@ func _process(_dt: float) -> bool:
 
 func capture() -> void:
 	await RenderingServer.frame_post_draw
-	var image := root.get_texture().get_image()
+	var image := render_view.get_texture().get_image()
 	image.save_png(output.path_join("frames/%04d.png" % frame))
 	if frame == 30: image.save_png(output.path_join("tiny-barrage-gameplay.png"))
-	if not captured_impact and not game.rings.is_empty():
+	if not captured_impact and not game.rings.is_empty() and game.rings[0].life < game.rings[0].max - 0.13:
 		image.save_png(output.path_join("tiny-barrage-impact.png"))
 		captured_impact = true
 	if frame == 510: image.save_png(output.path_join("tiny-barrage-aftermath.png"))

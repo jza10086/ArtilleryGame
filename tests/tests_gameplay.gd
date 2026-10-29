@@ -205,16 +205,14 @@ func run() -> void:
 	var mouse := InputEventMouseButton.new()
 	mouse.button_index = MOUSE_BUTTON_LEFT
 	mouse.pressed = true
-	mouse.position = Vector2(960, 850)
+	mouse.position = Vector2(960, 850) + game.position
 	mouse.global_position = mouse.position
-	# Dummy headless pointer is (0,0); offset the viewport canvas to exercise UI-space guards.
-	root.canvas_transform = Transform2D(0, -mouse.position)
+	# Event coordinates are transformed into the centered game canvas.
 	game._unhandled_input(mouse)
 	verify(game.pointer.distance_to(Vector2(960, 850)) < 1 and not game.charging, "blank bottom HUD click cannot start charging")
 	mouse.pressed = false
 	game._unhandled_input(mouse)
 	verify(game.projectiles.is_empty(), "release after HUD click cannot fire a shell")
-	root.canvas_transform = Transform2D.IDENTITY
 
 	reset()
 	game.auto_demo = true

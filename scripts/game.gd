@@ -63,6 +63,9 @@ var demo_timer := 0.0
 var demo_stage := 0
 
 func _ready() -> void:
+	# 16:9 composition: keep the established simulation space centered.
+	position.x = 80.0
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	font = load("res://assets/ui.ttf")
 	bold = load("res://assets/ui_bold.ttf")
 	if ResourceLoader.exists("res://assets/background.svg"):
@@ -131,7 +134,7 @@ func start_turn() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
-		pointer = get_global_mouse_position()
+		pointer = get_global_transform_with_canvas().affine_inverse() * event.position
 		aim_mouse = true
 		hovered = button_at(pointer)
 	if event is InputEventKey and event.pressed and not event.echo:
@@ -185,7 +188,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and not event.pressed and event.keycode == KEY_SPACE:
 		if charging and interactive(): fire_shot(charge)
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		pointer = get_global_mouse_position()
+		pointer = get_global_transform_with_canvas().affine_inverse() * event.position
 		if event.pressed:
 			var button := button_at(pointer)
 			if button != "":
@@ -447,7 +450,7 @@ func update_projectiles(dt: float) -> void:
 func explode(pos: Vector2, radius: float, damage: float) -> void:
 	terrain.carve(pos, radius)
 	shake = minf(9.0, radius * 0.12)
-	rings.append({"pos": pos, "radius": radius, "life": 0.45, "max": 0.45})
+	rings.append({"pos": pos, "radius": radius, "life": 0.62, "max": 0.62, "kind": "blast"})
 	emit_sparks(pos, Color("ffc467"), 28, 230)
 	emit_sparks(pos, Color("c18453"), 24, 180)
 	sound.play("boom")
@@ -528,7 +531,7 @@ func emit_dust(pos: Vector2, count: int) -> void:
 
 func emit_splash(pos: Vector2) -> void:
 	emit_sparks(pos, Color("b8eee3"), 25, 160)
-	rings.append({"pos": pos, "radius": 45.0, "life": 0.5, "max": 0.5})
+	rings.append({"pos": pos, "radius": 45.0, "life": 0.5, "max": 0.5, "kind": "splash"})
 
 func update_effects(dt: float) -> void:
 	for i in range(particles.size() - 1, -1, -1):
@@ -559,10 +562,10 @@ func team_hp(index: int) -> int:
 
 func _draw() -> void:
 	if background:
-		draw_texture_rect(background, Rect2(0, 0, W, H), false)
+		draw_texture_rect(background, Rect2(-80, 0, W + 160, H), false)
 	else:
-		draw_rect(Rect2(0, 0, W, H), Color("80bfc1"))
-		draw_circle(Vector2(1120, 185), 90, Color("f9d598"))
+		draw_rect(Rect2(-80, 0, W + 160, H), Color("80bfc1"))
+		draw_circle(Vector2(1120, 185), 90, Color("f9d598"), true, -1, true)
 
 func draw_overlay(d: Node2D) -> void:
 	var offset := Vector2(sin(elapsed * 85), cos(elapsed * 61)) * shake
@@ -575,8 +578,8 @@ func draw_overlay(d: Node2D) -> void:
 		for t in range(1, p.trail.size()):
 			var alpha: float = float(t) / p.trail.size() * 0.65
 			d.draw_line(p.trail[t - 1], p.trail[t], Color(CREAM, alpha), 3.5, true)
-		d.draw_circle(p.pos + Vector2(1, 2), 7, INK)
-		d.draw_circle(p.pos, 5.0 if p.kind == 3 else 6.0, Color("ffcf6b"))
+		d.draw_circle(p.pos + Vector2(1, 2), 7, INK, true, -1, true)
+		d.draw_circle(p.pos, 5.0 if p.kind == 3 else 6.0, Color("ffcf6b"), true, -1, true)
 		if p.kind == 1:
 			d.draw_arc(p.pos, 10, -PI / 2, -PI / 2 + TAU * (1 - minf(1, p.age / 2.6)), 24, CREAM, 2, true)
 		if p.pos.y < 12:
@@ -584,11 +587,9 @@ func draw_overlay(d: Node2D) -> void:
 			d.draw_colored_polygon(PackedVector2Array([marker + Vector2(-7, 9), marker + Vector2(0, -3), marker + Vector2(7, 9)]), CREAM)
 			label(d, "%dm" % int(absf(p.pos.y) / 8), marker + Vector2(0, 29), 12, INK, true)
 	for r in rings:
-		var progress: float = 1.0 - r.life / r.max
-		d.draw_circle(r.pos, r.radius * (0.25 + progress * 0.75), Color("fff1c9", r.life / r.max * 0.42))
-		d.draw_arc(r.pos, r.radius * (0.35 + progress * 0.8), 0, TAU, 48, Color("fff3cf", r.life / r.max), 5.0 * (1.0 - progress) + 1.0, true)
+		draw_blast(d, r)
 	for p in particles:
-		d.draw_circle(p.pos, p.size * (0.45 + p.life / p.max * 0.55), Color(p.color, p.life / p.max))
+		d.draw_circle(p.pos, p.size * (0.45 + p.life / p.max * 0.55), Color(p.color, p.life / p.max), true, -1, true)
 	for p in popups:
 		label(d, p.text, p.pos + Vector2(1, 2), 23, INK, true, true)
 		label(d, p.text, p.pos, 23, Color(p.color, minf(1, p.life * 2)), true, true)
@@ -607,6 +608,29 @@ func draw_overlay(d: Node2D) -> void:
 	if paused or help_open or confirm_restart:
 		draw_modal(d)
 
+func draw_blast(d: Node2D, blast: Dictionary) -> void:
+	var t: float = 1.0 - blast.life / blast.max
+	var fade: float = 1.0 - t
+	var pos: Vector2 = blast.pos
+	var radius: float = blast.radius
+	if blast.get("kind", "blast") == "splash":
+		d.draw_arc(pos, radius * (0.3 + t), PI, TAU, 64, Color("d8fff1", fade), 3.0 * fade + 1.0, true)
+		return
+	var swell := 1.0 - pow(1.0 - t, 3.0)
+	var size := radius * (0.23 + swell * 0.57)
+	# Soft, layered illustrated blast lobes; no low-resolution sprites.
+	for i in 7:
+		var a := float(i) * TAU / 7.0 + 0.2
+		var center := pos + Vector2.from_angle(a) * size * 0.48
+		d.draw_circle(center, size * 0.61 + 2.0, Color("c97149", fade * 0.55), true, -1, true)
+		d.draw_circle(center, size * 0.61, Color("ffbd72", fade * 0.86), true, -1, true)
+	d.draw_circle(pos, size * 0.69, Color("ffe5a7", fade * 0.96), true, -1, true)
+	d.draw_circle(pos - Vector2(size * 0.12, size * 0.15), size * 0.39, Color("fff5d2", fade), true, -1, true)
+	d.draw_arc(pos, radius * (0.3 + swell * 0.87), 0, TAU, 96, Color("fff1bd", fade * 0.8), 3.0 * fade + 0.8, true)
+	for i in 9:
+		var ray := Vector2.from_angle(float(i) * TAU / 9.0 + 0.14)
+		d.draw_line(pos + ray * radius * (0.55 + swell * 0.7), pos + ray * radius * (0.63 + swell * 0.78), Color("fff2ca", fade * 0.8), 2.7 * fade + 0.5, true)
+
 func draw_tank(d: Node2D, index: int) -> void:
 	var u: Dictionary = units[index]
 	var pos: Vector2 = u.pos
@@ -622,17 +646,17 @@ func draw_tank(d: Node2D, index: int) -> void:
 	var muzzle := pivot + Vector2.from_angle(rot) * 29
 	d.draw_line(pivot + Vector2(0, 1), muzzle + Vector2(0, 1), INK, 12, true)
 	d.draw_line(pivot, muzzle, color.lightened(0.08), 7, true)
-	d.draw_circle(muzzle, 5, INK)
-	d.draw_circle(muzzle, 2, color.darkened(0.3))
+	d.draw_circle(muzzle, 5, INK, true, -1, true)
+	d.draw_circle(muzzle, 2, color.darkened(0.3), true, -1, true)
 	if tank_textures.size() > u.team and tank_textures[u.team] != null:
 		d.draw_texture_rect(tank_textures[u.team], Rect2(pos - Vector2(34, 28), Vector2(68, 49)), false, Color.WHITE if u.hurt <= 0 else Color("fff4cf"))
 	else:
 		panel(d, Rect2(pos.x - 24, pos.y + 2, 48, 18), INK, 9)
 		for x in [-15, 0, 15]:
-			d.draw_circle(pos + Vector2(x, 11), 5, Color("627b75"))
+			d.draw_circle(pos + Vector2(x, 11), 5, Color("627b75"), true, -1, true)
 		panel(d, Rect2(pos.x - 23, pos.y - 10, 46, 21), color, 8)
 		panel(d, Rect2(pos.x - 14, pos.y - 23, 28, 20), color.lightened(0.15), 9)
-		d.draw_circle(pos + Vector2(u.facing * 7, -16), 3, INK)
+		d.draw_circle(pos + Vector2(u.facing * 7, -16), 3, INK, true, -1, true)
 	# Keep names readable when blast knockback gathers tanks in one crater.
 	var name_y := pos.y - 45
 	for j in index:
@@ -658,16 +682,16 @@ func draw_aim(d: Node2D) -> void:
 		p += velocity * 0.07
 		if p.y > WATER or terrain.solid_at(p): break
 		var alpha := (1.0 - float(i) / 18) * (0.8 if charging else 0.48)
-		d.draw_circle(p, 2.2 if i % 3 != 0 else 3.0, Color(CREAM, alpha))
+		d.draw_circle(p, 2.2 if i % 3 != 0 else 3.0, Color(CREAM, alpha), true, -1, true)
 	var sight := muzzle + direction * 42
 	d.draw_arc(sight, 8, 0, TAU, 16, Color(INK, 0.5), 1.3, true)
 	d.draw_line(sight - Vector2(0, 12), sight + Vector2(0, 12), Color(INK, 0.32), 1, true)
 	d.draw_line(sight - Vector2(12, 0), sight + Vector2(12, 0), Color(INK, 0.32), 1, true)
 
 func draw_water(d: Node2D) -> void:
-	d.draw_rect(Rect2(0, WATER, W, H - WATER), Color("287480", 0.94))
+	d.draw_rect(Rect2(-80, WATER, W + 160, H - WATER), Color("287480", 0.94))
 	var points := PackedVector2Array()
-	for x in range(0, 1445, 8):
+	for x in range(-80, 1525, 6):
 		points.append(Vector2(x, WATER + sin(x * 0.018 + elapsed * 1.3) * 2.2 + sin(x * 0.045 - elapsed) * 1.2))
 	d.draw_polyline(points, Color("a7dacf", 0.75), 3, true)
 	for i in 24:
@@ -679,7 +703,7 @@ func draw_hud(d: Node2D) -> void:
 	for t in 2:
 		var x := 32.0 if t == 0 else 1128.0
 		panel(d, Rect2(x, 28, 280, 76), Color(INK, 0.88), 17)
-		d.draw_circle(Vector2(x + 25, 52), 6, TEAM_COLORS[t])
+		d.draw_circle(Vector2(x + 25, 52), 6, TEAM_COLORS[t], true, -1, true)
 		label(d, TEAM_NAMES[t], Vector2(x + 41, 59), 15, CREAM, false, true)
 		label(d, "%d" % team_hp(t), Vector2(x + 254, 60), 19, TEAM_COLORS[t], true, true)
 		for j in 3:
@@ -746,7 +770,7 @@ func draw_menu(d: Node2D) -> void:
 	label(d, "ENTER  START     M  SOUND     F11  FULLSCREEN", Vector2(1408, 869), 11, Color(CREAM, 0.65), false, false, true)
 
 func draw_victory(d: Node2D) -> void:
-	d.draw_rect(Rect2(0, 110, W, 680), Color(INK, 0.23))
+	d.draw_rect(Rect2(-80, 110, W + 160, 680), Color(INK, 0.23))
 	panel(d, Rect2(420, 210, 600, 320), Color(INK, 0.96), 26)
 	label(d, "ISLAND CHAMPIONS", Vector2(720, 259), 13, MUTED, true, true)
 	var title: String = TEAM_NAMES[winner] if winner >= 0 else "A PERFECT DRAW"
@@ -756,7 +780,7 @@ func draw_victory(d: Node2D) -> void:
 	button(d, Rect2(554, 431, 332, 59), "ANOTHER ROUND  →", "restart", true, 18)
 
 func draw_modal(d: Node2D) -> void:
-	d.draw_rect(Rect2(0, 0, W, H), Color(INK, 0.6))
+	d.draw_rect(Rect2(-80, 0, W + 160, H), Color(INK, 0.6))
 	if confirm_restart:
 		panel(d, Rect2(440, 270, 560, 270), Color("173e4b"), 24)
 		label(d, "FRESH ISLAND?", Vector2(720, 328), 28, CREAM, true, true)
