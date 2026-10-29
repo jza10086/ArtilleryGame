@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#699caa"/><stop offset=".57" stop-color="#c6d3be"/><stop offset="1" stop-color="#f8d79c"/></linearGradient>
+    <linearGradient id="haze" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#e8ddb4" stop-opacity="0"/><stop offset="1" stop-color="#f2d59f" stop-opacity=".9"/></linearGradient>
+    <linearGradient id="ocean" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#5c9f9c"/><stop offset="1" stop-color="#205467"/></linearGradient>
+    <linearGradient id="light" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff0bb" stop-opacity=".3"/><stop offset="1" stop-color="#b7e5c7" stop-opacity="0"/></linearGradient>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h1440v900H0z"/>
+  <!-- The sun and broad halo are quiet, painted layers rather than a hard glow. -->
+  <circle cx="1110" cy="190" r="122" fill="#f5e5b0" opacity=".13"/>
+  <circle cx="1110" cy="190" r="95" fill="#fae9b7" opacity=".2"/>
+  <circle cx="1110" cy="190" r="67" fill="#ffe9ab"/>
+  <path fill="#fff1ca" opacity=".38" d="M1051 158a67 67 0 0 1 125 25c-27-8-78-12-125-25z"/>
+  <!-- Sparse long clouds leave the main aiming area open. -->
+  <g fill="#e4e7cd" opacity=".59">
+    <path d="M60 159c17-11 34-11 52-5 9-20 27-27 43-23 18 3 27 14 33 25 14-6 30-5 43 1 4-15 17-25 32-22 13 3 22 13 25 26 15-3 31 2 43 13H59c-7-5-6-10 1-15z"/>
+    <path d="M644 112c15-11 33-12 47-4 11-18 28-24 42-17 11 5 16 14 19 23 13-5 28-3 38 7H641c-6-2-4-5 3-9z"/>
+    <path d="M1268 299c20-15 43-16 66-6 12-18 33-24 51-15 10 6 15 14 18 23 12-2 26 2 37 9v16h-194c-3-8 5-18 22-27z"/>
+  </g>
+  <g fill="#f9e5ba" opacity=".4">
+    <path d="M369 274c29-4 84-4 119 0l48 7H330z"/>
+    <path d="M866 351c40-5 91-4 123 0l61 7H837z"/>
+  </g>
+  <!-- Three receding island planes. -->
+  <path fill="#9db8ac" d="M0 618l41-11 56-53 47-13 32-25 29 3 48 51 52 14 41 26 69-35 41-45 54-5 47-49 32 1 27 26 33 53 50 18 67-5 38 25 45 44 86-31 33-46 28-13 22-30 37-2 56 66 46 8 47 42 48-3 41-20 66-14 38 19 36 5L1440 618V800H0z"/>
+  <path fill="#8daaa3" d="M126 599l52-68 27-12 48 51 52 14 41 26-61-5-32-19-39-10-22-22-30 42zm407-34 38-32 26-7 47 49 50 18-34 14-36-25-27-36-28 9zm500 56 43-63 28-13 22-30 37-2 56 66 46 8 28 25-68-14-45-46-23-12-19 31-34 10-32 43z"/>
+  <path fill="url(#haze)" d="M0 535h1440v200H0z"/>
+  <path fill="#78a59d" d="M0 677l51-29 47-8 48-51 40-7 25-29 23 5 34 52 47 10 43 34 46 17 68-5 47-29 53-1 47 17 46-7 52-27 62-5 36 14 41 39 49 3 51-28 45-11 30-40 39-9 28-38 34 4 47 76 45 10 40 34 43 4 45-31 35 10L1440 677V820H0z"/>
+  <path fill="#6b9895" d="M83 651l63-62 40-7 25-29 23 5 34 52 47 10 43 34 46 17-65-5-50-25-42-13-34-39-22 16-35 2-40 40zm918 18 45-11 30-40 39-9 28-38 34 4 47 76 45 10 40 34-62-13-42-12-37-52-20-12-13 26-36 12-31 28z"/>
+  <path fill="#e8d4a2" opacity=".35" d="M0 708c156-15 260-5 396 4s292-12 437-5 340-15 607-5v44H0z"/>
+  <path fill="url(#ocean)" d="M0 725c159-4 337 2 489 0s315-6 469-2 311-3 482 0v177H0z"/>
+  <path fill="url(#light)" d="M1068 725h83l184 175H877z"/>
+  <g fill="none" stroke-linecap="round">
+    <path stroke="#b6ccb0" stroke-width="3" opacity=".7" d="M0 732h155m78 0h204m103-1h169m91 0h89m89-1h124m74 1h184"/>
+    <path stroke="#c5d8b5" stroke-width="2" opacity=".33" d="M70 758h111m98 8h85m298-10h125m342-5h114m-215 34h192m-272 30h251"/>
+    <path stroke="#89b9ad" stroke-width="2" opacity=".38" d="M18 812h82m85 25h79m197-29h117m147 21h56m403 25h73m88-57h82M13 880h180m149-15h72m279 17h121m130-24h87"/>
+  </g>
+  <!-- Small gulls give the distant scale without stealing attention. -->
+  <g fill="none" stroke="#657e7f" stroke-width="2.2" stroke-linecap="round" opacity=".72">
+    <path d="M907 247q8-7 16 0 8-7 16 0"/>
+    <path d="M945 266q5-4 10 0 5-4 10 0"/>
+    <path d="M299 389q6-5 12 0 6-5 12 0"/>
+  </g>
+</svg>
