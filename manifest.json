@@ -1,0 +1,15 @@
+{
+  "manifest_version": 2,
+  "core_api_major": 4,
+  "package_version": "1.0.0",
+  "id": "godot_party_default_artillery_game",
+  "name": "小小炮火",
+  "kind": "minigame",
+  "introduction": "原型为同机双人轮流炮击，等待线上操作适配。",
+  "entry": "party_round.tscn",
+  "player_counts": [
+    2
+  ],
+  "playable": false,
+  "adapters": []
+}
