@@ -1,0 +1,11 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: zh_Hans\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "原型为同机双人轮流炮击，等待线上操作适配。"
+msgstr "原型为同机双人轮流炮击，等待线上操作适配。"
+
+msgid "小小炮火"
+msgstr "小小炮火"
