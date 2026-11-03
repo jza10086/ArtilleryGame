@@ -4,8 +4,26 @@ msgstr ""
 "Language: zh_Hans\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-msgid "原型为同机双人轮流炮击，等待线上操作适配。"
-msgstr "原型为同机双人轮流炮击，等待线上操作适配。"
+msgid "火炮大战"
+msgstr "火炮大战"
 
-msgid "小小炮火"
-msgstr "小小炮火"
+msgid "1–8 人回合制炮击。自由混战、偶数人数团队对抗与单人试射；风力弹道、可破坏地形和八类弹药。"
+msgstr "1–8 人回合制炮击。自由混战、偶数人数团队对抗与单人试射；风力弹道、可破坏地形和八类弹药。"
+
+msgid "对战模式"
+msgstr "对战模式"
+
+msgid "混战 2–8 人；团队对抗 2/4/6/8 人；单人测试 1 人。"
+msgstr "混战 2–8 人；团队对抗 2/4/6/8 人；单人测试 1 人。"
+
+msgid "自由混战"
+msgstr "自由混战"
+
+msgid "团队对抗"
+msgstr "团队对抗"
+
+msgid "单人测试"
+msgstr "单人测试"
+
+msgid "对战规则"
+msgstr "对战规则"

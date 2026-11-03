@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://bivs0gu2erdi"]
+
+[ext_resource type="Script" uid="uid://bb8fxkpjr4it" path="res://games/minigame/godot_party_default_artillery_game/game.gd" id="1_hqb37"]
+
+[node name="ArtilleryBattle" type="Control" unique_id=1523519008]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_hqb37")

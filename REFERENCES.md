@@ -48,3 +48,9 @@ Upstream licenses are documented for transparency; they do not become the
 license of this independent project merely because their gameplay ideas were
 studied. Any later copying or adaptation of upstream source must be reviewed
 separately and must preserve the notices and license conditions that apply.
+
+## ShellShock Live
+
+- Official reference: https://www.shellshocklive.com/
+- Concepts: multiplayer turn-based artillery, destructible landscapes, distinct ballistic weapons, dark layered scenery and bright battlefield silhouettes.
+- The GodotParty implementation uses original vector artwork and independent rules; no ShellShock Live assets or source are included.

@@ -3,15 +3,32 @@
   "core_api_major": 4,
   "package_version": "1.0.0",
   "id": "godot_party_default_artillery_game",
-  "name": "小小炮火",
+  "name": "火炮大战",
   "kind": "minigame",
-  "introduction": "原型为同机双人轮流炮击，等待线上操作适配。",
-  "entry": "party_round.tscn",
+  "introduction": "1–8 人回合制炮击。自由混战、偶数人数团队对抗与单人试射；风力弹道、可破坏地形和八类弹药。",
+  "entry": "game.tscn",
   "player_counts": [
-    2
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
   ],
-  "playable": false,
-  "adapters": [],
+  "playable": true,
+  "adapters": [
+    {
+      "id": "standard",
+      "protocol": {
+        "id": "godot_party_default_protocol",
+        "api_major": 1,
+        "min_api_minor": 0
+      },
+      "entry": "adapter.gd"
+    }
+  ],
   "localization": {
     "supported_locales": [
       "zh_Hans"
@@ -20,5 +37,50 @@
     "translations": {
       "zh_Hans": "i18n/zh_Hans.po"
     }
-  }
+  },
+  "config_schema": "settings.gd",
+  "dependencies": {
+    "godot_party_default_protocol": "1.0.0"
+  },
+  "streams": {
+    "artillery_state": {
+      "mode": "reliable",
+      "audience": "instance"
+    }
+  },
+  "player_count_rules": [
+    {
+      "when": {
+        "mode": "ffa"
+      },
+      "counts": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "when": {
+        "mode": "teams"
+      },
+      "counts": [
+        2,
+        4,
+        6,
+        8
+      ]
+    },
+    {
+      "when": {
+        "mode": "training"
+      },
+      "counts": [
+        1
+      ]
+    }
+  ]
 }
