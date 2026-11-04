@@ -139,7 +139,7 @@ func _receive_state(value: Dictionary) -> void:
 		last_turn = state.turn
 		pending_fire = false
 		selected = 0
-		angle_slider.value = 45 if state.tanks[state.active].x < 960 else 135
+		angle_slider.value = state.tanks[state.active].aim
 	if state.phase != "aim":
 		pending_fire = false
 	_sync_ui()
@@ -285,7 +285,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		var p: Vector2 = event.position * Vector2(1920, 1080) / size
 		var tank: Dictionary = state.tanks[state.active]
-		var offset: Vector2 = p - Vector2(tank.x, tank.y - 12.0)
+		var offset: Vector2 = p - Battle.gun_pivot(tank)
 		angle_slider.value = clampf(rad_to_deg(atan2(-offset.y, offset.x)), 5.0, 175.0)
 
 func _fire() -> void:

@@ -4,6 +4,10 @@ extends RefCounted
 const WIDTH: float = 1920.0
 const FLOOR: float = 970.0
 const CELL: float = 4.0
+const GUN_MOUNT: Vector2 = Vector2(0, -13)
+const BARREL_LENGTH: float = 38.0
+const TRACK_HALF: float = 19.0
+const TRACK_BOTTOM: float = 12.0
 const GRAVITY: float = 430.0
 const TURN_SECONDS: float = 35.0
 const WEAPONS: Array[Dictionary] = [
@@ -37,19 +41,41 @@ func setup(players: Array[Dictionary], seed_value: int, mode: String) -> void:
 		for definition: Dictionary in WEAPONS:
 			ammo.append(-1 if mode == "training" else int(definition.ammo))
 		tanks.append({"id": players[i].player_id, "name": players[i].name,
-			"color": players[i].color, "x": x, "y": terrain[roundi(x / CELL)] - 13.0,
+			"color": players[i].color, "x": x, "aim": 45.0 if x < WIDTH * 0.5 else 135.0, "shots": 0,
 			"hp": 200, "team": i % 2 if mode == "teams" else i,
 			"ammo": ammo, "damage": 0, "eliminated": 0, "withdrawn": false})
 	if mode == "training":
 		for i: int in 3:
 			var x: float = 860.0 + i * 330.0
 			tanks.append({"id": "target_%d" % i, "name": "靶标 %d" % (i + 1), "color": "ff7d91",
-				"x": x, "y": terrain[roundi(x / CELL)] - 13.0, "hp": 200, "team": i + 1,
+				"x": x, "aim": 45.0 if x < WIDTH * 0.5 else 135.0, "shots": 0, "hp": 200, "team": i + 1,
 				"ammo": [], "damage": 0, "eliminated": 0, "withdrawn": false})
 	state = {"mode": mode, "terrain": terrain, "tanks": tanks, "projectiles": [],
 		"impacts": [], "turn": 0, "active": -1, "phase": "aim", "time": TURN_SECONDS,
 		"wind": 0.0, "fuel": 90.0, "wait": 0.0, "winner": -2, "revision": 0}
+	for tank: Dictionary in tanks:
+		_seat_on_ground(tank)
 	_next_turn()
+
+## Fit the track sole across its footprint. The highest contact supports the hull
+## when a crater rim or a sharp crest lies between the two end wheels.
+func _seat_on_ground(tank: Dictionary) -> void:
+	var x: float = tank.x
+	var tilt: float = atan2(ground(x + TRACK_HALF) - ground(x - TRACK_HALF), 2.0 * TRACK_HALF)
+	var sole: Vector2 = Vector2(0, TRACK_BOTTOM).rotated(tilt)
+	var tangent: Vector2 = Vector2.from_angle(tilt)
+	var support: float = INF
+	for i: int in 11:
+		var foot: Vector2 = sole + tangent * lerpf(-TRACK_HALF, TRACK_HALF, i / 10.0)
+		support = minf(support, ground(x + foot.x) - foot.y)
+	tank.y = support
+	tank.tilt = tilt
+
+static func gun_pivot(tank: Dictionary) -> Vector2:
+	return Vector2(tank.x, tank.y) + GUN_MOUNT.rotated(tank.tilt)
+
+static func muzzle_position(tank: Dictionary, degrees: float) -> Vector2:
+	return gun_pivot(tank) + Vector2.from_angle(-deg_to_rad(degrees)) * BARREL_LENGTH
 
 func ground(x: float) -> float:
 	var cell: float = clampf(x / CELL, 0.0, 480.0)
@@ -95,17 +121,19 @@ func command(player_id: String, turn_number: int, action: String, values: Dictio
 					return false
 			state.fuel -= absf(x - float(tank.x))
 			tank.x = x
-			tank.y = ground(x) - 13.0
+			_seat_on_ground(tank)
 		"fire":
 			var weapon: int = values.weapon
 			if tank.ammo[weapon] == 0:
 				return false
 			if tank.ammo[weapon] > 0:
 				tank.ammo[weapon] -= 1
-			var angle: float = deg_to_rad(float(values.angle))
+			tank.aim = float(values.angle)
+			tank.shots += 1
+			var angle: float = deg_to_rad(tank.aim)
 			var speed: float = (270.0 + float(values.power) * 6.0) * (0.82 if weapon == 1 else 1.0)
 			var direction: Vector2 = Vector2(cos(angle), -sin(angle))
-			var muzzle: Vector2 = Vector2(tank.x, tank.y - 12.0) + direction * 35.0
+			var muzzle: Vector2 = muzzle_position(tank, tank.aim)
 			if weapon == 2:
 				for offset: float in [-0.085, 0.0, 0.085]:
 					_spawn(muzzle, direction.rotated(offset) * speed, weapon, false)
@@ -250,12 +278,12 @@ func _blast(pos: Vector2, weapon: int) -> void:
 	for tank: Dictionary in state.tanks:
 		if tank.hp <= 0:
 			continue
-		var new_y: float = ground(tank.x) - 13.0
-		var fall: float = new_y - float(tank.y)
-		tank.y = new_y
+		var old_y: float = tank.y
+		_seat_on_ground(tank)
+		var fall: float = tank.y - old_y
 		if state.mode != "training" or tank.id.begins_with("target_"):
 			_hurt(tank, maxi(0, roundi((fall - 65.0) * 0.32)))
-			if new_y >= FLOOR - 15.0:
+			if tank.y >= FLOOR - 15.0:
 				_hurt(tank, 200)
 
 func _hurt(tank: Dictionary, amount: int) -> void:
