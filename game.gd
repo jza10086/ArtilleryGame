@@ -24,7 +24,7 @@ var angle_slider: HSlider
 var power_slider: HSlider
 var angle_label: Label
 var power_label: Label
-var status_label: Label
+var fuel_label: Label
 var weapon_button: Button
 var fire_button: Button
 var left_button: Button
@@ -62,8 +62,6 @@ func _ready() -> void:
 			{"player_id": "preview", "name": "试射坦克", "color": "71ddff"}]
 		battle.setup(sample, 5930, "training")
 		_receive_state(battle.state.duplicate(true))
-		status_label.text = "画面预览 · 从大厅选择「单人测试」即可试射"
-		_sync_ui()
 		return
 	var players: Array[Dictionary] = []
 	for player: Dictionary in api.get_players():
@@ -298,6 +296,7 @@ func _select(index: int) -> void:
 	if not _can_act() or state.tanks[state.active].ammo[index] == 0:
 		return
 	selected = index
+	arsenal.hide()
 	_sync_ui()
 
 func _button(text: String, callback: Callable) -> Button:
@@ -310,53 +309,62 @@ func _button(text: String, callback: Callable) -> Button:
 	button.pressed.connect(callback)
 	return button
 
-func _panel_style() -> StyleBoxFlat:
+func _fill(color: Color, padding: int) -> StyleBoxFlat:
 	var style: StyleBoxFlat = StyleBoxFlat.new()
-	style.bg_color = Color(0.025, 0.065, 0.10, 0.94)
-	style.border_color = Color("335560")
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(12)
-	style.content_margin_left = 20
-	style.content_margin_right = 20
-	style.content_margin_top = 14
-	style.content_margin_bottom = 14
+	style.bg_color = color
+	style.set_corner_radius_all(4)
+	style.content_margin_left = padding
+	style.content_margin_right = padding
+	style.content_margin_top = 6
+	style.content_margin_bottom = 6
 	return style
 
 func _build_hud() -> void:
+	var controls_theme: Theme = Theme.new()
+	controls_theme.set_stylebox("normal", "Button", _fill(Color("#34405a"), 14))
+	controls_theme.set_stylebox("hover", "Button", _fill(Color("#52627c"), 14))
+	controls_theme.set_stylebox("pressed", "Button", _fill(Color("#516d78"), 14))
+	controls_theme.set_stylebox("disabled", "Button", _fill(Color("#30394e"), 14))
+	controls_theme.set_color("font_color", "Button", Color("#fff4df"))
+	controls_theme.set_color("font_disabled_color", "Button", Color("#bdc3d0"))
+	var rail: StyleBoxFlat = _fill(Color("#6c758a"), 0)
+	rail.content_margin_top = 2
+	rail.content_margin_bottom = 2
+	controls_theme.set_stylebox("slider", "HSlider", rail)
+	var filled: StyleBoxFlat = rail.duplicate()
+	filled.bg_color = Color("#ecd0a1")
+	for style_name: String in ["grabber_area", "grabber_area_highlight"]:
+		controls_theme.set_stylebox(style_name, "HSlider", filled)
+	var handle: Image = Image.create_empty(10, 16, false, Image.FORMAT_RGBA8)
+	handle.fill(Color("#fff4df"))
+	var grip: ImageTexture = ImageTexture.create_from_image(handle)
+	for icon_name: String in ["grabber", "grabber_highlight", "grabber_disabled"]:
+		controls_theme.set_icon(icon_name, "HSlider", grip)
 	hud = MarginContainer.new()
-	hud.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	hud.offset_top = -152
-	hud.add_theme_constant_override("margin_left", 36)
-	hud.add_theme_constant_override("margin_right", 36)
-	hud.add_theme_constant_override("margin_bottom", 22)
+	hud.theme = controls_theme
+	hud.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	hud.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	hud.offset_top = -88
+	hud.offset_bottom = -22
 	add_child(hud)
 	var panel: PanelContainer = PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", _panel_style())
+	panel.add_theme_stylebox_override("panel", _fill(Color("#192236"), 12))
 	hud.add_child(panel)
-	var stack: VBoxContainer = VBoxContainer.new()
-	stack.add_theme_constant_override("separation", 8)
-	panel.add_child(stack)
-	var top: HBoxContainer = HBoxContainer.new()
-	top.add_theme_constant_override("separation", 16)
-	stack.add_child(top)
-	status_label = Label.new()
-	status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	status_label.add_theme_font_size_override("font_size", 18)
-	top.add_child(status_label)
-	var help: Label = Label.new()
-	help.text = "A / D 移动   ·   1–8 弹药   ·   鼠标瞄准   ·   Esc 菜单"
-	help.add_theme_font_size_override("font_size", 16)
-	help.modulate = Color("98b6c2")
-	top.add_child(help)
 	var row: HBoxContainer = HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
-	stack.add_child(row)
-	left_button = _button("← 移动", func() -> void: _send("move", {"direction": -1}))
-	right_button = _button("移动 →", func() -> void: _send("move", {"direction": 1}))
+	panel.add_child(row)
+	left_button = _button("◀", func() -> void: _send("move", {"direction": -1}))
+	left_button.custom_minimum_size.x = 44
+	left_button.tooltip_text = "向左移动（A）"
 	row.add_child(left_button)
+	fuel_label = Label.new()
+	row.add_child(fuel_label)
+	right_button = _button("▶", func() -> void: _send("move", {"direction": 1}))
+	right_button.custom_minimum_size.x = 44
+	right_button.tooltip_text = "向右移动（D）"
 	row.add_child(right_button)
 	var aim: VBoxContainer = VBoxContainer.new()
-	aim.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	aim.custom_minimum_size.x = 165
 	row.add_child(aim)
 	angle_label = Label.new()
 	aim.add_child(angle_label)
@@ -367,7 +375,7 @@ func _build_hud() -> void:
 	angle_slider.step = 0.5
 	aim.add_child(angle_slider)
 	var power: VBoxContainer = VBoxContainer.new()
-	power.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	power.custom_minimum_size.x = 165
 	row.add_child(power)
 	power_label = Label.new()
 	power.add_child(power_label)
@@ -380,11 +388,14 @@ func _build_hud() -> void:
 	angle_slider.value_changed.connect(func(_value: float) -> void: _sync_labels())
 	power_slider.value_changed.connect(func(_value: float) -> void: _sync_labels())
 	weapon_button = _button("弹药库", func() -> void: arsenal.visible = not arsenal.visible)
-	weapon_button.custom_minimum_size.x = 190
+	weapon_button.custom_minimum_size.x = 164
+	weapon_button.tooltip_text = "选择弹药（1–8）"
 	row.add_child(weapon_button)
-	fire_button = _button("开 火  [Space]", _fire)
-	fire_button.custom_minimum_size.x = 180
-	fire_button.modulate = Color("a0f1ce")
+	fire_button = _button("开火", _fire)
+	fire_button.tooltip_text = "发射炮弹（Space）"
+	fire_button.custom_minimum_size.x = 104
+	fire_button.add_theme_stylebox_override("normal", _fill(Color("#aa5542"), 16))
+	fire_button.add_theme_stylebox_override("hover", _fill(Color("#be654f"), 16))
 	row.add_child(fire_button)
 	pass_button = _button("结束回合", func() -> void: _send("pass"))
 	row.add_child(pass_button)
@@ -393,12 +404,13 @@ func _build_hud() -> void:
 	finish_button = _button("结束测试", func() -> void: _send("finish"))
 	row.add_child(finish_button)
 	arsenal = PanelContainer.new()
-	arsenal.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	arsenal.offset_left = 36
-	arsenal.offset_right = -36
-	arsenal.offset_top = -354
-	arsenal.offset_bottom = -166
-	arsenal.add_theme_stylebox_override("panel", _panel_style())
+	arsenal.theme = controls_theme
+	arsenal.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	arsenal.offset_left = -605
+	arsenal.offset_right = 605
+	arsenal.offset_top = -235
+	arsenal.offset_bottom = -100
+	arsenal.add_theme_stylebox_override("panel", _fill(Color("#192236"), 10))
 	add_child(arsenal)
 	var grid: GridContainer = GridContainer.new()
 	grid.columns = 4
@@ -409,7 +421,7 @@ func _build_hud() -> void:
 		var button: Button = _button("", _select.bind(index))
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		button.custom_minimum_size.y = 66
+		button.custom_minimum_size.y = 52
 		button.add_theme_font_size_override("font_size", 18)
 		grid.add_child(button)
 		weapon_buttons.append(button)
@@ -434,15 +446,17 @@ func _sync_ui() -> void:
 	reset_button.visible = state.mode == "training"
 	finish_button.visible = state.mode == "training"
 	pass_button.visible = state.mode != "training"
-	if not preview:
-		status_label.text = "移动额度 %.0f  ·  %s" % [state.fuel,
-			"轮到你了，选择弹药并瞄准" if can_act else ("已发出开火请求" if pending_fire else "正在观看战场")]
-	weapon_button.text = "弹药库 · " + Battle.WEAPONS[selected].name
+	hud.visible = preview or (running and not finished and not stopped and state.phase == "aim" and tank.id == local_id)
+	if not hud.visible:
+		arsenal.hide()
+	fuel_label.text = "移动 %d" % roundi(state.fuel)
+	var stock: int = tank.ammo[selected] if not tank.ammo.is_empty() else 0
+	weapon_button.text = "%s   %s  ▾" % [Battle.WEAPONS[selected].name, "∞" if stock < 0 else str(stock)]
 	for index: int in weapon_buttons.size():
 		var definition: Dictionary = Battle.WEAPONS[index]
 		var ammo: int = tank.ammo[index] if not tank.ammo.is_empty() else 0
-		weapon_buttons[index].text = "%d  %s  %s\n%s" % [index + 1, definition.name,
-			"∞" if ammo < 0 else "×%d" % ammo, definition.hint]
+		weapon_buttons[index].text = "%d   %s   %s" % [index + 1, definition.name,
+			"∞" if ammo < 0 else "×%d" % ammo]
+		weapon_buttons[index].tooltip_text = definition.hint
 		weapon_buttons[index].modulate = Color(definition.color)
 		weapon_buttons[index].disabled = not can_act or ammo == 0
-		weapon_buttons[index].button_pressed = selected == index

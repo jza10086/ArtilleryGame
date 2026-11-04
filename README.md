@@ -29,7 +29,7 @@ GodotParty 原版协议的 1–8 人回合制炮击游戏。从正式主菜单�
 
 - `game.tscn` / `game.gd`：正式入口、输入、HUD、PartyAPI 生命周期与同步。
 - `battle.gd`：纯对局规则、弹道与地形。
-- `battlefield.gd`：原创矢量夜景、分层远山、地表亮边、坦克与弹道爆炸表现。
+- `battlefield.gd` 用纯色块绘制落日、山体、地形、坦克和爆炸。多人对局的血量显示在坦克旁，瞄准与开火控件在自己的瞄准回合出现。
 - `settings.gd` / `manifest.json`：房间模式和可开局人数。
 - `prototype/`：保留的旧双人原型源码，不是正式入口。
 
