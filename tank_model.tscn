@@ -138,3 +138,7 @@ polygon = PackedVector2Array(-8, -13, -7, -15, 2, -15, 3, -13)
 color = Color(0.38431373, 0.43529412, 0.48235294, 1)
 antialiased = true
 polygon = PackedVector2Array(3, -11, 8, -11, 9, -8, 4, -8)
+
+[node name="Optic" type="Marker2D" parent="Turret" unique_id=960670203]
+unique_name_in_owner = true
+position = Vector2(6, -9.5)

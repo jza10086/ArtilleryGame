@@ -321,22 +321,22 @@ func _fill(color: Color, padding: int) -> StyleBoxFlat:
 
 func _build_hud() -> void:
 	var controls_theme: Theme = Theme.new()
-	controls_theme.set_stylebox("normal", "Button", _fill(Color("#34405a"), 14))
-	controls_theme.set_stylebox("hover", "Button", _fill(Color("#52627c"), 14))
-	controls_theme.set_stylebox("pressed", "Button", _fill(Color("#516d78"), 14))
-	controls_theme.set_stylebox("disabled", "Button", _fill(Color("#30394e"), 14))
-	controls_theme.set_color("font_color", "Button", Color("#fff4df"))
-	controls_theme.set_color("font_disabled_color", "Button", Color("#bdc3d0"))
-	var rail: StyleBoxFlat = _fill(Color("#6c758a"), 0)
+	controls_theme.set_stylebox("normal", "Button", _fill(Color("#15334d"), 14))
+	controls_theme.set_stylebox("hover", "Button", _fill(Color("#245570"), 14))
+	controls_theme.set_stylebox("pressed", "Button", _fill(Color("#126078"), 14))
+	controls_theme.set_stylebox("disabled", "Button", _fill(Color("#172d41"), 14))
+	controls_theme.set_color("font_color", "Button", Color("#ddf7ff"))
+	controls_theme.set_color("font_disabled_color", "Button", Color("#afcad8"))
+	var rail: StyleBoxFlat = _fill(Color("#3b5e78"), 0)
 	rail.content_margin_top = 2
 	rail.content_margin_bottom = 2
 	controls_theme.set_stylebox("slider", "HSlider", rail)
 	var filled: StyleBoxFlat = rail.duplicate()
-	filled.bg_color = Color("#ecd0a1")
+	filled.bg_color = Color("#48cdf3")
 	for style_name: String in ["grabber_area", "grabber_area_highlight"]:
 		controls_theme.set_stylebox(style_name, "HSlider", filled)
 	var handle: Image = Image.create_empty(10, 16, false, Image.FORMAT_RGBA8)
-	handle.fill(Color("#fff4df"))
+	handle.fill(Color("#ddf7ff"))
 	var grip: ImageTexture = ImageTexture.create_from_image(handle)
 	for icon_name: String in ["grabber", "grabber_highlight", "grabber_disabled"]:
 		controls_theme.set_icon(icon_name, "HSlider", grip)
@@ -348,7 +348,7 @@ func _build_hud() -> void:
 	hud.offset_bottom = -22
 	add_child(hud)
 	var panel: PanelContainer = PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", _fill(Color("#192236"), 12))
+	panel.add_theme_stylebox_override("panel", _fill(Color("#0b192d"), 12))
 	hud.add_child(panel)
 	var row: HBoxContainer = HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
@@ -394,8 +394,8 @@ func _build_hud() -> void:
 	fire_button = _button("开火", _fire)
 	fire_button.tooltip_text = "发射炮弹（Space）"
 	fire_button.custom_minimum_size.x = 104
-	fire_button.add_theme_stylebox_override("normal", _fill(Color("#aa5542"), 16))
-	fire_button.add_theme_stylebox_override("hover", _fill(Color("#be654f"), 16))
+	fire_button.add_theme_stylebox_override("normal", _fill(Color("#136882"), 16))
+	fire_button.add_theme_stylebox_override("hover", _fill(Color("#1b819b"), 16))
 	row.add_child(fire_button)
 	pass_button = _button("结束回合", func() -> void: _send("pass"))
 	row.add_child(pass_button)
@@ -410,7 +410,7 @@ func _build_hud() -> void:
 	arsenal.offset_right = 605
 	arsenal.offset_top = -235
 	arsenal.offset_bottom = -100
-	arsenal.add_theme_stylebox_override("panel", _fill(Color("#192236"), 10))
+	arsenal.add_theme_stylebox_override("panel", _fill(Color("#0b192d"), 10))
 	add_child(arsenal)
 	var grid: GridContainer = GridContainer.new()
 	grid.columns = 4

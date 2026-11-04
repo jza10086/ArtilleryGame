@@ -10,6 +10,7 @@ const RECOIL_TIME: float = 0.19
 @onready var tube: Node2D = %SlidingTube
 @onready var bore: Node2D = %Bore
 @onready var muzzle: Marker2D = %Muzzle
+@onready var sight: Marker2D = %Optic
 var shot_count: int = -1
 var recoil_left: float = 0.0
 
