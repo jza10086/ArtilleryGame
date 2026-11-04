@@ -8,7 +8,7 @@ const FINAL: StringName = &"artillery/final"
 var api: PartyAPI
 var request: Dictionary
 var battle: RefCounted = Battle.new()
-var board: Control
+@onready var board: Control = %Battlefield
 var state: Dictionary = {}
 var running: bool = false
 var stopped: bool = false
@@ -20,21 +20,21 @@ var snapshot_time: float = 0.0
 var last_turn: int = -1
 var selected: int = 0
 var pending_fire: bool = false
-var angle_slider: HSlider
-var power_slider: HSlider
-var angle_label: Label
-var power_label: Label
-var fuel_label: Label
-var weapon_button: Button
-var fire_button: Button
-var left_button: Button
-var right_button: Button
-var pass_button: Button
-var reset_button: Button
-var finish_button: Button
-var arsenal: PanelContainer
+@onready var angle_slider: HSlider = %AngleSlider
+@onready var power_slider: HSlider = %PowerSlider
+@onready var angle_label: Label = %AngleLabel
+@onready var power_label: Label = %PowerLabel
+@onready var fuel_label: Label = %FuelLabel
+@onready var weapon_button: Button = %WeaponButton
+@onready var fire_button: Button = %FireButton
+@onready var left_button: Button = %LeftButton
+@onready var right_button: Button = %RightButton
+@onready var pass_button: Button = %PassButton
+@onready var reset_button: Button = %ResetButton
+@onready var finish_button: Button = %FinishButton
+@onready var arsenal: PanelContainer = %Arsenal
 var weapon_buttons: Array[Button] = []
-var hud: MarginContainer
+@onready var hud: MarginContainer = %Hud
 var briefing: Control
 var settlement: Control
 var final_result: Dictionary = {}
@@ -52,10 +52,16 @@ func _ready() -> void:
 	add_to_group("party_minimal_hud")
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	board = Battlefield.new()
-	board.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(board)
-	_build_hud()
+	left_button.pressed.connect(_send.bind("move", {"direction":-1}))
+	right_button.pressed.connect(_send.bind("move", {"direction":1}))
+	weapon_button.pressed.connect(func() -> void: arsenal.visible = not arsenal.visible)
+	fire_button.pressed.connect(_fire)
+	pass_button.pressed.connect(_send.bind("pass"))
+	reset_button.pressed.connect(_send.bind("reset"))
+	finish_button.pressed.connect(_send.bind("finish"))
+	weapon_buttons.assign(arsenal.get_child(0).get_children())
+	for index: int in weapon_buttons.size():
+		weapon_buttons[index].pressed.connect(_select.bind(index))
 	if api == null:
 		preview = true
 		var sample: Array[Dictionary] = [
@@ -299,137 +305,14 @@ func _select(index: int) -> void:
 	arsenal.hide()
 	_sync_ui()
 
-func _button(text: String, callback: Callable) -> Button:
-	var button: Button = Button.new()
-	button.text = text
-	# Preserve the Space fire shortcut after choosing ammunition with the mouse.
-	button.focus_mode = Control.FOCUS_NONE
-	button.custom_minimum_size = Vector2(105, 46)
-	button.add_theme_font_size_override("font_size", 19)
-	button.pressed.connect(callback)
-	return button
+const DefaultText: Translation = preload("res://games/minigame/godot_party_default_artillery_game/i18n/zh_Hans.po")
 
-func _fill(color: Color, padding: int) -> StyleBoxFlat:
-	var style: StyleBoxFlat = StyleBoxFlat.new()
-	style.bg_color = color
-	style.set_corner_radius_all(4)
-	style.content_margin_left = padding
-	style.content_margin_right = padding
-	style.content_margin_top = 6
-	style.content_margin_bottom = 6
-	return style
-
-func _build_hud() -> void:
-	var controls_theme: Theme = Theme.new()
-	controls_theme.set_stylebox("normal", "Button", _fill(Color("#15334d"), 14))
-	controls_theme.set_stylebox("hover", "Button", _fill(Color("#245570"), 14))
-	controls_theme.set_stylebox("pressed", "Button", _fill(Color("#126078"), 14))
-	controls_theme.set_stylebox("disabled", "Button", _fill(Color("#172d41"), 14))
-	controls_theme.set_color("font_color", "Button", Color("#ddf7ff"))
-	controls_theme.set_color("font_disabled_color", "Button", Color("#afcad8"))
-	var rail: StyleBoxFlat = _fill(Color("#3b5e78"), 0)
-	rail.content_margin_top = 2
-	rail.content_margin_bottom = 2
-	controls_theme.set_stylebox("slider", "HSlider", rail)
-	var filled: StyleBoxFlat = rail.duplicate()
-	filled.bg_color = Color("#48cdf3")
-	for style_name: String in ["grabber_area", "grabber_area_highlight"]:
-		controls_theme.set_stylebox(style_name, "HSlider", filled)
-	var handle: Image = Image.create_empty(10, 16, false, Image.FORMAT_RGBA8)
-	handle.fill(Color("#ddf7ff"))
-	var grip: ImageTexture = ImageTexture.create_from_image(handle)
-	for icon_name: String in ["grabber", "grabber_highlight", "grabber_disabled"]:
-		controls_theme.set_icon(icon_name, "HSlider", grip)
-	hud = MarginContainer.new()
-	hud.theme = controls_theme
-	hud.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
-	hud.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	hud.offset_top = -88
-	hud.offset_bottom = -22
-	add_child(hud)
-	var panel: PanelContainer = PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", _fill(Color("#0b192d"), 12))
-	hud.add_child(panel)
-	var row: HBoxContainer = HBoxContainer.new()
-	row.add_theme_constant_override("separation", 12)
-	panel.add_child(row)
-	left_button = _button("◀", func() -> void: _send("move", {"direction": -1}))
-	left_button.custom_minimum_size.x = 44
-	left_button.tooltip_text = "向左移动（A）"
-	row.add_child(left_button)
-	fuel_label = Label.new()
-	row.add_child(fuel_label)
-	right_button = _button("▶", func() -> void: _send("move", {"direction": 1}))
-	right_button.custom_minimum_size.x = 44
-	right_button.tooltip_text = "向右移动（D）"
-	row.add_child(right_button)
-	var aim: VBoxContainer = VBoxContainer.new()
-	aim.custom_minimum_size.x = 165
-	row.add_child(aim)
-	angle_label = Label.new()
-	aim.add_child(angle_label)
-	angle_slider = HSlider.new()
-	angle_slider.min_value = 5
-	angle_slider.max_value = 175
-	angle_slider.value = 45
-	angle_slider.step = 0.5
-	aim.add_child(angle_slider)
-	var power: VBoxContainer = VBoxContainer.new()
-	power.custom_minimum_size.x = 165
-	row.add_child(power)
-	power_label = Label.new()
-	power.add_child(power_label)
-	power_slider = HSlider.new()
-	power_slider.min_value = 10
-	power_slider.max_value = 100
-	power_slider.value = 60
-	power_slider.step = 1
-	power.add_child(power_slider)
-	angle_slider.value_changed.connect(func(_value: float) -> void: _sync_labels())
-	power_slider.value_changed.connect(func(_value: float) -> void: _sync_labels())
-	weapon_button = _button("弹药库", func() -> void: arsenal.visible = not arsenal.visible)
-	weapon_button.custom_minimum_size.x = 164
-	weapon_button.tooltip_text = "选择弹药（1–8）"
-	row.add_child(weapon_button)
-	fire_button = _button("开火", _fire)
-	fire_button.tooltip_text = "发射炮弹（Space）"
-	fire_button.custom_minimum_size.x = 104
-	fire_button.add_theme_stylebox_override("normal", _fill(Color("#136882"), 16))
-	fire_button.add_theme_stylebox_override("hover", _fill(Color("#1b819b"), 16))
-	row.add_child(fire_button)
-	pass_button = _button("结束回合", func() -> void: _send("pass"))
-	row.add_child(pass_button)
-	reset_button = _button("重置靶场", func() -> void: _send("reset"))
-	row.add_child(reset_button)
-	finish_button = _button("结束测试", func() -> void: _send("finish"))
-	row.add_child(finish_button)
-	arsenal = PanelContainer.new()
-	arsenal.theme = controls_theme
-	arsenal.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
-	arsenal.offset_left = -605
-	arsenal.offset_right = 605
-	arsenal.offset_top = -235
-	arsenal.offset_bottom = -100
-	arsenal.add_theme_stylebox_override("panel", _fill(Color("#0b192d"), 10))
-	add_child(arsenal)
-	var grid: GridContainer = GridContainer.new()
-	grid.columns = 4
-	grid.add_theme_constant_override("h_separation", 12)
-	grid.add_theme_constant_override("v_separation", 10)
-	arsenal.add_child(grid)
-	for index: int in Battle.WEAPONS.size():
-		var button: Button = _button("", _select.bind(index))
-		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		button.custom_minimum_size.y = 52
-		button.add_theme_font_size_override("font_size", 18)
-		grid.add_child(button)
-		weapon_buttons.append(button)
-	arsenal.hide()
+func hud_text(key: StringName, values: Dictionary) -> String:
+	return DefaultText.get_message(key).format(values) if api == null else api.i18n.text(key, values)
 
 func _sync_labels() -> void:
-	angle_label.text = "角度  %.1f°" % angle_slider.value
-	power_label.text = "力度  %d%%" % power_slider.value
+	angle_label.text = hud_text(&"hud.angle", {"angle":"%.1f" % angle_slider.value})
+	power_label.text = hud_text(&"hud.power", {"power":int(power_slider.value)})
 
 func _sync_ui() -> void:
 	if state.is_empty():
@@ -449,7 +332,7 @@ func _sync_ui() -> void:
 	hud.visible = preview or (running and not finished and not stopped and state.phase == "aim" and tank.id == local_id)
 	if not hud.visible:
 		arsenal.hide()
-	fuel_label.text = "移动 %d" % roundi(state.fuel)
+	fuel_label.text = hud_text(&"hud.fuel", {"fuel":roundi(state.fuel)})
 	var stock: int = tank.ammo[selected] if not tank.ammo.is_empty() else 0
 	weapon_button.text = "%s   %s  ▾" % [Battle.WEAPONS[selected].name, "∞" if stock < 0 else str(stock)]
 	for index: int in weapon_buttons.size():

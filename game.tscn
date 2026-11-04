@@ -1,10 +1,369 @@
-[gd_scene format=3 uid="uid://bivs0gu2erdi"]
+[gd_scene format=3]
 
-[ext_resource type="Script" uid="uid://bb8fxkpjr4it" path="res://games/minigame/godot_party_default_artillery_game/game.gd" id="1_hqb37"]
+[ext_resource type="PackedScene" path="res://games/minigame/godot_party_default_artillery_game/battlefield.tscn" id="board"]
+[ext_resource type="Script" path="res://games/minigame/godot_party_default_artillery_game/game.gd" id="1_hqb37"]
 
-[node name="ArtilleryBattle" type="Control" unique_id=1523519008]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_s44do"]
+content_margin_left = 14.0
+content_margin_top = 6.0
+content_margin_right = 14.0
+content_margin_bottom = 6.0
+bg_color = Color(0.09019608, 0.1764706, 0.25490198, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8nvs8"]
+content_margin_left = 14.0
+content_margin_top = 6.0
+content_margin_right = 14.0
+content_margin_bottom = 6.0
+bg_color = Color(0.14117648, 0.33333334, 0.4392157, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wtgd2"]
+content_margin_left = 14.0
+content_margin_top = 6.0
+content_margin_right = 14.0
+content_margin_bottom = 6.0
+bg_color = Color(0.08235294, 0.2, 0.3019608, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ode5k"]
+content_margin_left = 14.0
+content_margin_top = 6.0
+content_margin_right = 14.0
+content_margin_bottom = 6.0
+bg_color = Color(0.07058824, 0.3764706, 0.47058824, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="Image" id="Image_hpo3y"]
+data = {
+"data": PackedByteArray(221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255),
+"format": "RGBA8",
+"height": 16,
+"mipmaps": false,
+"width": 10
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_ay15i"]
+image = SubResource("Image_hpo3y")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yua07"]
+content_margin_left = 0.0
+content_margin_top = 2.0
+content_margin_right = 0.0
+content_margin_bottom = 2.0
+bg_color = Color(0.28235295, 0.8039216, 0.9529412, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5ckxl"]
+content_margin_left = 0.0
+content_margin_top = 2.0
+content_margin_right = 0.0
+content_margin_bottom = 2.0
+bg_color = Color(0.23137255, 0.36862746, 0.47058824, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="Theme" id="Theme_vnxd6"]
+Button/colors/font_color = Color(0.8666667, 0.96862745, 1, 1)
+Button/colors/font_disabled_color = Color(0.6862745, 0.7921569, 0.84705883, 1)
+Button/styles/disabled = SubResource("StyleBoxFlat_s44do")
+Button/styles/hover = SubResource("StyleBoxFlat_8nvs8")
+Button/styles/normal = SubResource("StyleBoxFlat_wtgd2")
+Button/styles/pressed = SubResource("StyleBoxFlat_ode5k")
+HSlider/icons/grabber = SubResource("ImageTexture_ay15i")
+HSlider/icons/grabber_disabled = SubResource("ImageTexture_ay15i")
+HSlider/icons/grabber_highlight = SubResource("ImageTexture_ay15i")
+HSlider/styles/grabber_area = SubResource("StyleBoxFlat_yua07")
+HSlider/styles/grabber_area_highlight = SubResource("StyleBoxFlat_yua07")
+HSlider/styles/slider = SubResource("StyleBoxFlat_5ckxl")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8y8a2"]
+content_margin_left = 12.0
+content_margin_top = 6.0
+content_margin_right = 12.0
+content_margin_bottom = 6.0
+bg_color = Color(0.043137256, 0.09803922, 0.1764706, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fxntt"]
+content_margin_left = 16.0
+content_margin_top = 6.0
+content_margin_right = 16.0
+content_margin_bottom = 6.0
+bg_color = Color(0.07450981, 0.40784314, 0.50980395, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_34r4h"]
+content_margin_left = 16.0
+content_margin_top = 6.0
+content_margin_right = 16.0
+content_margin_bottom = 6.0
+bg_color = Color(0.105882354, 0.5058824, 0.60784316, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7k0ci"]
+content_margin_left = 10.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+bg_color = Color(0.043137256, 0.09803922, 0.1764706, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="ArtilleryBattle" type="Control" unique_id=1332144389]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+mouse_filter = 2
 script = ExtResource("1_hqb37")
+
+[node name="GameHUD" type="CanvasLayer" parent="." unique_id=1821958279]
+layer = -2
+
+[node name="Hud" type="MarginContainer" parent="GameHUD" unique_id=265046189]
+unique_name_in_owner = true
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_top = -88.0
+offset_bottom = -22.0
+grow_horizontal = 2
+theme = SubResource("Theme_vnxd6")
+
+[node name="PanelContainer1" type="PanelContainer" parent="GameHUD/Hud" unique_id=347464845]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_8y8a2")
+
+[node name="HBoxContainer1" type="HBoxContainer" parent="GameHUD/Hud/PanelContainer1" unique_id=1592953708]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="LeftButton" type="Button" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1" unique_id=1042804454]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(44, 46)
+layout_mode = 2
+tooltip_text = "向左移动（A）"
+focus_mode = 0
+theme_override_font_sizes/font_size = 19
+text = "◀"
+
+[node name="FuelLabel" type="Label" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1" unique_id=1098490356]
+unique_name_in_owner = true
+layout_mode = 2
+text = "移动 50"
+
+[node name="RightButton" type="Button" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1" unique_id=567962898]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(44, 46)
+layout_mode = 2
+tooltip_text = "向右移动（D）"
+focus_mode = 0
+theme_override_font_sizes/font_size = 19
+text = "▶"
+
+[node name="VBoxContainer4" type="VBoxContainer" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1" unique_id=1089494771]
+custom_minimum_size = Vector2(165, 0)
+layout_mode = 2
+
+[node name="AngleLabel" type="Label" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1/VBoxContainer4" unique_id=44840242]
+unique_name_in_owner = true
+layout_mode = 2
+text = "角度 45.0°"
+
+[node name="AngleSlider" type="HSlider" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1/VBoxContainer4" unique_id=973186405]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 5.0
+max_value = 175.0
+step = 0.5
+value = 45.0
+
+[node name="VBoxContainer5" type="VBoxContainer" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1" unique_id=16182805]
+custom_minimum_size = Vector2(165, 0)
+layout_mode = 2
+
+[node name="PowerLabel" type="Label" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1/VBoxContainer5" unique_id=1796213497]
+unique_name_in_owner = true
+layout_mode = 2
+text = "力度 60%"
+
+[node name="PowerSlider" type="HSlider" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1/VBoxContainer5" unique_id=632792778]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 10.0
+value = 60.0
+
+[node name="WeaponButton" type="Button" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1" unique_id=157951260]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(164, 46)
+layout_mode = 2
+tooltip_text = "选择弹药（1–8）"
+focus_mode = 0
+theme_override_font_sizes/font_size = 19
+text = "弹药库"
+
+[node name="FireButton" type="Button" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1" unique_id=1426729779]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(104, 46)
+layout_mode = 2
+tooltip_text = "发射炮弹（Space）"
+focus_mode = 0
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("StyleBoxFlat_fxntt")
+theme_override_styles/hover = SubResource("StyleBoxFlat_34r4h")
+text = "开火"
+
+[node name="PassButton" type="Button" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1" unique_id=943423675]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(105, 46)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 19
+text = "结束回合"
+
+[node name="ResetButton" type="Button" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1" unique_id=885014474]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(105, 46)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 19
+text = "重置靶场"
+
+[node name="FinishButton" type="Button" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1" unique_id=1931525404]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(105, 46)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 19
+text = "结束测试"
+
+[node name="Arsenal" type="PanelContainer" parent="GameHUD" unique_id=845930770]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -605.0
+offset_top = -235.0
+offset_right = 605.0
+offset_bottom = -100.0
+theme = SubResource("Theme_vnxd6")
+theme_override_styles/panel = SubResource("StyleBoxFlat_7k0ci")
+
+[node name="GridContainer1" type="GridContainer" parent="GameHUD/Arsenal" unique_id=2075435601]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 10
+columns = 4
+
+[node name="Ammo1" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=329932159]
+custom_minimum_size = Vector2(105, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "标准弹"
+alignment = 0
+
+[node name="Ammo2" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=1011771302]
+custom_minimum_size = Vector2(105, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "重型爆破"
+alignment = 0
+
+[node name="Ammo3" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=2078410983]
+custom_minimum_size = Vector2(105, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "三重散射"
+alignment = 0
+
+[node name="Ammo4" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=232187562]
+custom_minimum_size = Vector2(105, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "集束花火"
+alignment = 0
+
+[node name="Ammo5" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=283000095]
+custom_minimum_size = Vector2(105, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "跳弹"
+alignment = 0
+
+[node name="Ammo6" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=1834141148]
+custom_minimum_size = Vector2(105, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "钻地弹"
+alignment = 0
+
+[node name="Ammo7" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=227498944]
+custom_minimum_size = Vector2(105, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "造山弹"
+alignment = 0
+
+[node name="Ammo8" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=1316578095]
+custom_minimum_size = Vector2(105, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "虹吸弹"
+alignment = 0
+
+[node name="GameCanvas" type="CanvasLayer" parent="."]
+layer = -4
+
+[node name="Battlefield" parent="GameCanvas" instance=ExtResource("board")]
+unique_name_in_owner = true

@@ -27,3 +27,12 @@ msgstr "单人测试"
 
 msgid "对战规则"
 msgstr "对战规则"
+
+msgid "hud.angle"
+msgstr "角度  {angle}°"
+
+msgid "hud.power"
+msgstr "力度  {power}%"
+
+msgid "hud.fuel"
+msgstr "移动 {fuel}"

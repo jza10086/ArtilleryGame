@@ -6,14 +6,6 @@ const TankModel: Script = preload("res://games/minigame/godot_party_default_arti
 const SKY: Color = Color("#070d1d")
 const GROUND: Color = Color("#083660")
 const INK: Color = Color("#e4faff")
-var far_ridge: PackedVector2Array = PackedVector2Array([
-	Vector2(0, 515), Vector2(180, 435), Vector2(285, 466), Vector2(600, 310),
-	Vector2(790, 415), Vector2(910, 390), Vector2(1130, 505), Vector2(1500, 295),
-	Vector2(1710, 410), Vector2(1800, 385), Vector2(1920, 440), Vector2(1920, 1080), Vector2(0, 1080)])
-var near_ridge: PackedVector2Array = PackedVector2Array([
-	Vector2(0, 518), Vector2(195, 583), Vector2(435, 502), Vector2(550, 520), Vector2(715, 455),
-	Vector2(925, 547), Vector2(1090, 490), Vector2(1210, 525), Vector2(1445, 445),
-	Vector2(1640, 536), Vector2(1920, 480), Vector2(1920, 1080), Vector2(0, 1080)])
 var state: Dictionary = {}
 var ground_profile: PackedFloat32Array = PackedFloat32Array()
 var lit_surface: ArrayMesh = ArrayMesh.new()
@@ -24,36 +16,18 @@ var show_aim: bool = false
 var last_impact: int = 0
 var flashes: Array[Dictionary] = []
 var font: Font
-var world: Node2D = Node2D.new()
-var foreground: Node2D = Node2D.new()
-var light_layer: Node2D = Node2D.new()
-var falloff: GradientTexture2D = GradientTexture2D.new()
+@onready var world: Node2D = $World
+@onready var terrain: Node2D = $World/Terrain
+@onready var foreground: Node2D = $World/Foreground
+@onready var light_layer: Node2D = $World/LightLayer
+@export var falloff: GradientTexture2D
 var models: Array[TankModel] = []
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	font = get_theme_default_font()
-	add_child(world)
-	# All light sprites share a smooth radial mask. Only this layer adds light;
-	# solid silhouettes and the HUD keep their original opacity and contrast.
-	var ramp: Gradient = Gradient.new()
-	ramp.offsets = PackedFloat32Array([0.0, 0.18, 0.46, 0.76, 1.0])
-	ramp.colors = PackedColorArray([Color.WHITE, Color(1, 1, 1, 0.73), Color(1, 1, 1, 0.25), Color(1, 1, 1, 0.045), Color(1, 1, 1, 0)])
-	ramp.interpolation_mode = Gradient.GRADIENT_INTERPOLATE_CUBIC
-	falloff.gradient = ramp
-	falloff.width = 256
-	falloff.height = 256
-	falloff.fill = GradientTexture2D.FILL_RADIAL
-	falloff.fill_from = Vector2(0.5, 0.5)
-	falloff.fill_to = Vector2(1, 0.5)
-	var additive: CanvasItemMaterial = CanvasItemMaterial.new()
-	additive.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
-	light_layer.material = additive
-	light_layer.z_index = 1
-	world.add_child(light_layer)
+	terrain.draw.connect(_draw_terrain)
 	light_layer.draw.connect(_draw_lights)
-	world.add_child(foreground)
-	foreground.z_index = 2
 	foreground.draw.connect(_draw_foreground)
 	resized.connect(_resize_world)
 	_resize_world()
@@ -85,36 +59,21 @@ func update_state(value: Dictionary) -> void:
 		var model: TankModel = TankScene.instantiate()
 		world.add_child(model)
 		models.append(model)
-	queue_redraw()
+	terrain.queue_redraw()
 	for impact: Dictionary in state.impacts:
 		if impact.id > last_impact:
 			flashes.append({"pos": impact.pos, "radius": impact.radius, "weapon": impact.weapon, "life": 0.55})
 			last_impact = impact.id
 
-func _draw() -> void:
-	draw_set_transform(Vector2.ZERO, 0.0, size / Vector2(1920, 1080))
-	draw_rect(Rect2(0, 0, 1920, 1080), SKY)
-	draw_texture_rect(falloff, Rect2(-310, -100, 1420, 1020), false, Color("#42226879"))
-	draw_texture_rect(falloff, Rect2(830, -160, 1260, 1060), false, Color("#1266a290"))
-	for i: int in 56:
-		var star: Vector2 = Vector2(fposmod(i * 641.3 + i * i * 23.9, 1920.0), fposmod(i * 153.1 + i * i * 17.7, 510.0))
-		draw_circle(star, 0.8 + (i % 3) * 0.24, Color("#a2c9ea66"), true, -1, true)
-	var moon: Vector2 = Vector2(1460, 293)
-	draw_texture_rect(falloff, Rect2(moon - Vector2(182, 182), Vector2(364, 364)), false, Color("#337cd1a8"))
-	draw_circle(moon, 61.0, Color("#80caff"), true, -1, true)
-	draw_circle(moon + Vector2(-12, 5), 56.0, Color("#21365b"), true, -1, true)
-	draw_colored_polygon(far_ridge, Color("#202c4c"))
-	draw_colored_polygon(PackedVector2Array([Vector2(600, 310), Vector2(790, 415), Vector2(726, 480)]), Color("#17233e"))
-	draw_colored_polygon(PackedVector2Array([Vector2(1500, 295), Vector2(1710, 410), Vector2(1584, 492)]), Color("#17233e"))
-	draw_colored_polygon(near_ridge, Color("#10334d"))
+func _draw_terrain() -> void:
 	if state.is_empty():
 		return
 	var land: PackedVector2Array = PackedVector2Array([Vector2(0, 1080)])
 	for i: int in state.terrain.size():
 		land.append(Vector2(i * Battle.CELL, state.terrain[i]))
 	land.append(Vector2(1920, 1080))
-	draw_colored_polygon(land, GROUND)
-	draw_mesh(lit_surface, null)
+	terrain.draw_colored_polygon(land, GROUND)
+	terrain.draw_mesh(lit_surface, null)
 
 ## Pair each surface vertex with the one directly underneath it. An impact can
 ## change the silhouette without changing the direction the light falls into the soil.
