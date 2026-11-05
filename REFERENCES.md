@@ -1,8 +1,6 @@
 # References and asset provenance
 
-ArtilleryGame is an independent implementation. The projects below were inspected
-as conceptual references; their source code and artwork were not copied into
-this project.
+ArtilleryGame is an independent implementation. The code references below were inspected for concepts. Kenney Tanks is the external artwork used by the current tank scene, as documented below.
 
 ## BarrageFest
 
@@ -34,13 +32,15 @@ this project.
 
 ## Artwork
 
-The artwork shipped with ArtilleryGame is original project artwork. No
-BarrageFest or Alpacos artwork is included.
+The battlefield artwork and effects are original. No BarrageFest or Alpacos artwork is included.
 
-Kenney's side-view **Tanks** pack was also researched as a possible alternative:
-https://kenney.nl/assets/tanks . Its official page and included license identify
-it as CC0. That pack is not included in this version. If added in a later
-version, retain its provenance and keep this statement accurate.
+The current tank uses **Kenney Tanks** by Kenney Vleugels, CC0.
+- Official asset page: https://kenney.nl/assets/tanks
+- Author-published download: https://opengameart.org/content/tank-pack-80
+- Source package: https://opengameart.org/sites/default/files/kenney_tanksPack.zip
+- Included original Retina PNGs: `tanks_tankGrey_body2.png`, `tanks_tankTracks2.png`, `tanks_turret1.png`.
+- Local assets and original license: `assets/kenney_tanks/`.
+- Adaptation: scene-only sprite regions split the hull and turret; player tint, independent elevation, recoil and muzzle binding are applied in Godot. Source images are unchanged.
 
 ## Reuse boundary
 
@@ -53,4 +53,4 @@ separately and must preserve the notices and license conditions that apply.
 
 - Official reference: https://www.shellshocklive.com/
 - Concepts: multiplayer turn-based artillery, destructible landscapes, distinct ballistic weapons, dark layered scenery and bright battlefield silhouettes.
-- The GodotParty implementation uses original vector artwork and independent rules; no ShellShock Live assets or source are included.
+- The GodotParty implementation uses independent rules, original battlefield effects and the credited Kenney tank sprites; no ShellShock Live assets or source are included.

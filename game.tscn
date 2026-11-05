@@ -1,7 +1,7 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://e1jstpqw82l3"]
 
+[ext_resource type="Script" uid="uid://bb8fxkpjr4it" path="res://games/minigame/godot_party_default_artillery_game/game.gd" id="1_hqb37"]
 [ext_resource type="PackedScene" path="res://games/minigame/godot_party_default_artillery_game/battlefield.tscn" id="board"]
-[ext_resource type="Script" path="res://games/minigame/godot_party_default_artillery_game/game.gd" id="1_hqb37"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_s44do"]
 content_margin_left = 14.0
@@ -47,7 +47,7 @@ corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
-[sub_resource type="Image" id="Image_hpo3y"]
+[sub_resource type="Image" id="Image_s44do"]
 data = {
 "data": PackedByteArray(221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255),
 "format": "RGBA8",
@@ -57,7 +57,7 @@ data = {
 }
 
 [sub_resource type="ImageTexture" id="ImageTexture_ay15i"]
-image = SubResource("Image_hpo3y")
+image = SubResource("Image_s44do")
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yua07"]
 content_margin_left = 0.0
@@ -144,6 +144,8 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_hqb37")
 
@@ -278,7 +280,7 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -605.0
-offset_top = -235.0
+offset_top = -360.0
 offset_right = 605.0
 offset_bottom = -100.0
 theme = SubResource("Theme_vnxd6")
@@ -362,8 +364,82 @@ theme_override_font_sizes/font_size = 18
 text = "虹吸弹"
 alignment = 0
 
-[node name="GameCanvas" type="CanvasLayer" parent="."]
+[node name="Ammo9" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=687481084]
+custom_minimum_size = Vector2(105, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "滚地雷"
+alignment = 0
+
+[node name="Ammo10" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=1604029079]
+custom_minimum_size = Vector2(105, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "空爆弹雨"
+alignment = 0
+
+[node name="Ammo11" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=1528632043]
+custom_minimum_size = Vector2(105, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "燃烧弹"
+alignment = 0
+
+[node name="Ammo12" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=833603835]
+custom_minimum_size = Vector2(105, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "电磁脉冲"
+alignment = 0
+
+[node name="Ammo13" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=2047541741]
+custom_minimum_size = Vector2(105, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "跃迁弹"
+alignment = 0
+
+[node name="Ammo14" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=1097965629]
+custom_minimum_size = Vector2(105, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "连锁震爆"
+alignment = 0
+
+[node name="Ammo15" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=1603360318]
+custom_minimum_size = Vector2(105, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "感应雷"
+alignment = 0
+
+[node name="Ammo16" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=1604343664]
+custom_minimum_size = Vector2(105, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "护盾弹"
+alignment = 0
+
+[node name="GameCanvas" type="CanvasLayer" parent="." unique_id=1354447394]
 layer = -4
 
-[node name="Battlefield" parent="GameCanvas" instance=ExtResource("board")]
+[node name="Battlefield" parent="GameCanvas" unique_id=1610943847 instance=ExtResource("board")]
 unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15

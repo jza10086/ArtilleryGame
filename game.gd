@@ -86,7 +86,7 @@ func _ready() -> void:
 	briefing = gate_script.new()
 	var content: Dictionary = gate_script.read_content(get_script().resource_path.get_base_dir().path_join("manifest.json"), api)
 	content["controls"] = [{"binding": "鼠标 / 滑条", "description": "调整角度与力度，点击开火"},
-		{"binding": "A / D · 1–8", "description": "移动坦克 · 选择弹药；Esc 打开框架菜单"}]
+		{"binding": "A / D · 1–8", "description": "移动坦克 · 快选前八种弹药；全部 16 种从弹药库选择；Esc 打开菜单"}]
 	briefing.configure(api, content)
 	briefing.play_requested.connect(_begin)
 	add_child(briefing)

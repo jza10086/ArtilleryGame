@@ -4,7 +4,6 @@ extends Node2D
 const Battle: Script = preload("res://games/minigame/godot_party_default_artillery_game/battle.gd")
 const RECOIL_TIME: float = 0.19
 @onready var hull: Node2D = %Hull
-@onready var wheels: Node2D = %RoadWheels
 @onready var turret: Node2D = %Turret
 @onready var gun: Node2D = %GunPivot
 @onready var tube: Node2D = %SlidingTube
@@ -24,11 +23,6 @@ func pose(tank: Dictionary, degrees: float, tint: Color, delta: float) -> void:
 		return
 	var next_position: Vector2 = Vector2(tank.x, tank.y)
 	if shot_count >= 0:
-		var dx: float = next_position.x - position.x
-		var travel: float = signf(dx) * position.distance_to(next_position)
-		if dx != 0.0:
-			for wheel: Node2D in wheels.get_children():
-				wheel.rotation += travel / (3.7 if absf(wheel.position.x) > 15 else 4.6)
 		if tank.shots > shot_count:
 			recoil_left = RECOIL_TIME
 	shot_count = tank.shots
