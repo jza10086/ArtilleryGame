@@ -116,7 +116,7 @@ func _draw_lights() -> void:
 		return
 	_event_lights()
 	for shot: Dictionary in state.projectiles:
-		var tint: Color = Color(Battle.WEAPONS[shot.weapon].color)
+		var tint: Color = Color("#8cffe0") if shot.support else Color(Battle.WEAPONS[shot.weapon].color)
 		_glow(shot.pos, 39.0 * shot.boost, Color(tint, 0.92))
 		for i: int in range(0, shot.trail.size(), 3):
 			var strength: float = (i + 1.0) / shot.trail.size()
@@ -136,7 +136,7 @@ func _draw_foreground() -> void:
 	if show_aim and state.phase == "aim":
 		_aim()
 	for shot: Dictionary in state.projectiles:
-		var tint: Color = Color(Battle.WEAPONS[shot.weapon].color)
+		var tint: Color = Color("#8cffe0") if shot.support else Color(Battle.WEAPONS[shot.weapon].color)
 		for i: int in range(1, shot.trail.size()):
 			var strength: float = float(i) / (shot.trail.size() - 1)
 			foreground.draw_line(shot.trail[i - 1], shot.trail[i], Color(tint, strength * 0.88), 1.0 + strength * 2.0, true)
@@ -145,6 +145,8 @@ func _draw_foreground() -> void:
 			foreground.draw_colored_polygon(PackedVector2Array([Vector2(x, 8), Vector2(x - 6, 18), Vector2(x + 6, 18)]), tint)
 		foreground.draw_circle(shot.pos, 5.0 * shot.boost, tint, true, -1, true)
 		foreground.draw_circle(shot.pos, 2.8, tint.lerp(Color.WHITE, 0.88), true, -1, true)
+		if shot.boost > 1.0:
+			foreground.draw_string(font, shot.pos + Vector2(10, -10), "×%d" % int(shot.boost), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, tint)
 	for flash: Dictionary in flashes:
 		_blast(flash)
 	if state.phase == "over":
@@ -191,6 +193,16 @@ func _aim() -> void:
 	for i: int in 15:
 		velocity += Battle.projectile_acceleration(state, pos) * 0.045
 		pos += velocity * 0.045
+		var obstacle: bool = false
+		for event: Dictionary in state.events:
+			if event.kind == "portal":
+				obstacle = obstacle or pos.distance_to(event.pos) < Battle.PORTAL_RADIUS or pos.distance_to(event.exit) < Battle.PORTAL_RADIUS
+			elif event.kind == "bumper":
+				obstacle = obstacle or pos.distance_to(event.pos) < Battle.BUMPER_RADIUS
+			elif event.kind == "black_hole":
+				obstacle = obstacle or pos.distance_to(event.pos) < Battle.BLACK_HOLE_CORE
+		if obstacle:
+			break
 		if pos.x < 0.0 or pos.x > Battle.WIDTH or pos.y >= state.terrain[roundi(pos.x / Battle.CELL)]:
 			break
 		foreground.draw_circle(pos, lerpf(2.8, 1.1, i / 14.0), INK, true, -1, true)
@@ -214,16 +226,19 @@ func _blast(flash: Dictionary) -> void:
 		foreground.draw_colored_polygon(PackedVector2Array([tip, tail + side, tail - side]), tint)
 
 
+## Events use a few solid shapes. Small halos separate them from the backdrop.
 func _event_lights() -> void:
 	for event: Dictionary in state.events:
 		match event.kind:
 			"black_hole":
-				_glow(event.pos, 156.0, Color(0.44, 0.2, 1.0, 0.65))
-				_glow(event.pos + Vector2(0, 18), 80.0, Color(0.38, 0.65, 1.0, 0.65))
+				_glow(event.pos, 64.0, Color(0.48, 0.36, 0.85, 0.18))
+			"portal":
+				_glow(event.pos, 48.0, Color(0.2, 0.8, 1.0, 0.18))
+				_glow(event.exit, 48.0, Color(1.0, 0.55, 0.3, 0.18))
 			"amplifier":
-				_glow(event.pos, 88.0, Color(0.15, 0.85, 1.0, 0.45))
+				_glow(event.pos, event.radius * 1.5, Color(0.65, 1, 0.3, 0.14))
 			"supply":
-				_glow(event.pos, 52.0, Color(0.3, 1.0, 0.62, 0.45))
+				_glow(event.pos, 35.0, Color(0.3, 1.0, 0.62, 0.2))
 	for hazard: Dictionary in state.hazards:
 		var p: Vector2 = Vector2(hazard.x, _surface_y(hazard.x) - 10.0)
 		_glow(p, 75.0 if hazard.kind == "fire" else 25.0, Color(1, 0.3, 0.1, 0.55) if hazard.kind == "fire" else Color(1, 0.15, 0.4, 0.6))
@@ -231,44 +246,74 @@ func _event_lights() -> void:
 func _surface_y(x: float) -> float:
 	return state.terrain[clampi(roundi(x / Battle.CELL), 0, 480)]
 
+func _event_caption(point: Vector2, text: String, color: Color) -> void:
+	foreground.draw_string(font, point + Vector2(-110, 64), text, HORIZONTAL_ALIGNMENT_CENTER, 220, 15, color)
+
+func _portal(point: Vector2, tint: Color, phase: float) -> void:
+	foreground.draw_circle(point, Battle.PORTAL_RADIUS - 5.0, Color("#0c1930"), true, -1, true)
+	for half: int in 2:
+		var band: PackedVector2Array = PackedVector2Array()
+		for i: int in 25:
+			var a: float = phase + half * PI + i * PI * 0.83 / 24.0
+			band.append(point + Vector2.from_angle(a) * Battle.PORTAL_RADIUS)
+		for i: int in range(24, -1, -1):
+			var a: float = phase + half * PI + i * PI * 0.83 / 24.0
+			band.append(point + Vector2.from_angle(a) * (Battle.PORTAL_RADIUS - 6.0))
+		foreground.draw_colored_polygon(band, tint)
+	foreground.draw_circle(point, 4.0, tint, true, -1, true)
+
 func _draw_events() -> void:
 	for event: Dictionary in state.events:
 		var p: Vector2 = event.pos
 		var remaining: int = event.expires - state.turn + 1
 		match event.kind:
 			"black_hole":
-				# Layered, rotating accretion streaks surround an opaque event horizon.
-				for band: int in 5:
-					var points: PackedVector2Array = PackedVector2Array()
-					for step: int in 65:
-						var a: float = TAU * step / 64.0 + effect_time * (0.35 + band * 0.07)
-						points.append(p + Vector2(cos(a) * (62.0 + band * 9.0), sin(a) * (18.0 + band * 5.0)).rotated(-0.26))
-					foreground.draw_polyline(points, Color(0.55 + band * 0.08, 0.4 + band * 0.09, 1, 0.22 + band * 0.12), 2.5, true)
-				foreground.draw_circle(p, 29.0, Color("#050916"), true, -1, true)
-				foreground.draw_arc(p, 32.0, effect_time, effect_time + PI * 1.5, 48, Color("#c5acff"), 3.0, true)
-				foreground.draw_string(font, p + Vector2(-125, -72), "黑洞 · %d 回合" % remaining, HORIZONTAL_ALIGNMENT_CENTER, 250, 16, Color("#c0b7ef"))
+				for arm: int in 3:
+					var ribbon: PackedVector2Array = PackedVector2Array()
+					for step: int in 25:
+						var t: float = step / 24.0
+						var a: float = arm * TAU / 3.0 - effect_time * 0.65 + t * 1.8
+						ribbon.append(p + Vector2.from_angle(a) * lerpf(47.0, 21.0, t))
+					for step: int in range(24, -1, -1):
+						var t: float = step / 24.0
+						var a: float = arm * TAU / 3.0 - effect_time * 0.65 + t * 1.8
+						ribbon.append(p + Vector2.from_angle(a) * lerpf(40.0, 13.0, t))
+					foreground.draw_colored_polygon(ribbon, [Color("#9e88d5"), Color("#7966b6"), Color("#b0a4e2")][arm])
+				foreground.draw_circle(p, Battle.BLACK_HOLE_CORE, Color("#040812"), true, -1, true)
+				_event_caption(p, "黑洞 · %d 回合" % remaining, Color("#b7abd9"))
+			"portal":
+				_portal(p, Color("#65dafa"), effect_time * 0.6)
+				_portal(event.exit, Color("#ffa76c"), -effect_time * 0.6)
+				_event_caption(p, "传送 A ↔ B · %d" % remaining, Color("#94ddee"))
+				_event_caption(event.exit, "传送 B ↔ A · %d" % remaining, Color("#f2b78f"))
+			"bumper":
+				foreground.draw_circle(p, Battle.BUMPER_RADIUS, Color("#3288d2"), true, -1, true)
+				foreground.draw_colored_polygon(PackedVector2Array([p + Vector2(-16, 5), p + Vector2(0, -12), p + Vector2(16, 5), p + Vector2(0, -2)]), Color("#caeeff"))
+				_event_caption(p, "反弹 · %d 回合" % remaining, Color("#8cc8f6"))
 			"amplifier":
-				var points: PackedVector2Array = PackedVector2Array()
-				for side: int in 6:
-					points.append(p + Vector2.from_angle(side * TAU / 6.0 + effect_time * 0.12) * 55.0)
-				foreground.draw_colored_polygon(points, Color(0.2, 0.8, 1, 0.12))
-				points.append(points[0])
-				foreground.draw_polyline(points, Color("#64ddff"), 2.0, true)
-				foreground.draw_string(font, p + Vector2(-40, 8), "×1.5", HORIZONTAL_ALIGNMENT_CENTER, 80, 24, INK)
-				foreground.draw_string(font, p + Vector2(-110, -76), "增幅 · %d 回合" % remaining, HORIZONTAL_ALIGNMENT_CENTER, 220, 16, Color("#8ee3f6"))
+				var tint: Color = Color("#e6b0ff") if event.factor == 3.0 else Color("#b8ed76")
+				foreground.draw_circle(p, event.radius, Color(tint, 0.1), true, -1, true)
+				foreground.draw_string(font, p + Vector2(-55, 12), "×%d" % int(event.factor), HORIZONTAL_ALIGNMENT_CENTER, 110, 30 if event.factor == 3.0 else 40, tint)
+				_event_caption(p, "增伤 · %d 回合" % remaining, tint)
+			"drone":
+				var body: PackedVector2Array = PackedVector2Array([p + Vector2(-24, 0), p + Vector2(-10, -10), p + Vector2(10, -10), p + Vector2(24, 0), p + Vector2(7, 8), p + Vector2(-7, 8)])
+				foreground.draw_colored_polygon(body, Color("#74bcae"))
+				foreground.draw_rect(Rect2(p + Vector2(-34, -15), Vector2(22, 4)), Color("#b7e6da"))
+				foreground.draw_rect(Rect2(p + Vector2(12, -15), Vector2(22, 4)), Color("#b7e6da"))
+				foreground.draw_circle(p, 4.0, Color("#ddfff0"), true, -1, true)
+				_event_caption(p, "无人机 · 射中支援 · %d" % remaining, Color("#a3d4c5"))
 			"supply":
 				if p.y < _surface_y(p.x) - 19.0:
 					var canopy: PackedVector2Array = PackedVector2Array()
 					for step: int in 17:
-						canopy.append(p + Vector2.from_angle(PI + step * PI / 16.0) * 30.0 + Vector2(0, -53))
-					foreground.draw_colored_polygon(canopy, Color("#94eadb"))
-					foreground.draw_line(p + Vector2(-28, -53), p + Vector2(-10, -14), Color("#8db9c6"), 1.5, true)
-					foreground.draw_line(p + Vector2(28, -53), p + Vector2(10, -14), Color("#8db9c6"), 1.5, true)
-				foreground.draw_rect(Rect2(p - Vector2(18, 15), Vector2(36, 30)), Color("#287b74"))
-				foreground.draw_rect(Rect2(p - Vector2(18, 15), Vector2(36, 6)), Color("#82edcc"))
-				foreground.draw_rect(Rect2(p - Vector2(3, 8), Vector2(6, 17)), Color("#d9ffee"))
+						canopy.append(p + Vector2.from_angle(PI + step * PI / 16.0) * 26.0 + Vector2(0, -48))
+					foreground.draw_colored_polygon(canopy, Color("#94d6c5"))
+					foreground.draw_line(p + Vector2(-24, -48), p + Vector2(-10, -14), Color("#8db9c6"), 1.5, true)
+					foreground.draw_line(p + Vector2(24, -48), p + Vector2(10, -14), Color("#8db9c6"), 1.5, true)
+				foreground.draw_rect(Rect2(p - Vector2(16, 14), Vector2(32, 28)), Color("#438c78"))
+				foreground.draw_rect(Rect2(p - Vector2(3, 8), Vector2(6, 16)), Color("#d9ffee"))
 				foreground.draw_rect(Rect2(p - Vector2(8, 3), Vector2(16, 6)), Color("#d9ffee"))
-				foreground.draw_string(font, p + Vector2(-90, 38), "补给", HORIZONTAL_ALIGNMENT_CENTER, 180, 16, Color("#97efd0"))
+				foreground.draw_string(font, p + Vector2(-90, 38), "补给", HORIZONTAL_ALIGNMENT_CENTER, 180, 15, Color("#97d7b8"))
 	for hazard: Dictionary in state.hazards:
 		var p: Vector2 = Vector2(hazard.x, _surface_y(hazard.x))
 		if hazard.kind == "fire":

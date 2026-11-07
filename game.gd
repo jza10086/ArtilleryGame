@@ -247,7 +247,7 @@ func _open_result(result: Dictionary) -> void:
 		_fail("settlement_missing", "原版协议缺少结算界面")
 		return
 	settlement = gate_script.new()
-	settlement.configure(api, {"title": "火炮大战 · 对局结果", "rows": result.rankings}, request.request_id)
+	settlement.configure(api, {"title": "炮火争锋 · 对局结果", "rows": result.rankings}, request.request_id)
 	settlement.continued.connect(_submit)
 	add_child(settlement)
 

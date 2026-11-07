@@ -7,6 +7,6 @@ anchor_bottom = 1.0
 
 [node name="Status" type="Label" parent="." unique_id=1284181782]
 layout_mode = 2
-text = "火炮大战 · 暂未开放
+text = "炮火争锋 · 暂未开放
 原型为同机双人轮流炮击，等待线上操作适配。"
 horizontal_alignment = 1

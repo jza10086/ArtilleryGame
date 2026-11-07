@@ -10,6 +10,9 @@ const TRACK_HALF: float = 19.0
 const TRACK_BOTTOM: float = 12.0
 const GRAVITY: float = 430.0
 const TURN_SECONDS: float = 35.0
+const BLACK_HOLE_CORE: float = 18.0
+const PORTAL_RADIUS: float = 30.0
+const BUMPER_RADIUS: float = 34.0
 const WEAPONS: Array[Dictionary] = [
 	{"name": "标准弹", "hint": "可靠的单发爆破 · 无限弹药", "radius": 68.0, "damage": 48.0, "ammo": -1, "color": "ffe6a6"},
 	{"name": "重型爆破", "hint": "大范围深坑 · 低初速", "radius": 110.0, "damage": 70.0, "ammo": 2, "color": "ff8b52"},
@@ -181,9 +184,13 @@ func command(player_id: String, turn_number: int, action: String, values: Dictio
 			return false
 	return true
 
+func _projectile(pos: Vector2, velocity: Vector2, weapon: int, child: bool, boost: float = 1.0) -> Dictionary:
+	return {"pos": pos, "vel": velocity, "weapon": weapon, "child": child,
+		"age": 0.0, "bounces": 0, "drilling": false, "rolling": 0.0, "boost": boost,
+		"lock_until": 0.0, "support": false, "trail": []}
+
 func _spawn(pos: Vector2, velocity: Vector2, weapon: int, child: bool) -> void:
-	state.projectiles.append({"pos": pos, "vel": velocity, "weapon": weapon, "child": child,
-		"age": 0.0, "bounces": 0, "drilling": false, "rolling": 0.0, "boost": 1.0, "trail": []})
+	state.projectiles.append(_projectile(pos, velocity, weapon, child))
 
 func step(delta: float) -> void:
 	if state.phase == "over":
@@ -227,8 +234,9 @@ func _fly(delta: float) -> void:
 		shot.vel += projectile_acceleration(state, shot.pos) * delta
 		if shot.weapon in [3, 9] and not shot.child and previous_y < 0.0 and shot.vel.y >= 0.0:
 			for spread: int in range(-2 if shot.weapon == 3 else -3, 3 if shot.weapon == 3 else 4):
-				children.append({"pos": shot.pos, "vel": Vector2(shot.vel.x * (1.0 if shot.weapon == 3 else 0.3) + spread * 100.0, 75.0 if shot.weapon == 3 else 260.0),
-					"weapon": shot.weapon, "child": true, "age": 0.0, "bounces": 0, "drilling": false, "rolling": 0.0, "boost": shot.boost, "trail": []})
+				children.append(_projectile(shot.pos,
+					Vector2(shot.vel.x * (1.0 if shot.weapon == 3 else 0.3) + spread * 100.0, 75.0 if shot.weapon == 3 else 260.0),
+					shot.weapon, true, shot.boost))
 			state.projectiles.remove_at(i)
 			continue
 		var displacement: Vector2 = shot.vel * delta
@@ -241,15 +249,9 @@ func _fly(delta: float) -> void:
 				shot.pos = next
 				hit = true
 				break
-			for event: Dictionary in state.events.duplicate():
-				var distance: float = next.distance_to(event.pos)
-				if event.kind == "black_hole" and distance < 18.0:
-					absorbed = true
-				elif event.kind == "amplifier" and distance < 55.0:
-					shot.boost = 1.5
-				elif event.kind == "supply" and distance < 24.0:
-					_claim_supply(event, state.active)
-			if absorbed:
+			var interaction: StringName = _flight_events(shot, next, children)
+			absorbed = interaction == &"absorbed"
+			if absorbed or interaction == &"redirected":
 				break
 			var terrain_hit: bool = next.y >= ground(next.x)
 			if terrain_hit and shot.weapon == 8:
@@ -470,11 +472,92 @@ func _advance_events() -> void:
 		var x: float = rng.randf_range(260.0, 1660.0)
 		state.events.append({"kind": "supply", "pos": Vector2(x, 100.0), "expires": state.turn + 5})
 		_notify("黑洞扭曲弹道、吞噬炮弹 · 补给靠近或射中领取" if cycle == 0 else "补给空投 · 靠近或射中领取生命和弹药")
+	if cycle == 1:
+		var left: float = rng.randf_range(380.0, 680.0)
+		var right: float = rng.randf_range(1240.0, 1540.0)
+		state.events.append({"kind": "portal", "pos": Vector2(left, ground(left) - 165.0),
+			"exit": Vector2(right, ground(right) - 165.0), "expires": state.turn + 3})
+		_notify("双向传送门 · 炮弹保留速度，从另一端飞出")
+	if cycle == 2:
+		var x: float = rng.randf_range(820.0, 1100.0)
+		state.events.append({"kind": "bumper", "pos": Vector2(x, ground(x) - 100.0), "expires": state.turn + 3})
+		_notify("反弹障碍 · 碰到蓝色圆盘会反射弹道")
 	if cycle == 4:
 		var x: float = rng.randf_range(500.0, 1420.0)
-		state.events.append({"kind": "amplifier", "pos": Vector2(x, ground(x) - 200.0), "expires": state.turn + 3})
-		_notify("增幅力场 · 穿过的炮弹伤害 ×1.5")
+		var factor: float = 3.0 if rng.randf() < 0.2 else 2.0
+		state.events.append({"kind": "amplifier", "pos": Vector2(x, ground(x) - 200.0),
+			"factor": factor, "radius": 26.0 if factor == 3.0 else 42.0, "expires": state.turn + 3})
+		_notify("增伤标记 ×%d · 首枚命中的炮弹领取，倍率取最高值" % int(factor))
+	if cycle == 5:
+		var x: float = rng.randf_range(460.0, 1460.0)
+		state.events.append({"kind": "drone", "pos": Vector2(x, ground(x) - 330.0), "expires": state.turn + 2})
+		_notify("支援无人机 · 射中后向最近的敌人发射三枚炮弹")
 	_trigger_mines()
+
+## Small swept steps resolve contacts in order. A short lock and an offset beyond
+## the exit surface prevent re-entry; teleport clears the trail across the map.
+func _flight_events(shot: Dictionary, next: Vector2, children: Array[Dictionary]) -> StringName:
+	if shot.drilling:
+		return &""
+	for event: Dictionary in state.events.duplicate():
+		var distance: float = next.distance_to(event.pos)
+		match event.kind:
+			"black_hole":
+				if distance < BLACK_HOLE_CORE:
+					return &"absorbed"
+			"amplifier":
+				if distance < event.radius:
+					shot.boost = maxf(shot.boost, event.factor)
+					state.events.erase(event)
+			"supply":
+				if distance < 24.0:
+					_claim_supply(event, state.active)
+			"portal":
+				if shot.age < shot.lock_until:
+					continue
+				var into_first: bool = distance < PORTAL_RADIUS
+				if into_first or next.distance_to(event.exit) < PORTAL_RADIUS:
+					var destination: Vector2 = event.exit if into_first else event.pos
+					shot.pos = destination + shot.vel.normalized() * (PORTAL_RADIUS + 6.0)
+					shot.lock_until = shot.age + 0.12
+					shot.trail.clear()
+					return &"redirected"
+			"bumper":
+				if distance < BUMPER_RADIUS and shot.age >= shot.lock_until:
+					var normal: Vector2 = (next - event.pos).normalized() if distance > 0.01 else -shot.vel.normalized()
+					shot.vel = shot.vel.bounce(normal)
+					shot.pos = event.pos + normal * (BUMPER_RADIUS + 4.0)
+					shot.lock_until = shot.age + 0.12
+					return &"redirected"
+			"drone":
+				if distance < 28.0:
+					_activate_drone(event, children)
+	return &""
+
+func _activate_drone(event: Dictionary, children: Array[Dictionary]) -> void:
+	var target: int = -1
+	var nearest: float = INF
+	var shooter: Dictionary = state.tanks[state.active]
+	for index: int in state.tanks.size():
+		var tank: Dictionary = state.tanks[index]
+		if tank.hp <= 0 or tank.team == shooter.team:
+			continue
+		var distance: float = event.pos.distance_to(Vector2(tank.x, tank.y))
+		if distance < nearest:
+			nearest = distance
+			target = index
+	if target < 0:
+		return
+	state.events.erase(event)
+	var enemy: Dictionary = state.tanks[target]
+	for index: int in 3:
+		var duration: float = 0.8 + index * 0.15
+		var destination: Vector2 = Vector2(enemy.x + (index - 1) * 20.0, enemy.y)
+		var velocity: Vector2 = (destination - event.pos) / duration - Vector2(state.wind, GRAVITY) * duration * 0.5
+		var shot: Dictionary = _projectile(event.pos, velocity, 9, true)
+		shot.support = true
+		children.append(shot)
+	_notify("%s 激活无人机支援" % shooter.name)
 
 static func projectile_acceleration(snapshot: Dictionary, pos: Vector2) -> Vector2:
 	var force: Vector2 = Vector2(snapshot.wind, GRAVITY)

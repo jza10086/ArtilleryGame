@@ -54,3 +54,5 @@ separately and must preserve the notices and license conditions that apply.
 - Official reference: https://www.shellshocklive.com/
 - Concepts: multiplayer turn-based artillery, destructible landscapes, distinct ballistic weapons, dark layered scenery and bright battlefield silhouettes.
 - The GodotParty implementation uses independent rules, original battlefield effects and the credited Kenney tank sprites; no ShellShock Live assets or source are included.
+
+- Event reference: https://store.steampowered.com/news/posts/?appgroupname=ShellShock+Live&appids=326460&enddate=1645653731&feed=steam_community_announcements (official v1.0 notes: X3 buffs, Vortex portals, bumpers and attack drones). Shapes and event rules are implemented independently; no reference artwork is shipped.

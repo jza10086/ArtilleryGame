@@ -3,9 +3,9 @@
   "core_api_major": 4,
   "package_version": "1.0.0",
   "id": "godot_party_default_artillery_game",
-  "name": "火炮大战",
+  "name": "炮火争锋",
   "kind": "minigame",
-  "introduction": "1–8 人回合制炮击。自由混战、偶数人数团队对抗与单人试射；风力弹道、可破坏地形、16 种弹药，以及黑洞、空投补给和增幅力场。",
+  "introduction": "1–8 人回合制炮击。自由混战、偶数人数团队对抗与单人试射；风力弹道、可破坏地形、16 种弹药，以及黑洞、空投、增伤、传送、反弹与无人机事件。",
   "entry": "game.tscn",
   "player_counts": [
     1,
