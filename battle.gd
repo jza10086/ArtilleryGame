@@ -481,7 +481,7 @@ func _advance_events() -> void:
 	if cycle == 2:
 		var x: float = rng.randf_range(820.0, 1100.0)
 		state.events.append({"kind": "bumper", "pos": Vector2(x, ground(x) - 100.0), "expires": state.turn + 3})
-		_notify("反弹障碍 · 碰到蓝色圆盘会反射弹道")
+		_notify("反弹障碍 · 碰到洋红光环会反射弹道")
 	if cycle == 4:
 		var x: float = rng.randf_range(500.0, 1420.0)
 		var factor: float = 3.0 if rng.randf() < 0.2 else 2.0

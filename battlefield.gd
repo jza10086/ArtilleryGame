@@ -226,17 +226,30 @@ func _blast(flash: Dictionary) -> void:
 		foreground.draw_colored_polygon(PackedVector2Array([tip, tail + side, tail - side]), tint)
 
 
-## Events use a few solid shapes. Small halos separate them from the backdrop.
+## Emissive edges follow the official gameplay references; geometry stays vector.
+func _ring_light(point: Vector2, radius: float, tint: Color) -> void:
+	for layer: int in 4:
+		light_layer.draw_arc(point, radius, 0.0, TAU, 96, Color(tint, 0.06 + layer * 0.025), 18.0 - layer * 4.0, true)
+
 func _event_lights() -> void:
 	for event: Dictionary in state.events:
 		match event.kind:
 			"black_hole":
-				_glow(event.pos, 64.0, Color(0.48, 0.36, 0.85, 0.18))
+				_glow(event.pos, 104.0, Color(0.28, 0.25, 1.0, 0.42))
+				_ring_light(event.pos, Battle.BLACK_HOLE_CORE + 3.0, Color("#747fff"))
 			"portal":
-				_glow(event.pos, 48.0, Color(0.2, 0.8, 1.0, 0.18))
-				_glow(event.exit, 48.0, Color(1.0, 0.55, 0.3, 0.18))
+				_glow(event.pos, 76.0, Color(0.03, 0.47, 1.0, 0.8))
+				_glow(event.exit, 76.0, Color(1.0, 0.34, 0.015, 0.8))
+				_ring_light(event.pos, Battle.PORTAL_RADIUS, Color("#259dff"))
+				_ring_light(event.exit, Battle.PORTAL_RADIUS, Color("#ff921f"))
+			"bumper":
+				_ring_light(event.pos, Battle.BUMPER_RADIUS, Color("#ff21e9"))
 			"amplifier":
-				_glow(event.pos, event.radius * 1.5, Color(0.65, 1, 0.3, 0.14))
+				var tint: Color = Color("#ff9a16") if event.factor == 3.0 else Color("#ff253c")
+				_glow(event.pos, event.radius * 1.9, Color(tint, 0.36))
+				_ring_light(event.pos, event.radius, Color(tint, 0.45))
+			"drone":
+				_glow(event.pos, 42.0, Color(0.2, 0.45, 1.0, 0.6))
 			"supply":
 				_glow(event.pos, 35.0, Color(0.3, 1.0, 0.62, 0.2))
 	for hazard: Dictionary in state.hazards:
@@ -246,62 +259,69 @@ func _event_lights() -> void:
 func _surface_y(x: float) -> float:
 	return state.terrain[clampi(roundi(x / Battle.CELL), 0, 480)]
 
-func _event_caption(point: Vector2, text: String, color: Color) -> void:
-	foreground.draw_string(font, point + Vector2(-110, 64), text, HORIZONTAL_ALIGNMENT_CENTER, 220, 15, color)
-
+## Blue/orange portals are dark apertures, distinct from the spiral gravity well.
 func _portal(point: Vector2, tint: Color, phase: float) -> void:
-	foreground.draw_circle(point, Battle.PORTAL_RADIUS - 5.0, Color("#0c1930"), true, -1, true)
-	for half: int in 2:
-		var band: PackedVector2Array = PackedVector2Array()
-		for i: int in 25:
-			var a: float = phase + half * PI + i * PI * 0.83 / 24.0
-			band.append(point + Vector2.from_angle(a) * Battle.PORTAL_RADIUS)
-		for i: int in range(24, -1, -1):
-			var a: float = phase + half * PI + i * PI * 0.83 / 24.0
-			band.append(point + Vector2.from_angle(a) * (Battle.PORTAL_RADIUS - 6.0))
-		foreground.draw_colored_polygon(band, tint)
-	foreground.draw_circle(point, 4.0, tint, true, -1, true)
+	foreground.draw_circle(point, Battle.PORTAL_RADIUS, Color("#02050c"), true, -1, true)
+	foreground.draw_arc(point, Battle.PORTAL_RADIUS, 0.0, TAU, 96, tint, 1.8, true)
+	for i: int in 9:
+		var angle: float = i * 2.39996 + phase * 0.18
+		var travel: float = fposmod(effect_time * 0.23 + i * 0.37, 1.0)
+		var radius: float = Battle.PORTAL_RADIUS + 3.0 + travel * 18.0
+		foreground.draw_circle(point + Vector2.from_angle(angle) * radius, 0.7 + (i % 3) * 0.35, Color(tint, (1.0 - travel) * 0.65), true, -1, true)
+
+func _black_hole(point: Vector2) -> void:
+	# Thin, uneven spiral streams leave space between the core and the outer dust.
+	for arm: int in 5:
+		var stream: PackedVector2Array = PackedVector2Array()
+		for step: int in 49:
+			var t: float = step / 48.0
+			var angle: float = arm * TAU / 5.0 - effect_time * 0.32 + t * 5.4
+			var radius: float = lerpf(68.0 - arm * 3.0, Battle.BLACK_HOLE_CORE + 2.0, t)
+			stream.append(point + Vector2.from_angle(angle) * radius)
+		foreground.draw_polyline(stream, Color(0.39 + arm * 0.035, 0.42, 0.95, 0.18 + arm * 0.045), 1.25, true)
+	for i: int in 48:
+		var travel: float = fposmod(i * 0.618034 + effect_time * 0.055, 1.0)
+		var angle: float = i * 2.39996 - effect_time * 0.34 - travel * 3.0
+		var radius: float = lerpf(87.0, 21.0, travel)
+		foreground.draw_circle(point + Vector2.from_angle(angle) * radius, 0.55 + (i % 3) * 0.3, Color(0.65, 0.73, 1.0, sin(travel * PI) * 0.7), true, -1, true)
+	foreground.draw_circle(point, Battle.BLACK_HOLE_CORE, Color("#01030b"), true, -1, true)
+	foreground.draw_arc(point, Battle.BLACK_HOLE_CORE + 1.0, 0.0, TAU, 64, Color("#8b9aff"), 1.5, true)
 
 func _draw_events() -> void:
 	for event: Dictionary in state.events:
 		var p: Vector2 = event.pos
-		var remaining: int = event.expires - state.turn + 1
 		match event.kind:
 			"black_hole":
-				for arm: int in 3:
-					var ribbon: PackedVector2Array = PackedVector2Array()
-					for step: int in 25:
-						var t: float = step / 24.0
-						var a: float = arm * TAU / 3.0 - effect_time * 0.65 + t * 1.8
-						ribbon.append(p + Vector2.from_angle(a) * lerpf(47.0, 21.0, t))
-					for step: int in range(24, -1, -1):
-						var t: float = step / 24.0
-						var a: float = arm * TAU / 3.0 - effect_time * 0.65 + t * 1.8
-						ribbon.append(p + Vector2.from_angle(a) * lerpf(40.0, 13.0, t))
-					foreground.draw_colored_polygon(ribbon, [Color("#9e88d5"), Color("#7966b6"), Color("#b0a4e2")][arm])
-				foreground.draw_circle(p, Battle.BLACK_HOLE_CORE, Color("#040812"), true, -1, true)
-				_event_caption(p, "黑洞 · %d 回合" % remaining, Color("#b7abd9"))
+				_black_hole(p)
 			"portal":
-				_portal(p, Color("#65dafa"), effect_time * 0.6)
-				_portal(event.exit, Color("#ffa76c"), -effect_time * 0.6)
-				_event_caption(p, "传送 A ↔ B · %d" % remaining, Color("#94ddee"))
-				_event_caption(event.exit, "传送 B ↔ A · %d" % remaining, Color("#f2b78f"))
+				_portal(p, Color("#60baff"), effect_time)
+				_portal(event.exit, Color("#ffb45c"), -effect_time)
 			"bumper":
-				foreground.draw_circle(p, Battle.BUMPER_RADIUS, Color("#3288d2"), true, -1, true)
-				foreground.draw_colored_polygon(PackedVector2Array([p + Vector2(-16, 5), p + Vector2(0, -12), p + Vector2(16, 5), p + Vector2(0, -2)]), Color("#caeeff"))
-				_event_caption(p, "反弹 · %d 回合" % remaining, Color("#8cc8f6"))
+				foreground.draw_arc(p, Battle.BUMPER_RADIUS, 0.0, TAU, 96, Color("#ff65ee"), 3.2, true)
+				foreground.draw_arc(p, Battle.BUMPER_RADIUS, 0.0, TAU, 96, Color("#fff2ff"), 1.2, true)
 			"amplifier":
-				var tint: Color = Color("#e6b0ff") if event.factor == 3.0 else Color("#b8ed76")
-				foreground.draw_circle(p, event.radius, Color(tint, 0.1), true, -1, true)
-				foreground.draw_string(font, p + Vector2(-55, 12), "×%d" % int(event.factor), HORIZONTAL_ALIGNMENT_CENTER, 110, 30 if event.factor == 3.0 else 40, tint)
-				_event_caption(p, "增伤 · %d 回合" % remaining, tint)
+				var tint: Color = Color("#ff9a16") if event.factor == 3.0 else Color("#ff253c")
+				foreground.draw_circle(p, event.radius, Color(tint, 0.16), true, -1, true)
+				for segment: int in 8:
+					var angle: float = segment * TAU / 8.0 + effect_time * 0.12
+					foreground.draw_arc(p, event.radius, angle, angle + TAU / 8.0 - 0.10, 12, Color(tint, 0.85), 2.5, true)
+				for i: int in 5:
+					var angle: float = i * 2.39996 + effect_time * 0.15
+					var radius: float = event.radius + 9.0 + 9.0 * sin(effect_time + i * 1.7)
+					foreground.draw_circle(p + Vector2.from_angle(angle) * radius, 1.6, Color(tint, 0.7), true, -1, true)
+				foreground.draw_string(font, p + Vector2(-55, 9 if event.factor == 3.0 else 7), "×%d" % int(event.factor), HORIZONTAL_ALIGNMENT_CENTER, 110, 30 if event.factor == 3.0 else 38, Color("#fff6ed"))
+				if event.factor == 2.0:
+					foreground.draw_string(font, p + Vector2(-55, 26), "增伤", HORIZONTAL_ALIGNMENT_CENTER, 110, 13, Color("#ff969c"))
 			"drone":
-				var body: PackedVector2Array = PackedVector2Array([p + Vector2(-24, 0), p + Vector2(-10, -10), p + Vector2(10, -10), p + Vector2(24, 0), p + Vector2(7, 8), p + Vector2(-7, 8)])
-				foreground.draw_colored_polygon(body, Color("#74bcae"))
-				foreground.draw_rect(Rect2(p + Vector2(-34, -15), Vector2(22, 4)), Color("#b7e6da"))
-				foreground.draw_rect(Rect2(p + Vector2(12, -15), Vector2(22, 4)), Color("#b7e6da"))
-				foreground.draw_circle(p, 4.0, Color("#ddfff0"), true, -1, true)
-				_event_caption(p, "无人机 · 射中支援 · %d" % remaining, Color("#a3d4c5"))
+				foreground.draw_colored_polygon(PackedVector2Array([p + Vector2(-29, -10), p + Vector2(-12, -5), p + Vector2(12, -5), p + Vector2(29, -10), p + Vector2(23, 4), p + Vector2(-23, 4)]), Color("#849ac7"))
+				foreground.draw_colored_polygon(PackedVector2Array([p + Vector2(0, -17), p + Vector2(14, -4), p + Vector2(9, 12), p + Vector2(0, 19), p + Vector2(-9, 12), p + Vector2(-14, -4)]), Color("#c3e4ff"))
+				foreground.draw_circle(p, 8.0, Color("#3c8bff"), true, -1, true)
+				foreground.draw_circle(p, 4.0, Color("#a5f0ff"), true, -1, true)
+				for side: int in [-1, 1]:
+					var rotor: Vector2 = p + Vector2(side * 26, -14)
+					foreground.draw_set_transform(rotor, 0.0, Vector2(1.0, 0.18))
+					foreground.draw_circle(Vector2.ZERO, 14.0 + sin(effect_time * 24.0) * 1.5, Color("#e2efff"), true, -1, true)
+					foreground.draw_set_transform(Vector2.ZERO)
 			"supply":
 				if p.y < _surface_y(p.x) - 19.0:
 					var canopy: PackedVector2Array = PackedVector2Array()
@@ -313,7 +333,6 @@ func _draw_events() -> void:
 				foreground.draw_rect(Rect2(p - Vector2(16, 14), Vector2(32, 28)), Color("#438c78"))
 				foreground.draw_rect(Rect2(p - Vector2(3, 8), Vector2(6, 16)), Color("#d9ffee"))
 				foreground.draw_rect(Rect2(p - Vector2(8, 3), Vector2(16, 6)), Color("#d9ffee"))
-				foreground.draw_string(font, p + Vector2(-90, 38), "补给", HORIZONTAL_ALIGNMENT_CENTER, 180, 15, Color("#97d7b8"))
 	for hazard: Dictionary in state.hazards:
 		var p: Vector2 = Vector2(hazard.x, _surface_y(hazard.x))
 		if hazard.kind == "fire":

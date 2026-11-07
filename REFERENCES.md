@@ -56,3 +56,12 @@ separately and must preserve the notices and license conditions that apply.
 - The GodotParty implementation uses independent rules, original battlefield effects and the credited Kenney tank sprites; no ShellShock Live assets or source are included.
 
 - Event reference: https://store.steampowered.com/news/posts/?appgroupname=ShellShock+Live&appids=326460&enddate=1645653731&feed=steam_community_announcements (official v1.0 notes: X3 buffs, Vortex portals, bumpers and attack drones). Shapes and event rules are implemented independently; no reference artwork is shipped.
+
+### Screenshot-based event appearance
+
+- Official in-game portal screenshot: https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/326460/ss_91b3915763f80aff330f978a0d8e31ab9cc7ffa7.1920x1080.jpg
+- Official obstacle overview: https://clan.akamai.steamstatic.com/images/8045780/c9a0982dff125d5073ae88def8a293dca90894c0.png
+- Official X3 screenshot: https://clan.akamai.steamstatic.com/images/8045780/25a74a35db3c99567f327ed9aa63f493a93d4f20.png
+- Additional community gameplay screenshot: https://steamcommunity.com/sharedfiles/filedetails/?id=2069384920
+- Observed features: black blue/orange portal apertures with continuous luminous rims, thin magenta bumper rings, red X2 and orange X3 segmented markers, a blue-violet spiral gravity well, and a pale drone with a blue core. The Vortex image describes a game mode, not a separate black-hole obstacle.
+- Reference-only images stay in the host project's ignored private_assets/shellshock_event_reference directory. They are not runtime textures or distributed artwork. Effects are independently drawn with vector circles, arcs, curves, particles and local additive light; existing event collision sizes and rules are retained.
