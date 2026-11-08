@@ -8,7 +8,9 @@ const GROUND: Color = Color("#083660")
 const INK: Color = Color("#e4faff")
 var state: Dictionary = {}
 var ground_profile: PackedFloat32Array = PackedFloat32Array()
-var lit_surface: ArrayMesh = ArrayMesh.new()
+var initial_profile: PackedFloat32Array = PackedFloat32Array()
+var previous_msaa: Viewport.MSAA = Viewport.MSAA_DISABLED
+var render_viewport: Viewport
 var aim_angle: float = 45.0
 var aim_power: float = 60.0
 var weapon: int = 0
@@ -19,6 +21,7 @@ var effect_time: float = 0.0
 var font: Font
 @onready var world: Node2D = $World
 @onready var terrain: Node2D = $World/Terrain
+@onready var terrain_material: ShaderMaterial = terrain.material
 @onready var foreground: Node2D = $World/Foreground
 @onready var light_layer: Node2D = $World/LightLayer
 @onready var aim_curve: Line2D = %AimCurve
@@ -27,6 +30,9 @@ var models: Array[TankModel] = []
 var supply_positions: Dictionary[Vector2, Vector2] = {}
 
 func _ready() -> void:
+	render_viewport = get_viewport()
+	previous_msaa = render_viewport.msaa_2d
+	render_viewport.msaa_2d = Viewport.MSAA_8X
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	font = get_theme_default_font()
 	terrain.draw.connect(_draw_terrain)
@@ -34,6 +40,9 @@ func _ready() -> void:
 	foreground.draw.connect(_draw_foreground)
 	resized.connect(_resize_world)
 	_resize_world()
+
+func _exit_tree() -> void:
+	render_viewport.msaa_2d = previous_msaa
 
 func _resize_world() -> void:
 	world.scale = size / Vector2(1920, 1080)
@@ -72,14 +81,17 @@ func update_state(value: Dictionary) -> void:
 			var previous: Vector2 = supply_positions.get(key, event.pos)
 			next_supplies[key] = event.pos if previous.distance_to(event.pos) > 120.0 else previous
 	supply_positions = next_supplies
+	if initial_profile != state.terrain_origin:
+		initial_profile = state.terrain_origin.duplicate()
+		var profile_image: Image = Image.create_from_data(initial_profile.size(), 1, false, Image.FORMAT_RF, initial_profile.to_byte_array())
+		terrain_material.set_shader_parameter("initial_surface", ImageTexture.create_from_image(profile_image))
 	if ground_profile != state.terrain:
 		ground_profile = state.terrain
-		_rebuild_surface_light()
+		terrain.queue_redraw()
 	while models.size() < state.tanks.size():
 		var model: TankModel = TankScene.instantiate()
 		world.add_child(model)
 		models.append(model)
-	terrain.queue_redraw()
 	for impact: Dictionary in state.impacts:
 		if impact.id > last_impact:
 			flashes.append({"pos": impact.pos, "radius": impact.radius, "weapon": impact.weapon, "life": 0.55})
@@ -92,27 +104,7 @@ func _draw_terrain() -> void:
 	for i: int in state.terrain.size():
 		land.append(Vector2(i * Battle.CELL, state.terrain[i]))
 	land.append(Vector2(1920, 1080))
-	terrain.draw_colored_polygon(land, GROUND)
-	terrain.draw_mesh(lit_surface, null)
-
-## Pair each surface vertex with the one directly underneath it. An impact can
-## change the silhouette without changing the direction the light falls into the soil.
-func _rebuild_surface_light() -> void:
-	var vertices: PackedVector2Array = PackedVector2Array()
-	var colors: PackedColorArray = PackedColorArray()
-	for i: int in ground_profile.size():
-		var surface: Vector2 = Vector2(i * Battle.CELL, ground_profile[i])
-		var light: float = 0.5 + 0.5 * cos(surface.x / 510.0)
-		vertices.append(surface)
-		colors.append(Color("#168de7").lerp(Color("#38dbf1"), light))
-		vertices.append(surface + Vector2(0, 179))
-		colors.append(GROUND)
-	var arrays: Array = []
-	arrays.resize(Mesh.ARRAY_MAX)
-	arrays[Mesh.ARRAY_VERTEX] = vertices
-	arrays[Mesh.ARRAY_COLOR] = colors
-	lit_surface.clear_surfaces()
-	lit_surface.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLE_STRIP, arrays)
+	terrain.draw_colored_polygon(land, Color.WHITE)
 
 func _glow(point: Vector2, radius: float, tint: Color) -> void:
 	var extent: Vector2 = Vector2.ONE * radius

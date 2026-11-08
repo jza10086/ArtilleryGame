@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://games/minigame/godot_party_default_artillery_game/battlefield.gd" id="script"]
 [ext_resource type="Curve" uid="uid://7ykrayrs44l1" path="res://games/minigame/godot_party_default_artillery_game/aim_taper.tres" id="2_86f1o"]
+[ext_resource type="Shader" uid="uid://drjwm03edmxrs" path="res://games/minigame/godot_party_default_artillery_game/terrain_fill.gdshader" id="2_5wmmb"]
 
 [sub_resource type="Gradient" id="Glow"]
 offsets = PackedFloat32Array(0, 0.18, 0.46, 0.76, 1)
@@ -19,7 +20,16 @@ fill_to = Vector2(1,0.5)
 [sub_resource type="CanvasItemMaterial" id="Additive"]
 blend_mode = 1
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8t6i4"]
+resource_local_to_scene = true
+shader = ExtResource("2_5wmmb")
+shader_parameter/deep_color = Color(0.031373, 0.211765, 0.376471, 1)
+shader_parameter/blue_color = Color(0.086275, 0.552941, 0.905882, 1)
+shader_parameter/cyan_color = Color(0.219608, 0.858824, 0.945098, 1)
+shader_parameter/gradient_depth = 179.0
+
 [node name="Battlefield" type="Control"]
+texture_filter = 2
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
@@ -302,6 +312,7 @@ color = Color(0.062745,0.2,0.30196,1)
 polygon = PackedVector2Array(0.000, 518.000, 195.000, 583.000, 435.000, 502.000, 550.000, 520.000, 715.000, 455.000, 925.000, 547.000, 1090.000, 490.000, 1210.000, 525.000, 1445.000, 445.000, 1640.000, 536.000, 1920.000, 480.000, 1920.000, 1080.000, 0.000, 1080.000)
 
 [node name="Terrain" type="Node2D" parent="World"]
+material = SubResource("ShaderMaterial_8t6i4")
 z_index = -1
 
 [node name="LightLayer" type="Node2D" parent="World"]
