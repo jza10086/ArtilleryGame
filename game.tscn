@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://e1jstpqw82l3"]
 
 [ext_resource type="Script" uid="uid://bb8fxkpjr4it" path="res://games/minigame/godot_party_default_artillery_game/game.gd" id="1_hqb37"]
+[ext_resource type="Theme" uid="uid://uwnrdgk1k5uq" path="res://core/ui/ambient_reveal/ambient_theme.tres" id="2_8nvs8"]
 [ext_resource type="PackedScene" path="res://games/minigame/godot_party_default_artillery_game/battlefield.tscn" id="board"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_s44do"]
@@ -47,7 +48,7 @@ corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
-[sub_resource type="Image" id="Image_s44do"]
+[sub_resource type="Image" id="Image_wtgd2"]
 data = {
 "data": PackedByteArray(221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255),
 "format": "RGBA8",
@@ -57,7 +58,7 @@ data = {
 }
 
 [sub_resource type="ImageTexture" id="ImageTexture_ay15i"]
-image = SubResource("Image_s44do")
+image = SubResource("Image_wtgd2")
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yua07"]
 content_margin_left = 0.0
@@ -207,9 +208,10 @@ text = "角度 45.0°"
 [node name="AngleSlider" type="HSlider" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1/VBoxContainer4" unique_id=973186405]
 unique_name_in_owner = true
 layout_mode = 2
+focus_mode = 0
 min_value = 5.0
 max_value = 175.0
-step = 0.5
+step = 0.0
 value = 45.0
 
 [node name="VBoxContainer5" type="VBoxContainer" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1" unique_id=16182805]
@@ -224,7 +226,9 @@ text = "力度 60%"
 [node name="PowerSlider" type="HSlider" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1/VBoxContainer5" unique_id=632792778]
 unique_name_in_owner = true
 layout_mode = 2
+focus_mode = 0
 min_value = 10.0
+step = 0.0
 value = 60.0
 
 [node name="WeaponButton" type="Button" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1" unique_id=157951260]
@@ -436,6 +440,57 @@ theme_override_font_sizes/font_size = 18
 text = "护盾弹"
 alignment = 0
 
+[node name="TopStatus" type="VBoxContainer" parent="GameHUD" unique_id=1199755538]
+unique_name_in_owner = true
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -62.0
+offset_top = 24.0
+offset_right = 62.0
+grow_horizontal = 2
+mouse_filter = 2
+theme = ExtResource("2_8nvs8")
+theme_override_constants/separation = 8
+
+[node name="ClockFrame" type="PanelContainer" parent="GameHUD/TopStatus" unique_id=1470130730]
+custom_minimum_size = Vector2(108, 72)
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+
+[node name="Countdown" type="Label" parent="GameHUD/TopStatus/ClockFrame" unique_id=1495010426]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "35"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Wind" type="HBoxContainer" parent="GameHUD/TopStatus" unique_id=525505183]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="ArrowSlot" type="Control" parent="GameHUD/TopStatus/Wind" unique_id=243887825]
+custom_minimum_size = Vector2(36, 32)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="WindArrow" type="Polygon2D" parent="GameHUD/TopStatus/Wind/ArrowSlot" unique_id=828069561]
+unique_name_in_owner = true
+position = Vector2(18, 16)
+color = Color(0.82, 0.94, 1, 1)
+polygon = PackedVector2Array(-13, -2, 4, -2, 4, -8, 14, 0, 4, 8, 4, 2, -13, 2)
+
+[node name="WindStrength" type="Label" parent="GameHUD/TopStatus/Wind" unique_id=583207917]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "18"
+vertical_alignment = 1
+
 [node name="GameCanvas" type="CanvasLayer" parent="." unique_id=1354447394]
 layer = -4
 
@@ -443,3 +498,5 @@ layer = -4
 unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 15
+grow_horizontal = 2
+grow_vertical = 2

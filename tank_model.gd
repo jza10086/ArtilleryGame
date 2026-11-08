@@ -26,8 +26,12 @@ func pose(tank: Dictionary, degrees: float, tint: Color, delta: float) -> void:
 		if tank.shots > shot_count:
 			recoil_left = RECOIL_TIME
 	shot_count = tank.shots
-	position = next_position
-	rotation = tank.tilt
+	# Render between network samples; teleports and first placement stay immediate.
+	var weight: float = 1.0 - exp(-delta * 24.0)
+	if position.distance_to(next_position) > 90.0 or delta == 0.0:
+		weight = 1.0
+	position = position.lerp(next_position, weight)
+	rotation = lerp_angle(rotation, tank.tilt, weight)
 	var relative: float = -deg_to_rad(degrees) - rotation
 	var facing: float = -1.0 if cos(relative) < 0.0 else 1.0
 	turret.scale = Vector2(facing, 1)

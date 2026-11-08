@@ -36,3 +36,27 @@ msgstr "力度  {power}%"
 
 msgid "hud.fuel"
 msgstr "移动 {fuel}"
+
+msgid "向左移动"
+msgstr "向左移动"
+
+msgid "向右移动"
+msgstr "向右移动"
+
+msgid "增加角度"
+msgstr "增加角度"
+
+msgid "减小角度"
+msgstr "减小角度"
+
+msgid "减小力度"
+msgstr "减小力度"
+
+msgid "增加力度"
+msgstr "增加力度"
+
+msgid "发射炮弹"
+msgstr "发射炮弹"
+
+msgid "操作"
+msgstr "操作"

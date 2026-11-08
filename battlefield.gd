@@ -23,6 +23,7 @@ var font: Font
 @onready var light_layer: Node2D = $World/LightLayer
 @export var falloff: GradientTexture2D
 var models: Array[TankModel] = []
+var supply_positions: Dictionary[Vector2, Vector2] = {}
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -37,6 +38,8 @@ func _resize_world() -> void:
 	world.scale = size / Vector2(1920, 1080)
 
 func _process(delta: float) -> void:
+	if state.is_empty():
+		return
 	effect_time += delta
 	for i: int in range(flashes.size() - 1, -1, -1):
 		flashes[i].life -= delta
@@ -49,11 +52,22 @@ func _process(delta: float) -> void:
 		if state.mode == "teams":
 			tint = [Color("#73d9ed"), Color("#ff947d")][tank.team]
 		models[i].pose(tank, degrees, tint, delta)
+	for event: Dictionary in state.events:
+		if event.kind == "supply":
+			var key: Vector2 = Vector2(event.pos.x, event.expires)
+			supply_positions[key] = supply_positions[key].lerp(event.pos, 1.0 - exp(-delta * 24.0))
 	light_layer.queue_redraw()
 	foreground.queue_redraw()
 
 func update_state(value: Dictionary) -> void:
 	state = value
+	var next_supplies: Dictionary[Vector2, Vector2] = {}
+	for event: Dictionary in state.events:
+		if event.kind == "supply":
+			var key: Vector2 = Vector2(event.pos.x, event.expires)
+			var previous: Vector2 = supply_positions.get(key, event.pos)
+			next_supplies[key] = event.pos if previous.distance_to(event.pos) > 120.0 else previous
+	supply_positions = next_supplies
 	if ground_profile != state.terrain:
 		ground_profile = state.terrain
 		_rebuild_surface_light()
@@ -149,26 +163,12 @@ func _draw_foreground() -> void:
 			foreground.draw_string(font, shot.pos + Vector2(10, -10), "×%d" % int(shot.boost), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, tint)
 	for flash: Dictionary in flashes:
 		_blast(flash)
-	if state.phase == "over":
-		return
-	var wind: float = state.wind
-	var info: String = "风  %s %d" % ["→" if wind >= 0 else "←", roundi(absf(wind))]
-	if state.mode != "training":
-		info = "%s 的回合     %s" % [state.tanks[state.active].name, info]
-		if state.phase == "aim":
-			info += "     %d 秒" % ceili(state.time)
-		if state.turn > state.tanks.size() * 8:
-			info += "     决胜阶段 · 每回合损失 12 生命"
-	foreground.draw_string(font, Vector2(38, 57), info, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, INK)
-	if state.notice_left > 0.0:
-		foreground.draw_string(font, Vector2(38, 90), state.notice, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color("#91c6dc"))
-	foreground.draw_string(font, Vector2(1740, 54), "Esc  菜单", HORIZONTAL_ALIGNMENT_RIGHT, 142, 17, INK)
 
 func _tank_label(index: int) -> void:
 	var tank: Dictionary = state.tanks[index]
 	if tank.hp <= 0:
 		return
-	var p: Vector2 = Vector2(tank.x, tank.y)
+	var p: Vector2 = models[index].position
 	var tint: Color = Color(tank.color)
 	if state.mode == "teams":
 		tint = [Color("#73d9ed"), Color("#ff947d")][tank.team]
@@ -186,26 +186,39 @@ func _tank_label(index: int) -> void:
 		var marker: Vector2 = p + Vector2(0, -63 if state.mode == "training" else -89)
 		foreground.draw_colored_polygon(PackedVector2Array([marker - Vector2(6, 0), marker + Vector2(6, 0), marker + Vector2(0, 7)]), INK)
 
+## Integrate at the simulation rate, then place moving dots by arc length.
+## Their spacing and motion remain continuous at any render frame rate.
 func _aim() -> void:
 	var direction: Vector2 = Vector2.from_angle(-deg_to_rad(aim_angle))
 	var pos: Vector2 = world.to_local(models[state.active].muzzle.global_position)
 	var velocity: Vector2 = direction * (270.0 + aim_power * 6.0) * (0.82 if weapon == 1 else 1.0)
-	for i: int in 15:
-		velocity += Battle.projectile_acceleration(state, pos) * 0.045
-		pos += velocity * 0.045
+	var spacing_left: float = fposmod(effect_time * 28.0, 22.0)
+	var travelled: float = 0.0
+	for i: int in 240:
+		velocity += Battle.projectile_acceleration(state, pos) / 60.0
+		var next: Vector2 = pos + velocity / 60.0
 		var obstacle: bool = false
 		for event: Dictionary in state.events:
 			if event.kind == "portal":
-				obstacle = obstacle or pos.distance_to(event.pos) < Battle.PORTAL_RADIUS or pos.distance_to(event.exit) < Battle.PORTAL_RADIUS
+				obstacle = obstacle or next.distance_to(event.pos) < Battle.PORTAL_RADIUS or next.distance_to(event.exit) < Battle.PORTAL_RADIUS
 			elif event.kind == "bumper":
-				obstacle = obstacle or pos.distance_to(event.pos) < Battle.BUMPER_RADIUS
+				obstacle = obstacle or next.distance_to(event.pos) < Battle.BUMPER_RADIUS
 			elif event.kind == "black_hole":
-				obstacle = obstacle or pos.distance_to(event.pos) < Battle.BLACK_HOLE_CORE
-		if obstacle:
+				obstacle = obstacle or next.distance_to(event.pos) < Battle.BLACK_HOLE_CORE
+		if obstacle or next.x < 0.0 or next.x > Battle.WIDTH:
 			break
-		if pos.x < 0.0 or pos.x > Battle.WIDTH or pos.y >= state.terrain[roundi(pos.x / Battle.CELL)]:
+		if next.y >= state.terrain[roundi(next.x / Battle.CELL)]:
 			break
-		foreground.draw_circle(pos, lerpf(2.8, 1.1, i / 14.0), INK, true, -1, true)
+		if weapon in [3, 9] and velocity.y >= 0.0:
+			break
+		var length: float = pos.distance_to(next)
+		while spacing_left <= length and length > 0.0:
+			var point: Vector2 = pos.lerp(next, spacing_left / length)
+			foreground.draw_circle(point, 2.0, Color(INK, maxf(0.22, 0.85 - travelled / 2200.0)), true, -1, true)
+			spacing_left += 22.0
+		spacing_left -= length
+		travelled += length
+		pos = next
 
 func _blast(flash: Dictionary) -> void:
 	var t: float = 1.0 - flash.life / 0.55
@@ -251,7 +264,7 @@ func _event_lights() -> void:
 			"drone":
 				_glow(event.pos, 42.0, Color(0.2, 0.45, 1.0, 0.6))
 			"supply":
-				_glow(event.pos, 35.0, Color(0.3, 1.0, 0.62, 0.2))
+				_glow(supply_positions[Vector2(event.pos.x, event.expires)], 35.0, Color(0.3, 1.0, 0.62, 0.2))
 	for hazard: Dictionary in state.hazards:
 		var p: Vector2 = Vector2(hazard.x, _surface_y(hazard.x) - 10.0)
 		_glow(p, 75.0 if hazard.kind == "fire" else 25.0, Color(1, 0.3, 0.1, 0.55) if hazard.kind == "fire" else Color(1, 0.15, 0.4, 0.6))
@@ -289,7 +302,7 @@ func _black_hole(point: Vector2) -> void:
 
 func _draw_events() -> void:
 	for event: Dictionary in state.events:
-		var p: Vector2 = event.pos
+		var p: Vector2 = supply_positions[Vector2(event.pos.x, event.expires)] if event.kind == "supply" else event.pos
 		match event.kind:
 			"black_hole":
 				_black_hole(p)

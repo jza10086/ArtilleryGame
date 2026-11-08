@@ -63,7 +63,7 @@ func setup(players: Array[Dictionary], seed_value: int, mode: String) -> void:
 				"ammo": [], "damage": 0, "eliminated": 0, "withdrawn": false})
 	state = {"mode": mode, "terrain": terrain, "tanks": tanks, "projectiles": [],
 		"impacts": [], "events": [], "hazards": [], "bursts": [], "notice": "", "notice_left": 0.0, "turn": 0, "active": -1, "phase": "aim", "time": TURN_SECONDS,
-		"wind": 0.0, "fuel": 90.0, "wait": 0.0, "winner": -2, "revision": 0}
+		"wind": Vector2.ZERO, "fuel": 90.0, "wait": 0.0, "winner": -2, "revision": 0}
 	for tank: Dictionary in tanks:
 		_seat_on_ground(tank)
 	_next_turn()
@@ -110,7 +110,7 @@ func _next_turn() -> void:
 	if state.tanks[state.active].hp <= 0:
 		_next_turn()
 		return
-	state.wind = rng.randf_range(-38.0, 38.0)
+	state.wind = Vector2.from_angle(rng.randf_range(0.0, TAU)) * rng.randf_range(0.0, 38.0)
 	state.wait = 0.0
 	# Sudden death bounds multiplayer rounds even when every player passes.
 	if state.mode != "training" and state.turn > state.tanks.size() * 8:
@@ -553,14 +553,14 @@ func _activate_drone(event: Dictionary, children: Array[Dictionary]) -> void:
 	for index: int in 3:
 		var duration: float = 0.8 + index * 0.15
 		var destination: Vector2 = Vector2(enemy.x + (index - 1) * 20.0, enemy.y)
-		var velocity: Vector2 = (destination - event.pos) / duration - Vector2(state.wind, GRAVITY) * duration * 0.5
+		var velocity: Vector2 = (destination - event.pos) / duration - (state.wind + Vector2(0.0, GRAVITY)) * duration * 0.5
 		var shot: Dictionary = _projectile(event.pos, velocity, 9, true)
 		shot.support = true
 		children.append(shot)
 	_notify("%s 激活无人机支援" % shooter.name)
 
 static func projectile_acceleration(snapshot: Dictionary, pos: Vector2) -> Vector2:
-	var force: Vector2 = Vector2(snapshot.wind, GRAVITY)
+	var force: Vector2 = snapshot.wind + Vector2(0.0, GRAVITY)
 	for event: Dictionary in snapshot.events:
 		if event.kind != "black_hole":
 			continue
@@ -620,3 +620,27 @@ func _tick_bursts(delta: float) -> void:
 func _notify(message: String) -> void:
 	state.notice = message
 	state.notice_left = 4.0
+
+## Fit a launch towards the cursor using a distance-based flight time. Correct the
+## initial velocity with the same 60 Hz gravity/wind/black-hole integration as play.
+## Clamping preserves legal shots for unreachable targets; portals/terrain still
+## interrupt the displayed path and are not solved through.
+static func aim_at(snapshot: Dictionary, tank: Dictionary, weapon: int, target: Vector2) -> Vector2:
+	var pivot: Vector2 = gun_pivot(tank)
+	var duration: float = clampf(pivot.distance_to(target) / 600.0, 0.12, 3.0)
+	var steps: int = maxi(1, roundi(duration * 60.0))
+	var dt: float = 1.0 / 60.0
+	duration = steps * dt
+	var velocity: Vector2 = (target - pivot) / duration - (snapshot.wind + Vector2(0.0, GRAVITY)) * (duration + dt) * 0.5
+	for correction: int in 4:
+		var degrees: float = clampf(rad_to_deg(atan2(-velocity.y, velocity.x)), 5.0, 175.0)
+		var pos: Vector2 = muzzle_position(tank, degrees)
+		var moving: Vector2 = velocity
+		for step_index: int in steps:
+			moving += projectile_acceleration(snapshot, pos) * dt
+			pos += moving * dt
+		velocity += (target - pos) / duration
+	var angle: float = clampf(rad_to_deg(atan2(-velocity.y, velocity.x)), 5.0, 175.0)
+	var speed_scale: float = 0.82 if weapon == 1 else 1.0
+	var power: float = clampf((velocity.length() / speed_scale - 270.0) / 6.0, 10.0, 100.0)
+	return Vector2(angle, power)

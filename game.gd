@@ -20,6 +20,14 @@ var snapshot_time: float = 0.0
 var last_turn: int = -1
 var selected: int = 0
 var pending_fire: bool = false
+var move_delay: float = 0.0
+var held_direction: int = 0
+var mouse_aiming: bool = false
+var display_time: float = 0.0
+@onready var top_status: VBoxContainer = %TopStatus
+@onready var countdown: Label = %Countdown
+@onready var wind_arrow: Polygon2D = %WindArrow
+@onready var wind_strength: Label = %WindStrength
 @onready var angle_slider: HSlider = %AngleSlider
 @onready var power_slider: HSlider = %PowerSlider
 @onready var angle_label: Label = %AngleLabel
@@ -52,8 +60,6 @@ func _ready() -> void:
 	add_to_group("party_minimal_hud")
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	left_button.pressed.connect(_send.bind("move", {"direction":-1}))
-	right_button.pressed.connect(_send.bind("move", {"direction":1}))
 	weapon_button.pressed.connect(func() -> void: arsenal.visible = not arsenal.visible)
 	fire_button.pressed.connect(_fire)
 	pass_button.pressed.connect(_send.bind("pass"))
@@ -85,8 +91,8 @@ func _ready() -> void:
 		return
 	briefing = gate_script.new()
 	var content: Dictionary = gate_script.read_content(get_script().resource_path.get_base_dir().path_join("manifest.json"), api)
-	content["controls"] = [{"binding": "鼠标 / 滑条", "description": "调整角度与力度，点击开火"},
-		{"binding": "A / D · 1–8", "description": "移动坦克 · 快选前八种弹药；全部 16 种从弹药库选择；Esc 打开菜单"}]
+	content["controls"] = [{"binding": "A / D · W / S · Q / E", "description": "按住移动 · 调整角度 · 减小 / 增大力度"},
+		{"binding": "鼠标左键长按", "description": "同时调整角度与力度，使弹道靠近指针；Space / 开火按钮发射；1–8 快选弹药；Esc 菜单"}]
 	briefing.configure(api, content)
 	briefing.play_requested.connect(_begin)
 	add_child(briefing)
@@ -112,14 +118,66 @@ func _physics_process(delta: float) -> void:
 		if snapshot_time >= 0.08 or battle.state.phase == "over":
 			snapshot_time = 0.0
 			_publish()
-	_sync_ui()
 
-func _process(_delta: float) -> void:
-	if not state.is_empty():
-		board.aim_angle = angle_slider.value
-		board.aim_power = power_slider.value
-		board.weapon = selected
-		board.show_aim = _can_act() or preview
+func _process(delta: float) -> void:
+	if state.is_empty():
+		return
+	if _can_act() and not arsenal.visible:
+		var move_axis: int = int(api.input.is_pressed(&"move_right") or right_button.is_pressed()) - int(api.input.is_pressed(&"move_left") or left_button.is_pressed())
+		var angle_axis: float = float(api.input.is_pressed(&"artillery_angle_up")) - float(api.input.is_pressed(&"artillery_angle_down"))
+		var power_axis: float = float(api.input.is_pressed(&"artillery_power_up")) - float(api.input.is_pressed(&"artillery_power_down"))
+		_apply_controls(delta, move_axis, angle_axis, power_axis)
+		if mouse_aiming and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+			_aim_mouse(board.get_local_mouse_position() * Vector2(1920, 1080) / board.size)
+		else:
+			mouse_aiming = false
+	else:
+		move_delay = 0.0
+		held_direction = 0
+		mouse_aiming = false
+	board.aim_angle = angle_slider.value
+	board.aim_power = power_slider.value
+	board.weapon = selected
+	board.show_aim = _can_act() or preview
+	_sync_labels()
+	if state.phase == "aim" and state.mode != "training":
+		display_time = maxf(0.0, display_time - delta)
+	_sync_status()
+
+## Repeat bounded logical movement commands; the host still owns fuel and collisions.
+func _apply_controls(delta: float, direction: int, angle_axis: float, power_axis: float) -> void:
+	if not _can_act() or arsenal.visible:
+		return
+	angle_slider.value += angle_axis * 40.0 * delta
+	power_slider.value += power_axis * 32.0 * delta
+	if direction == 0:
+		move_delay = 0.0
+		held_direction = 0
+		return
+	if direction != held_direction:
+		move_delay = 0.0
+		held_direction = direction
+	move_delay -= delta
+	if move_delay <= 0.0 and state.fuel > 0.0:
+		_send("move", {"direction": direction})
+		move_delay = 0.12
+
+func _aim_mouse(target: Vector2) -> void:
+	var tank: Dictionary = state.tanks[state.active].duplicate()
+	var model: Node2D = board.models[state.active]
+	tank.x = model.position.x
+	tank.y = model.position.y
+	tank.tilt = model.rotation
+	var aim: Vector2 = Battle.aim_at(state, tank, selected, target)
+	angle_slider.value = aim.x
+	power_slider.value = aim.y
+
+func _sync_status() -> void:
+	top_status.visible = preview or (running and not stopped and not finished)
+	countdown.text = "∞" if state.mode == "training" else (str(ceili(display_time)) if state.phase == "aim" else "—")
+	countdown.modulate = Color("#ff515b") if state.mode != "training" and state.phase == "aim" and display_time <= 10.0 else Color.WHITE
+	wind_arrow.rotation = state.wind.angle()
+	wind_strength.text = str(roundi(state.wind.length()))
 
 func _publish() -> void:
 	revision += 1
@@ -140,10 +198,14 @@ func _publish() -> void:
 
 func _receive_state(value: Dictionary) -> void:
 	state = value
+	display_time = state.time
 	board.update_state(state)
 	if last_turn != state.turn:
 		last_turn = state.turn
 		pending_fire = false
+		mouse_aiming = false
+		move_delay = 0.0
+		held_direction = 0
 		selected = 0
 		angle_slider.value = state.tanks[state.active].aim
 	if state.phase != "aim":
@@ -276,23 +338,30 @@ func party_stop(_reason: StringName) -> void:
 		api.players_changed.disconnect(_players_changed)
 	set_physics_process(false)
 
+func _input(event: InputEvent) -> void:
+	# Release must be observed even when a HUD control consumes the mouse event.
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+		mouse_aiming = false
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		mouse_aiming = false
+		held_direction = 0
+		move_delay = 0.0
+
 func _unhandled_input(event: InputEvent) -> void:
-	if not _can_act():
+	if not _can_act() or arsenal.visible:
 		return
-	if event is InputEventKey and event.pressed and not event.echo:
+	if api.input.event_matches(event, &"artillery_fire"):
+		_fire()
+		get_viewport().set_input_as_handled()
+	elif event is InputEventKey and event.pressed and not event.echo:
 		if event.physical_keycode >= KEY_1 and event.physical_keycode <= KEY_8:
 			_select(event.physical_keycode - KEY_1)
-		elif event.physical_keycode == KEY_A:
-			_send("move", {"direction": -1})
-		elif event.physical_keycode == KEY_D:
-			_send("move", {"direction": 1})
-		elif event.physical_keycode == KEY_SPACE:
-			_fire()
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		var p: Vector2 = event.position * Vector2(1920, 1080) / size
-		var tank: Dictionary = state.tanks[state.active]
-		var offset: Vector2 = p - Battle.gun_pivot(tank)
-		angle_slider.value = clampf(rad_to_deg(atan2(-offset.y, offset.x)), 5.0, 175.0)
+		mouse_aiming = true
+		_aim_mouse(board.get_local_mouse_position() * Vector2(1920, 1080) / board.size)
+		get_viewport().set_input_as_handled()
 
 func _fire() -> void:
 	_send("fire", {"weapon": selected, "angle": angle_slider.value, "power": power_slider.value})
@@ -318,6 +387,7 @@ func _sync_ui() -> void:
 	if state.is_empty():
 		return
 	_sync_labels()
+	_sync_status()
 	var can_act: bool = _can_act()
 	var tank: Dictionary = state.tanks[state.active]
 	for button: Button in [left_button, right_button, fire_button, pass_button, reset_button, finish_button]:
