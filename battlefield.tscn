@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://games/minigame/godot_party_default_artillery_game/battlefield.gd" id="script"]
+[ext_resource type="Curve" uid="uid://7ykrayrs44l1" path="res://games/minigame/godot_party_default_artillery_game/aim_taper.tres" id="2_86f1o"]
 
 [sub_resource type="Gradient" id="Glow"]
 offsets = PackedFloat32Array(0, 0.18, 0.46, 0.76, 1)
@@ -309,3 +310,13 @@ material = SubResource("Additive")
 
 [node name="Foreground" type="Node2D" parent="World"]
 z_index = 2
+
+[node name="AimCurve" type="Line2D" parent="World" unique_id=1753117064]
+unique_name_in_owner = true
+z_index = 2
+width = 5.0
+width_curve = ExtResource("2_86f1o")
+default_color = Color(0.894, 0.98, 1, 0.78)
+joint_mode = 2
+begin_cap_mode = 2
+antialiased = true

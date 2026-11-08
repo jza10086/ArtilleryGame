@@ -10,6 +10,7 @@ const TRACK_HALF: float = 19.0
 const TRACK_BOTTOM: float = 12.0
 const GRAVITY: float = 430.0
 const TURN_SECONDS: float = 35.0
+const AIM_STEPS: int = 36
 const BLACK_HOLE_CORE: float = 18.0
 const PORTAL_RADIUS: float = 30.0
 const BUMPER_RADIUS: float = 34.0
@@ -621,25 +622,48 @@ func _notify(message: String) -> void:
 	state.notice = message
 	state.notice_left = 4.0
 
-## Fit a launch towards the cursor using a distance-based flight time. Correct the
-## initial velocity with the same 60 Hz gravity/wind/black-hole integration as play.
-## Clamping preserves legal shots for unreachable targets; portals/terrain still
-## interrupt the displayed path and are not solved through.
+## Shared visible preview: only the first 0.6 seconds, cut at obstacles or splitting.
+## Returning the muzzle alone is valid when the first step is already obstructed.
+static func aim_path(snapshot: Dictionary, pos: Vector2, velocity: Vector2, weapon: int, steps: int = AIM_STEPS) -> PackedVector2Array:
+	var path: PackedVector2Array = PackedVector2Array([pos])
+	for i: int in mini(steps, AIM_STEPS):
+		velocity += projectile_acceleration(snapshot, pos) / 60.0
+		var next: Vector2 = pos + velocity / 60.0
+		var obstacle: bool = false
+		for event: Dictionary in snapshot.events:
+			if event.kind == "portal":
+				obstacle = obstacle or next.distance_to(event.pos) < PORTAL_RADIUS or next.distance_to(event.exit) < PORTAL_RADIUS
+			elif event.kind == "bumper":
+				obstacle = obstacle or next.distance_to(event.pos) < BUMPER_RADIUS
+			elif event.kind == "black_hole":
+				obstacle = obstacle or next.distance_to(event.pos) < BLACK_HOLE_CORE
+		if obstacle or next.x < 0.0 or next.x > WIDTH:
+			break
+		if next.y >= snapshot.terrain[roundi(next.x / CELL)]:
+			break
+		if weapon in [3, 9] and velocity.y >= 0.0:
+			break
+		path.append(next)
+		pos = next
+	return path
+
+## Aim through nearby cursor positions. Beyond the visible preview, solve against
+## its endpoint tangent, not the hidden ballistic arc. Both branches meet at 0.6 s.
+## Legal elevation/power limits still apply to unreachable or obstructed targets.
 static func aim_at(snapshot: Dictionary, tank: Dictionary, weapon: int, target: Vector2) -> Vector2:
 	var pivot: Vector2 = gun_pivot(tank)
-	var duration: float = clampf(pivot.distance_to(target) / 600.0, 0.12, 3.0)
-	var steps: int = maxi(1, roundi(duration * 60.0))
-	var dt: float = 1.0 / 60.0
-	duration = steps * dt
-	var velocity: Vector2 = (target - pivot) / duration - (snapshot.wind + Vector2(0.0, GRAVITY)) * (duration + dt) * 0.5
-	for correction: int in 4:
+	var steps: int = maxi(1, roundi(clampf(pivot.distance_to(target) / 600.0, 0.12, 3.0) * 60.0))
+	var duration: float = steps / 60.0
+	var visible_duration: float = mini(steps, AIM_STEPS) / 60.0
+	var acceleration: Vector2 = snapshot.wind + Vector2(0.0, GRAVITY)
+	var velocity: Vector2 = (target - pivot - acceleration * visible_duration * (duration - (visible_duration - 1.0 / 60.0) * 0.5)) / duration
+	for correction: int in 6:
 		var degrees: float = clampf(rad_to_deg(atan2(-velocity.y, velocity.x)), 5.0, 175.0)
-		var pos: Vector2 = muzzle_position(tank, degrees)
-		var moving: Vector2 = velocity
-		for step_index: int in steps:
-			moving += projectile_acceleration(snapshot, pos) * dt
-			pos += moving * dt
-		velocity += (target - pos) / duration
+		var muzzle: Vector2 = muzzle_position(tank, degrees)
+		var path: PackedVector2Array = aim_path(snapshot, muzzle, velocity, weapon, steps)
+		var tangent: Vector2 = (path[-1] - path[-2]) * 60.0 if path.size() > 1 else velocity
+		var projection: Vector2 = path[-1] + tangent * (duration - (path.size() - 1) / 60.0)
+		velocity += (target - projection) / duration
 	var angle: float = clampf(rad_to_deg(atan2(-velocity.y, velocity.x)), 5.0, 175.0)
 	var speed_scale: float = 0.82 if weapon == 1 else 1.0
 	var power: float = clampf((velocity.length() / speed_scale - 270.0) / 6.0, 10.0, 100.0)

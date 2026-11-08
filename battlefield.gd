@@ -21,6 +21,7 @@ var font: Font
 @onready var terrain: Node2D = $World/Terrain
 @onready var foreground: Node2D = $World/Foreground
 @onready var light_layer: Node2D = $World/LightLayer
+@onready var aim_curve: Line2D = %AimCurve
 @export var falloff: GradientTexture2D
 var models: Array[TankModel] = []
 var supply_positions: Dictionary[Vector2, Vector2] = {}
@@ -56,6 +57,9 @@ func _process(delta: float) -> void:
 		if event.kind == "supply":
 			var key: Vector2 = Vector2(event.pos.x, event.expires)
 			supply_positions[key] = supply_positions[key].lerp(event.pos, 1.0 - exp(-delta * 24.0))
+	aim_curve.visible = show_aim and state.phase == "aim"
+	if aim_curve.visible:
+		_update_aim()
 	light_layer.queue_redraw()
 	foreground.queue_redraw()
 
@@ -147,8 +151,6 @@ func _draw_foreground() -> void:
 	_draw_events()
 	for i: int in state.tanks.size():
 		_tank_label(i)
-	if show_aim and state.phase == "aim":
-		_aim()
 	for shot: Dictionary in state.projectiles:
 		var tint: Color = Color("#8cffe0") if shot.support else Color(Battle.WEAPONS[shot.weapon].color)
 		for i: int in range(1, shot.trail.size()):
@@ -186,39 +188,12 @@ func _tank_label(index: int) -> void:
 		var marker: Vector2 = p + Vector2(0, -63 if state.mode == "training" else -89)
 		foreground.draw_colored_polygon(PackedVector2Array([marker - Vector2(6, 0), marker + Vector2(6, 0), marker + Vector2(0, 7)]), INK)
 
-## Integrate at the simulation rate, then place moving dots by arc length.
-## Their spacing and motion remain continuous at any render frame rate.
-func _aim() -> void:
+## A native Line2D supplies smooth joins and an editable taper from barrel to tip.
+func _update_aim() -> void:
 	var direction: Vector2 = Vector2.from_angle(-deg_to_rad(aim_angle))
 	var pos: Vector2 = world.to_local(models[state.active].muzzle.global_position)
 	var velocity: Vector2 = direction * (270.0 + aim_power * 6.0) * (0.82 if weapon == 1 else 1.0)
-	var spacing_left: float = fposmod(effect_time * 28.0, 22.0)
-	var travelled: float = 0.0
-	for i: int in 240:
-		velocity += Battle.projectile_acceleration(state, pos) / 60.0
-		var next: Vector2 = pos + velocity / 60.0
-		var obstacle: bool = false
-		for event: Dictionary in state.events:
-			if event.kind == "portal":
-				obstacle = obstacle or next.distance_to(event.pos) < Battle.PORTAL_RADIUS or next.distance_to(event.exit) < Battle.PORTAL_RADIUS
-			elif event.kind == "bumper":
-				obstacle = obstacle or next.distance_to(event.pos) < Battle.BUMPER_RADIUS
-			elif event.kind == "black_hole":
-				obstacle = obstacle or next.distance_to(event.pos) < Battle.BLACK_HOLE_CORE
-		if obstacle or next.x < 0.0 or next.x > Battle.WIDTH:
-			break
-		if next.y >= state.terrain[roundi(next.x / Battle.CELL)]:
-			break
-		if weapon in [3, 9] and velocity.y >= 0.0:
-			break
-		var length: float = pos.distance_to(next)
-		while spacing_left <= length and length > 0.0:
-			var point: Vector2 = pos.lerp(next, spacing_left / length)
-			foreground.draw_circle(point, 2.0, Color(INK, maxf(0.22, 0.85 - travelled / 2200.0)), true, -1, true)
-			spacing_left += 22.0
-		spacing_left -= length
-		travelled += length
-		pos = next
+	aim_curve.points = Battle.aim_path(state, pos, velocity, weapon)
 
 func _blast(flash: Dictionary) -> void:
 	var t: float = 1.0 - flash.life / 0.55
