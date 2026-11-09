@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="PartyAudioCue" format=3 uid="uid://d2yqr46ux4wrx"]
+
+[ext_resource type="Script" uid="uid://b8e8ifodc3mml" path="res://games/protocols/godot_party_default_protocol/audio/audio_cue.gd" id="1_o4re0"]
+[ext_resource type="AudioStream" uid="uid://cflqy37dn3q8b" path="res://games/minigame/godot_party_default_artillery_game/assets/audio/explosions/explosion4.ogg" id="2_qrd43"]
+
+[resource]
+script = ExtResource("1_o4re0")
+stream = ExtResource("2_qrd43")
+volume_db = -10.0
+pitch_scale = 0.8
+loop_mode = 2.0
+cooldown = 0.025

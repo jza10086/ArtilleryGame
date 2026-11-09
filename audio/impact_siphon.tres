@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="PartyAudioCue" format=3 uid="uid://dwj2cpe52t57t"]
+
+[ext_resource type="Script" uid="uid://b8e8ifodc3mml" path="res://games/protocols/godot_party_default_protocol/audio/audio_cue.gd" id="1_a0y8m"]
+[ext_resource type="AudioStream" uid="uid://dba0gdichvo2m" path="res://games/minigame/godot_party_default_artillery_game/assets/audio/kenney/slime_000.ogg" id="2_mnggt"]
+
+[resource]
+script = ExtResource("1_a0y8m")
+stream = ExtResource("2_mnggt")
+volume_db = -10.0
+loop_mode = 2.0
+cooldown = 0.025

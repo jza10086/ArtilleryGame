@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="PartyAudioCue" format=3 uid="uid://bd0mt373fms7p"]
+
+[ext_resource type="Script" uid="uid://b8e8ifodc3mml" path="res://games/protocols/godot_party_default_protocol/audio/audio_cue.gd" id="1_vix27"]
+[ext_resource type="AudioStream" uid="uid://c6ujkl82ga7y5" path="res://games/minigame/godot_party_default_artillery_game/assets/audio/kenney/impactMetal_000.ogg" id="2_uxcth"]
+
+[resource]
+script = ExtResource("1_vix27")
+stream = ExtResource("2_uxcth")
+volume_db = -11.0
+pitch_scale = 0.75
+loop_mode = 2.0
+priority = 20.0
+max_instances = 2.0

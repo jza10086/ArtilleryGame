@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="PartyAudioCue" format=3 uid="uid://dxd386h385eaa"]
+
+[ext_resource type="Script" uid="uid://b8e8ifodc3mml" path="res://games/protocols/godot_party_default_protocol/audio/audio_cue.gd" id="1_nr6qh"]
+[ext_resource type="AudioStream" uid="uid://cuueb48wn88qf" path="res://games/minigame/godot_party_default_artillery_game/assets/audio/kenney/explosionCrunch_004.ogg" id="2_ixaix"]
+
+[resource]
+script = ExtResource("1_nr6qh")
+stream = ExtResource("2_ixaix")
+volume_db = -12.0
+pitch_scale = 1.8
+loop_mode = 2.0
+priority = 20.0
+max_instances = 2.0

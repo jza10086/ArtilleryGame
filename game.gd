@@ -1,5 +1,6 @@
 extends Control
 ## Party scope integration. Only the host simulates; clients send logical turn actions.
+const CombatAudio: Script = preload("res://games/minigame/godot_party_default_artillery_game/combat_audio.gd")
 const Battle: Script = preload("res://games/minigame/godot_party_default_artillery_game/battle.gd")
 const Battlefield: Script = preload("res://games/minigame/godot_party_default_artillery_game/battlefield.gd")
 const ACTION: StringName = &"artillery/action"
@@ -46,8 +47,13 @@ var weapon_buttons: Array[Button] = []
 var briefing: Control
 var settlement: Control
 var final_result: Dictionary = {}
+@onready var combat_audio: CombatAudio = %CombatAudio
+
+func godot_party_audio_target() -> PartyGameAudio:
+	return %CombatAudio.get_node("GameAudio")
 
 func party_setup(value: PartyAPI, config: Dictionary) -> void:
+	%CombatAudio.get_node("GameAudio").prepare_scope()
 	api = value
 	request = config.duplicate(true)
 	api.net.message_received.connect(_message)
@@ -70,6 +76,7 @@ func _ready() -> void:
 		weapon_buttons[index].pressed.connect(_select.bind(index))
 	if api == null:
 		preview = true
+		combat_audio.start()
 		var sample: Array[Dictionary] = [
 			{"player_id": "preview", "name": "试射坦克", "color": "71ddff"}]
 		battle.setup(sample, 5930, "training")
@@ -104,6 +111,7 @@ func party_start() -> void:
 	briefing.transport_started()
 
 func _begin() -> void:
+	combat_audio.start()
 	running = true
 	_sync_ui()
 	if api.is_host():
@@ -200,6 +208,13 @@ func _receive_state(value: Dictionary) -> void:
 	state = value
 	display_time = state.time
 	board.update_state(state)
+	var audio_error: Error = combat_audio.update_state(state)
+	if audio_error != OK:
+		if preview:
+			push_error("Artillery audio: " + error_string(audio_error))
+		else:
+			_fail("audio_playback_failed", error_string(audio_error))
+		return
 	if last_turn != state.turn:
 		last_turn = state.turn
 		pending_fire = false
@@ -301,6 +316,7 @@ func _open_result(result: Dictionary) -> void:
 		return
 	finished = true
 	running = false
+	combat_audio.finish()
 	final_result = result.duplicate(true)
 	hud.hide()
 	arsenal.hide()
@@ -321,11 +337,13 @@ func _submit() -> void:
 		_fail("result_rejected", error_string(error))
 
 func _fail(code: String, message: String) -> void:
+	combat_audio.close()
 	stopped = true
 	running = false
 	api.fail(code, message)
 
 func party_stop(_reason: StringName) -> void:
+	combat_audio.close()
 	stopped = true
 	running = false
 	if briefing != null:

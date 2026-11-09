@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="PartyAudioCue" format=3 uid="uid://dx6566rgh7yjm"]
+
+[ext_resource type="Script" uid="uid://b8e8ifodc3mml" path="res://games/protocols/godot_party_default_protocol/audio/audio_cue.gd" id="1_xq4dx"]
+[ext_resource type="AudioStream" uid="uid://cguigrwnklqxm" path="res://games/minigame/godot_party_default_artillery_game/assets/audio/kenney/lowFrequency_explosion_001.ogg" id="2_fglfs"]
+
+[resource]
+script = ExtResource("1_xq4dx")
+stream = ExtResource("2_fglfs")
+volume_db = -13.0
+pitch_scale = 1.1
+loop_mode = 2.0
+priority = 20.0
+max_instances = 2.0

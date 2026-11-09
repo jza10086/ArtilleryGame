@@ -2,6 +2,36 @@
 
 [ext_resource type="Script" uid="uid://bb8fxkpjr4it" path="res://games/minigame/godot_party_default_artillery_game/game.gd" id="1_hqb37"]
 [ext_resource type="Theme" uid="uid://uwnrdgk1k5uq" path="res://core/ui/ambient_reveal/ambient_theme.tres" id="2_8nvs8"]
+[ext_resource type="Script" uid="uid://qb4bypwgffjc" path="res://games/minigame/godot_party_default_artillery_game/combat_audio.gd" id="4_p2hp6"]
+[ext_resource type="Resource" uid="uid://cp8au7ssgavbs" path="res://games/minigame/godot_party_default_artillery_game/audio/engine.tres" id="5_ii4du"]
+[ext_resource type="Resource" uid="uid://sdwfca2hk7c5" path="res://games/minigame/godot_party_default_artillery_game/audio/fire_cannon.tres" id="6_s6du4"]
+[ext_resource type="Resource" uid="uid://dx6566rgh7yjm" path="res://games/minigame/godot_party_default_artillery_game/audio/fire_heavy.tres" id="7_5b5ls"]
+[ext_resource type="Resource" uid="uid://dgksdr5cedwkm" path="res://games/minigame/godot_party_default_artillery_game/audio/fire_scatter.tres" id="8_pef78"]
+[ext_resource type="Resource" uid="uid://cwpl6u7ivj581" path="res://games/minigame/godot_party_default_artillery_game/audio/fire_plasma.tres" id="9_jx8e4"]
+[ext_resource type="Resource" uid="uid://bd0mt373fms7p" path="res://games/minigame/godot_party_default_artillery_game/audio/fire_mine.tres" id="10_1sxwt"]
+[ext_resource type="Resource" uid="uid://c6ftt7jgggked" path="res://games/minigame/godot_party_default_artillery_game/audio/fire_energy.tres" id="11_gsslv"]
+[ext_resource type="Resource" uid="uid://cqlbi5ypxuvos" path="res://games/minigame/godot_party_default_artillery_game/audio/impact_standard.tres" id="12_57x8p"]
+[ext_resource type="Resource" uid="uid://d3ig4tastk5o8" path="res://games/minigame/godot_party_default_artillery_game/audio/impact_heavy.tres" id="13_pn6er"]
+[ext_resource type="Resource" uid="uid://bnk3mkyjabshx" path="res://games/minigame/godot_party_default_artillery_game/audio/impact_scatter.tres" id="14_pts6j"]
+[ext_resource type="Resource" uid="uid://d2mulqckur0yf" path="res://games/minigame/godot_party_default_artillery_game/audio/impact_cluster.tres" id="15_k0do7"]
+[ext_resource type="Resource" uid="uid://cq2s58qd40xq" path="res://games/minigame/godot_party_default_artillery_game/audio/impact_bounce.tres" id="16_08kt6"]
+[ext_resource type="Resource" uid="uid://bxomdm1aytkac" path="res://games/minigame/godot_party_default_artillery_game/audio/impact_drill.tres" id="17_ryocn"]
+[ext_resource type="Resource" uid="uid://sby8j2yvtdpp" path="res://games/minigame/godot_party_default_artillery_game/audio/impact_build.tres" id="18_3jum3"]
+[ext_resource type="Resource" uid="uid://dwj2cpe52t57t" path="res://games/minigame/godot_party_default_artillery_game/audio/impact_siphon.tres" id="19_n3g05"]
+[ext_resource type="Resource" uid="uid://d2yqr46ux4wrx" path="res://games/minigame/godot_party_default_artillery_game/audio/impact_roller.tres" id="20_d6qko"]
+[ext_resource type="Resource" uid="uid://bji32ey0yv72g" path="res://games/minigame/godot_party_default_artillery_game/audio/impact_rain.tres" id="21_rfg1k"]
+[ext_resource type="Resource" uid="uid://chahfg1oyljqi" path="res://games/minigame/godot_party_default_artillery_game/audio/impact_fire.tres" id="22_4uqep"]
+[ext_resource type="Resource" uid="uid://da2rrb3imn53a" path="res://games/minigame/godot_party_default_artillery_game/audio/impact_emp.tres" id="23_0knu8"]
+[ext_resource type="Resource" uid="uid://mh6eptw662ev" path="res://games/minigame/godot_party_default_artillery_game/audio/impact_teleport.tres" id="24_gbpne"]
+[ext_resource type="Resource" uid="uid://da0ovf60uttii" path="res://games/minigame/godot_party_default_artillery_game/audio/impact_chain.tres" id="25_jv237"]
+[ext_resource type="Resource" uid="uid://cqg1whwplmbff" path="res://games/minigame/godot_party_default_artillery_game/audio/impact_mine.tres" id="26_bdosc"]
+[ext_resource type="Resource" uid="uid://cxrttwg8qfcrs" path="res://games/minigame/godot_party_default_artillery_game/audio/impact_shield.tres" id="27_rdf2b"]
+[ext_resource type="Resource" uid="uid://dxd386h385eaa" path="res://games/minigame/godot_party_default_artillery_game/audio/cluster_split.tres" id="28_bowx8"]
+[ext_resource type="Resource" uid="uid://bdapxlml3slkp" path="res://games/minigame/godot_party_default_artillery_game/audio/rain_split.tres" id="29_jdqjv"]
+[ext_resource type="Resource" uid="uid://b4cya7gqnqnhh" path="res://games/minigame/godot_party_default_artillery_game/audio/bounce.tres" id="30_ewb6d"]
+[ext_resource type="Resource" uid="uid://bcalctyjdagjg" path="res://games/minigame/godot_party_default_artillery_game/audio/drill.tres" id="31_gc0fu"]
+[ext_resource type="Resource" uid="uid://bknidjxx2inqv" path="res://games/minigame/godot_party_default_artillery_game/audio/mine_arm.tres" id="32_tb0gd"]
+[ext_resource type="PackedScene" uid="uid://dkvs0ys861xvk" path="res://games/protocols/godot_party_default_protocol/audio/game_audio.tscn" id="33_61nbx"]
 [ext_resource type="PackedScene" path="res://games/minigame/godot_party_default_artillery_game/battlefield.tscn" id="board"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_s44do"]
@@ -500,3 +530,19 @@ layout_mode = 3
 anchors_preset = 15
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="CombatAudio" type="Node" parent="." unique_id=639058327]
+unique_name_in_owner = true
+script = ExtResource("4_p2hp6")
+engine_cue = ExtResource("5_ii4du")
+fire_cues = [ExtResource("6_s6du4"), ExtResource("7_5b5ls"), ExtResource("8_pef78"), ExtResource("8_pef78"), ExtResource("6_s6du4"), ExtResource("7_5b5ls"), ExtResource("7_5b5ls"), ExtResource("9_jx8e4"), ExtResource("10_1sxwt"), ExtResource("8_pef78"), ExtResource("11_gsslv"), ExtResource("11_gsslv"), ExtResource("9_jx8e4"), ExtResource("7_5b5ls"), ExtResource("10_1sxwt"), ExtResource("9_jx8e4")]
+impact_cues = [ExtResource("12_57x8p"), ExtResource("13_pn6er"), ExtResource("14_pts6j"), ExtResource("15_k0do7"), ExtResource("16_08kt6"), ExtResource("17_ryocn"), ExtResource("18_3jum3"), ExtResource("19_n3g05"), ExtResource("20_d6qko"), ExtResource("21_rfg1k"), ExtResource("22_4uqep"), ExtResource("23_0knu8"), ExtResource("24_gbpne"), ExtResource("25_jv237"), ExtResource("26_bdosc"), ExtResource("27_rdf2b")]
+cluster_split = ExtResource("28_bowx8")
+rain_split = ExtResource("29_jdqjv")
+bounce_cue = ExtResource("30_ewb6d")
+drill_cue = ExtResource("31_gc0fu")
+mine_arm = ExtResource("32_tb0gd")
+
+[node name="Engine" type="AudioStreamPlayer" parent="CombatAudio" unique_id=59776409]
+
+[node name="GameAudio" type="Node" parent="CombatAudio" unique_id=1528834399 instance=ExtResource("33_61nbx")]

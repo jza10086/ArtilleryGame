@@ -62,3 +62,5 @@ GodotParty 原版协议的 1–8 人回合制炮击游戏。从正式主菜单�
 美术与玩法概念参考 [ShellShock Live 官方介绍](https://www.shellshocklive.com/)，未使用其素材或源码。坦克使用 [Kenney Tanks](https://kenney.nl/assets/tanks) 的 CC0 侧视素材，保留原始高清 PNG，以 Sprite2D 区域拆分车体和炮塔，独立绑定炮管。素材与许可位于 `assets/kenney_tanks/`；战场和事件光效由 Godot 绘制。原型中的字体许可仍见 `prototype/assets/FONT_LICENSE.txt`。
 
 F6 运行 `game.tscn` 可查看 1920×1080 构图；实际试射从大厅选择单人测试。验证命令与范围见 [TESTING.md](TESTING.md)。
+
+音效沿用空白模板的 PartyGameAudio / PartyAudioCue：成功移动时播放连续发动机，开炮与 16 种命中音色按主机事件同步，子母弹分裂、子弹爆炸、跳弹、钻地、布雷与连锁震爆独立发声。音量沿用协议 SFX 设置，退出关闭作用域。音效可在 game.tscn 的 CombatAudio 节点和 audio/*.tres 中替换与调参；素材商用许可与逐文件来源见 [assets/audio/SOURCES.md](assets/audio/SOURCES.md)。

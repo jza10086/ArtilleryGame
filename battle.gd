@@ -36,6 +36,7 @@ var state: Dictionary = {}
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _impact_id: int = 0
 var _feedback_id: int = 0
+var _audio_id: int = 0
 
 func setup(players: Array[Dictionary], seed_value: int, mode: String) -> void:
 	rng.seed = seed_value
@@ -64,7 +65,7 @@ func setup(players: Array[Dictionary], seed_value: int, mode: String) -> void:
 				"x": x, "aim": 45.0 if x < WIDTH * 0.5 else 135.0, "shots": 0, "hp": 200, "shield": 0, "jammed": false, "team": i + 1,
 				"ammo": [], "damage": 0, "eliminated": 0, "withdrawn": false})
 	state = {"mode": mode, "terrain": terrain, "terrain_origin": terrain.duplicate(), "tanks": tanks, "projectiles": [],
-		"impacts": [], "health_feedback": [], "events": [], "hazards": [], "bursts": [], "notice": "", "notice_left": 0.0, "turn": 0, "active": -1, "phase": "aim", "time": TURN_SECONDS,
+		"impacts": [], "health_feedback": [], "audio_events": [], "events": [], "hazards": [], "bursts": [], "notice": "", "notice_left": 0.0, "turn": 0, "active": -1, "phase": "aim", "time": TURN_SECONDS,
 		"wind": Vector2.ZERO, "fuel": 90.0, "wait": 0.0, "winner": -2, "revision": 0}
 	for tank: Dictionary in tanks:
 		_seat_on_ground(tank)
@@ -140,6 +141,8 @@ func command(player_id: String, turn_number: int, action: String, values: Dictio
 				if other.id != tank.id and other.hp > 0 and absf(other.x - x) < 42.0:
 					return false
 			state.fuel -= absf(x - float(tank.x))
+			if x != tank.x:
+				_sound("move")
 			tank.x = x
 			_seat_on_ground(tank)
 			_collect_supplies(state.active)
@@ -154,6 +157,7 @@ func command(player_id: String, turn_number: int, action: String, values: Dictio
 				tank.ammo[weapon] -= 1
 			tank.aim = float(values.angle)
 			tank.shots += 1
+			_sound("fire", weapon)
 			var angle: float = deg_to_rad(tank.aim)
 			var speed: float = (270.0 + float(values.power) * 6.0) * (0.82 if weapon == 1 else 1.0)
 			var direction: Vector2 = Vector2(cos(angle), -sin(angle))
@@ -175,6 +179,7 @@ func command(player_id: String, turn_number: int, action: String, values: Dictio
 			var previous_turn: int = state.turn
 			setup([player], rng.randi(), "training")
 			state.turn = previous_turn + 1
+			_sound("reset")
 			for event: Dictionary in state.events:
 				event.expires += previous_turn
 		"finish":
@@ -235,6 +240,7 @@ func _fly(delta: float) -> void:
 			continue
 		shot.vel += projectile_acceleration(state, shot.pos) * delta
 		if shot.weapon in [3, 9] and not shot.child and previous_y < 0.0 and shot.vel.y >= 0.0:
+			_sound("split", shot.weapon)
 			for spread: int in range(-2 if shot.weapon == 3 else -3, 3 if shot.weapon == 3 else 4):
 				children.append(_projectile(shot.pos,
 					Vector2(shot.vel.x * (1.0 if shot.weapon == 3 else 0.3) + spread * 100.0, 75.0 if shot.weapon == 3 else 260.0),
@@ -265,11 +271,13 @@ func _fly(delta: float) -> void:
 				shot.vel = shot.vel.bounce(normal) * 0.68
 				shot.pos = Vector2(next.x, ground(next.x) - 3.0)
 				shot.bounces += 1
+				_sound("bounce", shot.weapon)
 				break
 			shot.pos = next
 			if terrain_hit:
 				if shot.weapon == 5 and not shot.drilling:
 					shot.drilling = true
+					_sound("drill", shot.weapon)
 					shot.depth = 0.0
 				if shot.drilling:
 					shot.depth += displacement.length() / float(steps)
@@ -302,6 +310,7 @@ func _resolve_hit(shot: Dictionary) -> void:
 		state.hazards.append({"kind": "fire" if weapon == 10 else "mine", "x": shot.pos.x,
 			"owner": state.active, "boost": shot.boost, "expires": state.turn + (3 if weapon == 10 else 6)})
 		if weapon == 14:
+			_sound("arm", weapon)
 			return
 	if weapon == 13:
 		for index: int in 5:
@@ -313,6 +322,7 @@ func _resolve_hit(shot: Dictionary) -> void:
 func _blast(pos: Vector2, weapon: int, owner: int = -1, damage_scale: float = 1.0) -> void:
 	var definition: Dictionary = WEAPONS[weapon]
 	var radius: float = definition.radius
+	_sound("impact", weapon)
 	_impact_id += 1
 	state.impacts.append({"id": _impact_id, "pos": pos, "radius": radius, "weapon": weapon})
 	if state.impacts.size() > 32:
@@ -397,6 +407,13 @@ func _heal(tank: Dictionary, amount: int) -> void:
 	var before: int = tank.hp
 	tank.hp = mini(200, before + amount)
 	_record_health_feedback(tank, int(tank.hp) - before)
+
+## Separate flight stages survive snapshot intervals and never depend on client input.
+func _sound(kind: String, weapon: int = 0) -> void:
+	_audio_id += 1
+	state.audio_events.append({"id": _audio_id, "kind": kind, "weapon": weapon})
+	if state.audio_events.size() > 96:
+		state.audio_events.pop_front()
 
 func _record_health_feedback(tank: Dictionary, amount: int) -> void:
 	if amount == 0:
