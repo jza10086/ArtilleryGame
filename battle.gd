@@ -35,6 +35,7 @@ const WEAPONS: Array[Dictionary] = [
 var state: Dictionary = {}
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _impact_id: int = 0
+var _feedback_id: int = 0
 
 func setup(players: Array[Dictionary], seed_value: int, mode: String) -> void:
 	rng.seed = seed_value
@@ -63,7 +64,7 @@ func setup(players: Array[Dictionary], seed_value: int, mode: String) -> void:
 				"x": x, "aim": 45.0 if x < WIDTH * 0.5 else 135.0, "shots": 0, "hp": 200, "shield": 0, "jammed": false, "team": i + 1,
 				"ammo": [], "damage": 0, "eliminated": 0, "withdrawn": false})
 	state = {"mode": mode, "terrain": terrain, "terrain_origin": terrain.duplicate(), "tanks": tanks, "projectiles": [],
-		"impacts": [], "events": [], "hazards": [], "bursts": [], "notice": "", "notice_left": 0.0, "turn": 0, "active": -1, "phase": "aim", "time": TURN_SECONDS,
+		"impacts": [], "health_feedback": [], "events": [], "hazards": [], "bursts": [], "notice": "", "notice_left": 0.0, "turn": 0, "active": -1, "phase": "aim", "time": TURN_SECONDS,
 		"wind": Vector2.ZERO, "fuel": 90.0, "wait": 0.0, "winner": -2, "revision": 0}
 	for tank: Dictionary in tanks:
 		_seat_on_ground(tank)
@@ -351,7 +352,7 @@ func _blast(pos: Vector2, weapon: int, owner: int = -1, damage_scale: float = 1.
 				total += actual
 	shooter.damage += total
 	if weapon == 7 and shooter.hp > 0:
-		shooter.hp = mini(200, int(shooter.hp) + roundi(total * 0.55))
+		_heal(shooter, roundi(total * 0.55))
 	if weapon in [11, 15]:
 		return
 	var first: int = maxi(0, floori((pos.x - radius) / CELL))
@@ -382,11 +383,30 @@ func _hurt(tank: Dictionary, amount: int) -> void:
 		return
 	if tank.hp <= 0 or amount <= 0:
 		return
+	var before: int = tank.hp + tank.shield
 	var absorbed: int = mini(tank.shield, amount)
 	tank.shield -= absorbed
 	tank.hp = maxi(0, int(tank.hp) - amount + absorbed)
+	if not tank.withdrawn:
+		_record_health_feedback(tank, int(tank.hp) + int(tank.shield) - before)
 	if tank.hp == 0:
 		tank.eliminated = state.turn
+
+## Record actual healing separately from damage, even when both happen between snapshots.
+func _heal(tank: Dictionary, amount: int) -> void:
+	var before: int = tank.hp
+	tank.hp = mini(200, before + amount)
+	_record_health_feedback(tank, int(tank.hp) - before)
+
+func _record_health_feedback(tank: Dictionary, amount: int) -> void:
+	if amount == 0:
+		return
+	_feedback_id += 1
+	state.health_feedback.append({"id": _feedback_id, "tank": tank.id,
+		"pos": Vector2(tank.x, tank.y), "amount": amount})
+	# Retain recent events across snapshots; IDs remain monotonic through training resets.
+	if state.health_feedback.size() > 64:
+		state.health_feedback.pop_front()
 
 func withdraw(player_id: String) -> void:
 	for tank: Dictionary in state.tanks:
@@ -591,7 +611,7 @@ func _claim_supply(event: Dictionary, index: int) -> void:
 	if tank.hp <= 0:
 		return
 	state.events.erase(event)
-	tank.hp = mini(200, int(tank.hp) + 35)
+	_heal(tank, 35)
 	var names: Array[String] = []
 	for draw: int in 2:
 		var weapon: int = rng.randi_range(1, WEAPONS.size() - 1)

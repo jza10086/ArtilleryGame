@@ -28,6 +28,54 @@ var font: Font
 @export var falloff: GradientTexture2D
 var models: Array[TankModel] = []
 var supply_positions: Dictionary[Vector2, Vector2] = {}
+var last_health_feedback: int = 0
+var health_numbers: Array[Dictionary] = []
+@export_group("Health feedback")
+@export_range(0.05, 1.0) var number_enter_seconds: float = 0.24
+@export_range(0.0, 2.0) var number_hold_seconds: float = 0.75
+@export_range(0.05, 1.0) var number_exit_seconds: float = 0.42
+
+## Keep animation local to rendering; host event IDs prevent duplicate snapshot feedback.
+func _receive_health_feedback() -> void:
+	var grouped: Dictionary[String, Dictionary] = {}
+	for event: Dictionary in state.health_feedback:
+		if event.id <= last_health_feedback:
+			continue
+		last_health_feedback = event.id
+		var key: String = "%s:%s" % [event.tank, event.amount > 0]
+		if grouped.has(key):
+			grouped[key].amount += event.amount
+		else:
+			grouped[key] = event.duplicate()
+	for event: Dictionary in grouped.values():
+		var origin: Vector2 = event.pos + Vector2(0, -94)
+		for number: Dictionary in health_numbers:
+			if number.tank == event.tank:
+				origin.y = minf(origin.y, number.pos.y - 38.0)
+		health_numbers.append({"tank": event.tank, "amount": event.amount,
+			"pos": origin, "age": 0.0})
+
+func _draw_health_numbers() -> void:
+	for number: Dictionary in health_numbers:
+		var age: float = number.age
+		var rise: float = 0.0
+		var opacity: float = 1.0
+		if age < number_enter_seconds:
+			var progress: float = age / number_enter_seconds
+			rise = 26.0 * (1.0 - pow(1.0 - progress, 3.0))
+			opacity = smoothstep(0.0, 0.65, progress)
+		elif age < number_enter_seconds + number_hold_seconds:
+			rise = 26.0
+		else:
+			var progress: float = clampf((age - number_enter_seconds - number_hold_seconds) / number_exit_seconds, 0.0, 1.0)
+			rise = 26.0 + 34.0 * progress * progress
+			opacity = 1.0 - smoothstep(0.0, 1.0, progress)
+		var tint: Color = Color("#65f5a2") if number.amount > 0 else Color("#ff6475")
+		tint.a = opacity
+		var text: String = ("+%d" if number.amount > 0 else "%d") % number.amount
+		var extent: Vector2 = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 30)
+		var position: Vector2 = number.pos - Vector2(extent.x * 0.5, rise)
+		foreground.draw_string(font, position, text, HORIZONTAL_ALIGNMENT_LEFT, -1, 30, tint)
 
 func _ready() -> void:
 	render_viewport = get_viewport()
@@ -51,6 +99,10 @@ func _process(delta: float) -> void:
 	if state.is_empty():
 		return
 	effect_time += delta
+	for i: int in range(health_numbers.size() - 1, -1, -1):
+		health_numbers[i].age += delta
+		if health_numbers[i].age >= number_enter_seconds + number_hold_seconds + number_exit_seconds:
+			health_numbers.remove_at(i)
 	for i: int in range(flashes.size() - 1, -1, -1):
 		flashes[i].life -= delta
 		if flashes[i].life <= 0.0:
@@ -73,7 +125,14 @@ func _process(delta: float) -> void:
 	foreground.queue_redraw()
 
 func update_state(value: Dictionary) -> void:
+	var first_snapshot: bool = state.is_empty()
 	state = value
+	# A newly opened view starts from the current state rather than replaying old hits.
+	if first_snapshot and not state.health_feedback.is_empty():
+		last_health_feedback = state.health_feedback.back().id
+	if initial_profile != state.terrain_origin:
+		health_numbers.clear()
+	_receive_health_feedback()
 	var next_supplies: Dictionary[Vector2, Vector2] = {}
 	for event: Dictionary in state.events:
 		if event.kind == "supply":
@@ -157,6 +216,7 @@ func _draw_foreground() -> void:
 			foreground.draw_string(font, shot.pos + Vector2(10, -10), "×%d" % int(shot.boost), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, tint)
 	for flash: Dictionary in flashes:
 		_blast(flash)
+	_draw_health_numbers()
 
 func _tank_label(index: int) -> void:
 	var tank: Dictionary = state.tanks[index]
