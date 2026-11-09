@@ -542,9 +542,11 @@ func _flight_events(shot: Dictionary, next: Vector2, children: Array[Dictionary]
 		match event.kind:
 			"black_hole":
 				if distance < BLACK_HOLE_CORE:
+					_sound("black_hole")
 					return &"absorbed"
 			"amplifier":
 				if distance < event.radius:
+					_sound("amplifier")
 					shot.boost = maxf(shot.boost, event.factor)
 					state.events.erase(event)
 			"supply":
@@ -559,6 +561,7 @@ func _flight_events(shot: Dictionary, next: Vector2, children: Array[Dictionary]
 					shot.pos = destination + shot.vel.normalized() * (PORTAL_RADIUS + 6.0)
 					shot.lock_until = shot.age + 0.12
 					shot.trail.clear()
+					_sound("portal")
 					return &"redirected"
 			"bumper":
 				if distance < BUMPER_RADIUS and shot.age >= shot.lock_until:
@@ -629,6 +632,7 @@ func _claim_supply(event: Dictionary, index: int) -> void:
 		return
 	state.events.erase(event)
 	_heal(tank, 35)
+	_sound("supply")
 	var names: Array[String] = []
 	for draw: int in 2:
 		var weapon: int = rng.randi_range(1, WEAPONS.size() - 1)

@@ -42,3 +42,5 @@
 | bounce | kenney/impactMetal_003.ogg | -15 | 1.3 |
 | drill | kenney/engineCircular_002_short.wav | -17 | 1.4 |
 | mine_arm | kenney/computerNoise_002_short.wav | -17 | 1.4 |
+
+事件音效复用以上 Kenney CC0 素材：黑洞吸收 forceField_000.ogg（音高 0.55）；穿过传送门 forceField_003.ogg（1.4）；增伤触发 laserRetro_002.ogg（1.6）；补给拾取 laserSmall_002.ogg（1.8）。各自使用 event_*.tres，主机事件触发、快照去重；补给包括坦克拾取与炮弹命中拾取。

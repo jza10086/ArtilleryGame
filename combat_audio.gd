@@ -8,6 +8,10 @@ extends Node
 @export var bounce_cue: PartyAudioCue
 @export var drill_cue: PartyAudioCue
 @export var mine_arm: PartyAudioCue
+@export var black_hole_cue: PartyAudioCue = preload("res://games/minigame/godot_party_default_artillery_game/audio/event_black_hole.tres")
+@export var portal_cue: PartyAudioCue = preload("res://games/minigame/godot_party_default_artillery_game/audio/event_portal.tres")
+@export var amplifier_cue: PartyAudioCue = preload("res://games/minigame/godot_party_default_artillery_game/audio/event_amplifier.tres")
+@export var supply_cue: PartyAudioCue = preload("res://games/minigame/godot_party_default_artillery_game/audio/event_supply.tres")
 @onready var mixer: PartyGameAudio = $GameAudio
 @onready var engine: AudioStreamPlayer = $Engine
 var last_event: int = 0
@@ -19,7 +23,7 @@ var engine_gain: float = 0.0
 func _ready() -> void:
 	assert(engine_cue != null and engine_cue.validate() == OK)
 	assert(fire_cues.size() == 16 and impact_cues.size() == 16)
-	for cue: PartyAudioCue in fire_cues + impact_cues + [cluster_split, rain_split, bounce_cue, drill_cue, mine_arm]:
+	for cue: PartyAudioCue in fire_cues + impact_cues + [cluster_split, rain_split, bounce_cue, drill_cue, mine_arm, black_hole_cue, portal_cue, amplifier_cue, supply_cue]:
 		assert(cue != null and cue.validate() == OK)
 	engine.stream = engine_cue.playback_stream()
 	engine.pitch_scale = engine_cue.pitch_scale
@@ -89,6 +93,14 @@ func update_state(snapshot: Dictionary) -> Error:
 				cue = drill_cue
 			"arm":
 				cue = mine_arm
+			"black_hole":
+				cue = black_hole_cue
+			"portal":
+				cue = portal_cue
+			"amplifier":
+				cue = amplifier_cue
+			"supply":
+				cue = supply_cue
 			_:
 				push_error("Unknown artillery audio event: " + event.kind)
 				return ERR_INVALID_DATA
