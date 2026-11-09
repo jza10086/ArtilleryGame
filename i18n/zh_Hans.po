@@ -111,3 +111,24 @@ msgstr "护盾弹"
 
 msgid "初始特殊弹药（标准弹无限，单人测试不受限）"
 msgstr "初始特殊弹药（标准弹无限，单人测试不受限）"
+
+msgid "基础弹"
+msgstr "基础弹"
+
+msgid "进阶弹"
+msgstr "进阶弹"
+
+msgid "高级弹"
+msgstr "高级弹"
+
+msgid "第 3 轮配给"
+msgstr "第 3 轮配给"
+
+msgid "第 5 轮配给"
+msgstr "第 5 轮配给"
+
+msgid "第 7 轮起每两轮配给"
+msgstr "第 7 轮起每两轮配给"
+
+msgid "补给箱弹药"
+msgstr "补给箱弹药"

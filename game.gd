@@ -146,6 +146,7 @@ func _process(delta: float) -> void:
 	board.aim_angle = angle_slider.value
 	board.aim_power = power_slider.value
 	board.weapon = selected
+	board.aim_tank = _view_tank()
 	board.show_aim = _can_act() or preview
 	_sync_labels()
 	if state.phase == "aim" and state.mode != "training":
@@ -166,13 +167,13 @@ func _apply_controls(delta: float, direction: int, angle_axis: float, power_axis
 		move_delay = 0.0
 		held_direction = direction
 	move_delay -= delta
-	if move_delay <= 0.0 and state.fuel > 0.0:
+	if move_delay <= 0.0 and state.tanks[_view_tank()].fuel > 0.0:
 		_send("move", {"direction": direction})
 		move_delay = 0.12
 
 func _aim_mouse(target: Vector2) -> void:
-	var tank: Dictionary = state.tanks[state.active].duplicate()
-	var model: Node2D = board.models[state.active]
+	var tank: Dictionary = state.tanks[_view_tank()].duplicate()
+	var model: Node2D = board.models[_view_tank()]
 	tank.x = model.position.x
 	tank.y = model.position.y
 	tank.tilt = model.rotation
@@ -222,7 +223,7 @@ func _receive_state(value: Dictionary) -> void:
 		move_delay = 0.0
 		held_direction = 0
 		selected = 0
-		angle_slider.value = state.tanks[state.active].aim
+		angle_slider.value = state.tanks[_view_tank()].aim
 	if state.phase != "aim":
 		pending_fire = false
 	_sync_ui()
@@ -299,8 +300,14 @@ func _send(action: String, values: Dictionary = {}) -> void:
 		_fail("action_send_failed", error_string(error))
 	_sync_ui()
 
+func _view_tank() -> int:
+	for i: int in state.tanks.size():
+		if state.tanks[i].id == local_id:
+			return i
+	return state.active
+
 func _can_act() -> bool:
-	return not preview and running and not stopped and not finished and not state.is_empty() and state.phase == "aim" and state.tanks[state.active].id == local_id and not pending_fire and not api.input.input_blocked
+	return not preview and running and not stopped and not finished and not state.is_empty() and state.phase == "aim" and Battle.can_act(state, _view_tank()) and state.tanks[_view_tank()].id == local_id and not pending_fire and not api.input.input_blocked
 
 func _players_changed() -> void:
 	if not api.is_host() or stopped or finished:
@@ -386,7 +393,7 @@ func _fire() -> void:
 	arsenal.hide()
 
 func _select(index: int) -> void:
-	if not _can_act() or state.tanks[state.active].ammo[index] == 0:
+	if not _can_act() or state.tanks[_view_tank()].ammo[index] == 0:
 		return
 	selected = index
 	arsenal.hide()
@@ -407,20 +414,22 @@ func _sync_ui() -> void:
 	_sync_labels()
 	_sync_status()
 	var can_act: bool = _can_act()
-	var tank: Dictionary = state.tanks[state.active]
+	var tank: Dictionary = state.tanks[_view_tank()]
 	for button: Button in [left_button, right_button, fire_button, pass_button, reset_button, finish_button]:
 		button.disabled = not can_act
 	angle_slider.editable = can_act
 	power_slider.editable = can_act
-	left_button.disabled = not can_act or state.fuel <= 0.0
+	left_button.disabled = not can_act or state.tanks[_view_tank()].fuel <= 0.0
 	right_button.disabled = left_button.disabled
 	reset_button.visible = state.mode == "training"
 	finish_button.visible = state.mode == "training"
 	pass_button.visible = state.mode != "training"
+	pass_button.text = "结束回合"
+	fire_button.text = "已行动" if tank.acted else "开火"
 	hud.visible = preview or (running and not finished and not stopped and state.phase == "aim" and tank.id == local_id)
 	if not hud.visible:
 		arsenal.hide()
-	fuel_label.text = hud_text(&"hud.fuel", {"fuel":roundi(state.fuel)})
+	fuel_label.text = hud_text(&"hud.fuel", {"fuel":roundi(state.tanks[_view_tank()].fuel)})
 	var stock: int = tank.ammo[selected] if not tank.ammo.is_empty() else 0
 	weapon_button.text = "%s   %s  ▾" % [Battle.WEAPONS[selected].name, "∞" if stock < 0 else str(stock)]
 	for index: int in weapon_buttons.size():

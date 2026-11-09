@@ -11,6 +11,7 @@ var ground_profile: PackedFloat32Array = PackedFloat32Array()
 var initial_profile: PackedFloat32Array = PackedFloat32Array()
 var previous_msaa: Viewport.MSAA = Viewport.MSAA_DISABLED
 var render_viewport: Viewport
+var aim_tank: int = 0
 var aim_angle: float = 45.0
 var aim_power: float = 60.0
 var weapon: int = 0
@@ -109,7 +110,7 @@ func _process(delta: float) -> void:
 			flashes.remove_at(i)
 	for i: int in models.size():
 		var tank: Dictionary = state.tanks[i]
-		var degrees: float = aim_angle if i == state.active and show_aim and state.phase == "aim" else float(tank.aim)
+		var degrees: float = aim_angle if i == aim_tank and show_aim and state.phase == "aim" else float(tank.aim)
 		var tint: Color = Color(tank.color)
 		if state.mode == "teams":
 			tint = [Color("#73d9ed"), Color("#ff947d")][tank.team]
@@ -236,14 +237,14 @@ func _tank_label(index: int) -> void:
 		foreground.draw_string(font, p + Vector2(-23, -39), "+%d" % tank.shield, HORIZONTAL_ALIGNMENT_CENTER, 46, 13, Color("#a1d8ff"))
 	if tank.jammed:
 		foreground.draw_string(font, p + Vector2(-30, 35), "EMP", HORIZONTAL_ALIGNMENT_CENTER, 60, 14, Color("#b5acff"))
-	if index == state.active and state.phase == "aim":
+	if Battle.can_act(state, index):
 		var marker: Vector2 = p + Vector2(0, -63 if state.mode == "training" else -89)
 		foreground.draw_colored_polygon(PackedVector2Array([marker - Vector2(6, 0), marker + Vector2(6, 0), marker + Vector2(0, 7)]), INK)
 
 ## A native Line2D supplies smooth joins and an editable taper from barrel to tip.
 func _update_aim() -> void:
 	var direction: Vector2 = Vector2.from_angle(-deg_to_rad(aim_angle))
-	var pos: Vector2 = world.to_local(models[state.active].muzzle.global_position)
+	var pos: Vector2 = world.to_local(models[aim_tank].muzzle.global_position)
 	var velocity: Vector2 = direction * (270.0 + aim_power * 6.0) * (0.82 if weapon == 1 else 1.0)
 	aim_curve.points = Battle.aim_path(state, pos, velocity, weapon)
 
