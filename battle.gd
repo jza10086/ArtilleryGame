@@ -16,21 +16,21 @@ const PORTAL_RADIUS: float = 30.0
 const BUMPER_RADIUS: float = 34.0
 const WEAPONS: Array[Dictionary] = [
 	{"name": "标准弹", "hint": "可靠的单发爆破 · 无限弹药", "radius": 68.0, "damage": 48.0, "ammo": -1, "color": "ffe6a6"},
-	{"name": "重型爆破", "hint": "大范围深坑 · 低初速", "radius": 110.0, "damage": 70.0, "ammo": 2, "color": "ff8b52"},
-	{"name": "三重散射", "hint": "三条弹道同时覆盖相邻落点", "radius": 44.0, "damage": 29.0, "ammo": 3, "color": "67dbff"},
-	{"name": "集束花火", "hint": "在最高点分裂为五枚子弹", "radius": 37.0, "damage": 24.0, "ammo": 2, "color": "e49cff"},
-	{"name": "跳弹", "hint": "沿地表反弹 · 3 秒引信", "radius": 82.0, "damage": 62.0, "ammo": 3, "color": "a5f27e"},
-	{"name": "钻地弹", "hint": "命中后向地下钻进再爆炸", "radius": 78.0, "damage": 60.0, "ammo": 2, "color": "ffcd66"},
-	{"name": "造山弹", "hint": "抬升落点地形 · 低伤害改变掩体", "radius": 100.0, "damage": 16.0, "ammo": 2, "color": "74edcf"},
-	{"name": "虹吸弹", "hint": "造成伤害并回复射手部分生命", "radius": 60.0, "damage": 44.0, "ammo": 2, "color": "ff78ac"},
-	{"name":"滚地雷","hint":"触地后沿地面滑行，接近坦克或 1.5 秒后爆炸","radius":66,"damage":52,"ammo":2,"color":"b6f578"},
-	{"name":"空爆弹雨","hint":"最高点向下散射七枚穿甲子弹","radius":30,"damage":19,"ammo":2,"color":"73dfff"},
-	{"name":"燃烧弹","hint":"落点留下火区，之后三个回合各造成 12 伤害","radius":54,"damage":24,"ammo":2,"color":"ff9649"},
-	{"name":"电磁脉冲","hint":"不破坏地形，命中者下次回合移动额度减半","radius":105,"damage":25,"ammo":2,"color":"a7a1ff"},
-	{"name":"跃迁弹","hint":"将射手传送至落点，保留生命且不炸地形","radius":42,"damage":0,"ammo":2,"color":"63ffe5"},
-	{"name":"连锁震爆","hint":"落点向两侧依次引爆五段震波","radius":45,"damage":23,"ammo":2,"color":"ffba61"},
-	{"name":"感应雷","hint":"留在落点，敌人靠近触发，保留六个回合","radius":75,"damage":58,"ammo":2,"color":"ff6c98"},
-	{"name":"护盾弹","hint":"给爆心附近的友军增加 60 护盾，上限 100","radius":95,"damage":0,"ammo":2,"color":"7fb8ff"}
+	{"name": "重型爆破", "hint": "大范围深坑 · 低初速", "radius": 110.0, "damage": 70.0, "ammo": 0, "color": "ff8b52"},
+	{"name": "三重散射", "hint": "三条弹道同时覆盖相邻落点", "radius": 44.0, "damage": 29.0, "ammo": 1, "color": "67dbff"},
+	{"name": "集束花火", "hint": "在最高点分裂为五枚子弹", "radius": 37.0, "damage": 24.0, "ammo": 0, "color": "e49cff"},
+	{"name": "跳弹", "hint": "沿地表反弹 · 3 秒引信", "radius": 82.0, "damage": 62.0, "ammo": 0, "color": "a5f27e"},
+	{"name": "钻地弹", "hint": "命中后向地下钻进再爆炸", "radius": 78.0, "damage": 60.0, "ammo": 0, "color": "ffcd66"},
+	{"name": "造山弹", "hint": "抬升落点地形 · 低伤害改变掩体", "radius": 100.0, "damage": 16.0, "ammo": 0, "color": "74edcf"},
+	{"name": "虹吸弹", "hint": "造成伤害并回复射手部分生命", "radius": 60.0, "damage": 44.0, "ammo": 0, "color": "ff78ac"},
+	{"name":"滚地雷","hint":"触地后沿地面滑行，接近坦克或 1.5 秒后爆炸","radius":66,"damage":52,"ammo": 0,"color":"b6f578"},
+	{"name":"空爆弹雨","hint":"最高点向下散射七枚穿甲子弹","radius":30,"damage":19,"ammo": 0,"color":"73dfff"},
+	{"name":"燃烧弹","hint":"落点留下火区，之后三个回合各造成 12 伤害","radius":54,"damage":24,"ammo": 0,"color":"ff9649"},
+	{"name":"电磁脉冲","hint":"不破坏地形，命中者下次回合移动额度减半","radius":105,"damage":25,"ammo": 0,"color":"a7a1ff"},
+	{"name":"跃迁弹","hint":"将射手传送至落点，保留生命且不炸地形","radius":42,"damage":0,"ammo": 0,"color":"63ffe5"},
+	{"name":"连锁震爆","hint":"落点向两侧依次引爆五段震波","radius":45,"damage":23,"ammo": 0,"color":"ffba61"},
+	{"name":"感应雷","hint":"留在落点，敌人靠近触发，保留六个回合","radius":75,"damage":58,"ammo": 0,"color":"ff6c98"},
+	{"name":"护盾弹","hint":"给爆心附近的友军增加 60 护盾，上限 100","radius":95,"damage":0,"ammo": 0,"color":"7fb8ff"}
 ]
 var state: Dictionary = {}
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -65,7 +65,7 @@ func setup(players: Array[Dictionary], seed_value: int, mode: String) -> void:
 				"x": x, "aim": 45.0 if x < WIDTH * 0.5 else 135.0, "shots": 0, "hp": 200, "shield": 0, "jammed": false, "team": i + 1,
 				"ammo": [], "damage": 0, "eliminated": 0, "withdrawn": false})
 	state = {"mode": mode, "terrain": terrain, "terrain_origin": terrain.duplicate(), "tanks": tanks, "projectiles": [],
-		"impacts": [], "health_feedback": [], "audio_events": [], "events": [], "hazards": [], "bursts": [], "notice": "", "notice_left": 0.0, "turn": 0, "active": -1, "phase": "aim", "time": TURN_SECONDS,
+		"impacts": [], "health_feedback": [], "audio_events": [], "events": [], "hazards": [], "bursts": [], "notice": "", "notice_left": 0.0, "turn": 0, "round": 0, "active": -1, "phase": "aim", "time": TURN_SECONDS,
 		"wind": Vector2.ZERO, "fuel": 90.0, "wait": 0.0, "winner": -2, "revision": 0}
 	for tank: Dictionary in tanks:
 		_seat_on_ground(tank)
@@ -99,10 +99,14 @@ func ground(x: float) -> float:
 func _next_turn() -> void:
 	if _check_over():
 		return
+	var previous_active: int = state.active
 	state.turn += 1
 	state.active = 0 if state.mode == "training" else (int(state.active) + 1) % state.tanks.size()
 	while state.tanks[state.active].hp <= 0:
 		state.active = (int(state.active) + 1) % state.tanks.size()
+	if state.mode != "training" and (state.round == 0 or state.active <= previous_active):
+		state.round += 1
+		_distribute_ammo()
 	state.phase = "aim"
 	state.time = TURN_SECONDS
 	state.fuel = 45.0 if state.tanks[state.active].jammed else 90.0
@@ -123,6 +127,26 @@ func _next_turn() -> void:
 			return
 		if state.tanks[state.active].hp <= 0:
 			_next_turn()
+
+## A round is one pass through the surviving roster, independent of player count.
+## Every survivor receives the same random selection; supply crates can grant any tier early.
+func _distribute_ammo() -> void:
+	if state.round < 3 or state.round % 2 == 0:
+		return
+	var pool: Array[int] = [1, 2, 4, 6, 8, 14]
+	var count: int = 1
+	if state.round >= 7:
+		pool = [3, 9, 13]
+		count = 3
+	elif state.round >= 5:
+		pool = [5, 7, 10, 11, 12, 15]
+		count = 2
+	for draw: int in count:
+		var index: int = rng.randi_range(0, pool.size() - 1)
+		var weapon: int = pool.pop_at(index)
+		for tank: Dictionary in state.tanks:
+			if tank.hp > 0 and not tank.withdrawn:
+				tank.ammo[weapon] += 1
 
 ## The transport validates payload shape; this boundary enforces turn, actor and ammo.
 func command(player_id: String, turn_number: int, action: String, values: Dictionary) -> bool:
