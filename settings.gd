@@ -1,5 +1,13 @@
 extends RefCounted
 ## Room-owned mode and local keyboard bindings; the manifest constrains player counts.
+const AMMO_NAMES: Array[String] = ["标准弹", "重型爆破", "三重散射", "集束花火", "跳弹", "钻地弹", "造山弹", "虹吸弹", "滚地雷", "空爆弹雨", "燃烧弹", "电磁脉冲", "跃迁弹", "连锁震爆", "感应雷", "护盾弹"]
+
+static func initial_ammo(values: Dictionary) -> Array[int]:
+	var ammo: Array[int] = [-1]
+	for i: int in range(1, AMMO_NAMES.size()):
+		ammo.append(int(values.get("initial_ammo_%d" % i, 1 if i == 2 else 0)))
+	return ammo
+
 static func schema() -> Dictionary:
 	var config: Dictionary = {"schema_format": 3, "settings_version": 1, "fields": {
 		"mode": {"type": "string", "default": "ffa", "title": "对战模式",
@@ -9,6 +17,15 @@ static func schema() -> Dictionary:
 	}, "layout": [{"id": "battle", "title": "对战规则", "expanded": true,
 		"children": [{"field": "mode"}]}]}
 
+	var ammunition: Array[Dictionary] = []
+	var defaults: Array[int] = initial_ammo({})
+	for i: int in range(1, AMMO_NAMES.size()):
+		var key: String = "initial_ammo_%d" % i
+		config.fields[key] = {"type": "int", "default": defaults[i], "title": AMMO_NAMES[i],
+			"min": 0, "max": 20, "audience": "room", "apply": "next_round", "control": "number"}
+		ammunition.append({"field": key})
+	config.layout.append({"id": "initial_ammo", "title": "初始特殊弹药（标准弹无限，单人测试不受限）",
+		"expanded": false, "children": ammunition})
 	var controls: Array[Dictionary] = []
 	for definition: Array in [
 		["move_left", "向左移动", KEY_A], ["move_right", "向右移动", KEY_D],

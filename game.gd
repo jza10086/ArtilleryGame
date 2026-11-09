@@ -90,7 +90,7 @@ func _ready() -> void:
 	if (mode == "training" and players.size() != 1) or (mode == "teams" and (players.size() % 2 != 0 or players.size() < 2)) or (mode == "ffa" and players.size() < 2):
 		_fail("invalid_roster", "所选模式与参赛人数不符")
 		return
-	battle.setup(players, api.get_seed(), mode)
+	battle.setup(players, api.get_seed(), mode, api.get_settings())
 	_receive_state(battle.state.duplicate(true))
 	var gate_script: Script = api.load_asset({"package_id": api.protocol_id, "resource_key": "briefing_gate"}) as Script
 	if gate_script == null:

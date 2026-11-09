@@ -60,3 +60,54 @@ msgstr "发射炮弹"
 
 msgid "操作"
 msgstr "操作"
+
+msgid "标准弹"
+msgstr "标准弹"
+
+msgid "重型爆破"
+msgstr "重型爆破"
+
+msgid "三重散射"
+msgstr "三重散射"
+
+msgid "集束花火"
+msgstr "集束花火"
+
+msgid "跳弹"
+msgstr "跳弹"
+
+msgid "钻地弹"
+msgstr "钻地弹"
+
+msgid "造山弹"
+msgstr "造山弹"
+
+msgid "虹吸弹"
+msgstr "虹吸弹"
+
+msgid "滚地雷"
+msgstr "滚地雷"
+
+msgid "空爆弹雨"
+msgstr "空爆弹雨"
+
+msgid "燃烧弹"
+msgstr "燃烧弹"
+
+msgid "电磁脉冲"
+msgstr "电磁脉冲"
+
+msgid "跃迁弹"
+msgstr "跃迁弹"
+
+msgid "连锁震爆"
+msgstr "连锁震爆"
+
+msgid "感应雷"
+msgstr "感应雷"
+
+msgid "护盾弹"
+msgstr "护盾弹"
+
+msgid "初始特殊弹药（标准弹无限，单人测试不受限）"
+msgstr "初始特殊弹药（标准弹无限，单人测试不受限）"

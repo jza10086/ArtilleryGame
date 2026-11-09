@@ -1,6 +1,7 @@
 extends RefCounted
 ## Host-owned artillery rules and fixed-step ballistics; no input, UI or transport.
 ## The terrain is a solid heightfield: explosions excavate bowls, construction raises banks.
+const Settings: Script = preload("res://games/minigame/godot_party_default_artillery_game/settings.gd")
 const WIDTH: float = 1920.0
 const FLOOR: float = 970.0
 const CELL: float = 4.0
@@ -15,22 +16,22 @@ const BLACK_HOLE_CORE: float = 18.0
 const PORTAL_RADIUS: float = 30.0
 const BUMPER_RADIUS: float = 34.0
 const WEAPONS: Array[Dictionary] = [
-	{"name": "标准弹", "hint": "可靠的单发爆破 · 无限弹药", "radius": 68.0, "damage": 48.0, "ammo": -1, "color": "ffe6a6"},
-	{"name": "重型爆破", "hint": "大范围深坑 · 低初速", "radius": 110.0, "damage": 70.0, "ammo": 0, "color": "ff8b52"},
-	{"name": "三重散射", "hint": "三条弹道同时覆盖相邻落点", "radius": 44.0, "damage": 29.0, "ammo": 1, "color": "67dbff"},
-	{"name": "集束花火", "hint": "在最高点分裂为五枚子弹", "radius": 37.0, "damage": 24.0, "ammo": 0, "color": "e49cff"},
-	{"name": "跳弹", "hint": "沿地表反弹 · 3 秒引信", "radius": 82.0, "damage": 62.0, "ammo": 0, "color": "a5f27e"},
-	{"name": "钻地弹", "hint": "命中后向地下钻进再爆炸", "radius": 78.0, "damage": 60.0, "ammo": 0, "color": "ffcd66"},
-	{"name": "造山弹", "hint": "抬升落点地形 · 低伤害改变掩体", "radius": 100.0, "damage": 16.0, "ammo": 0, "color": "74edcf"},
-	{"name": "虹吸弹", "hint": "造成伤害并回复射手部分生命", "radius": 60.0, "damage": 44.0, "ammo": 0, "color": "ff78ac"},
-	{"name":"滚地雷","hint":"触地后沿地面滑行，接近坦克或 1.5 秒后爆炸","radius":66,"damage":52,"ammo": 0,"color":"b6f578"},
-	{"name":"空爆弹雨","hint":"最高点向下散射七枚穿甲子弹","radius":30,"damage":19,"ammo": 0,"color":"73dfff"},
-	{"name":"燃烧弹","hint":"落点留下火区，之后三个回合各造成 12 伤害","radius":54,"damage":24,"ammo": 0,"color":"ff9649"},
-	{"name":"电磁脉冲","hint":"不破坏地形，命中者下次回合移动额度减半","radius":105,"damage":25,"ammo": 0,"color":"a7a1ff"},
-	{"name":"跃迁弹","hint":"将射手传送至落点，保留生命且不炸地形","radius":42,"damage":0,"ammo": 0,"color":"63ffe5"},
-	{"name":"连锁震爆","hint":"落点向两侧依次引爆五段震波","radius":45,"damage":23,"ammo": 0,"color":"ffba61"},
-	{"name":"感应雷","hint":"留在落点，敌人靠近触发，保留六个回合","radius":75,"damage":58,"ammo": 0,"color":"ff6c98"},
-	{"name":"护盾弹","hint":"给爆心附近的友军增加 60 护盾，上限 100","radius":95,"damage":0,"ammo": 0,"color":"7fb8ff"}
+	{"name": "标准弹", "hint": "可靠的单发爆破 · 无限弹药", "radius": 68.0, "damage": 48.0, "color": "ffe6a6"},
+	{"name": "重型爆破", "hint": "大范围深坑 · 低初速", "radius": 110.0, "damage": 70.0, "color": "ff8b52"},
+	{"name": "三重散射", "hint": "三条弹道同时覆盖相邻落点", "radius": 44.0, "damage": 29.0, "color": "67dbff"},
+	{"name": "集束花火", "hint": "在最高点分裂为五枚子弹", "radius": 37.0, "damage": 24.0, "color": "e49cff"},
+	{"name": "跳弹", "hint": "沿地表反弹 · 3 秒引信", "radius": 82.0, "damage": 62.0, "color": "a5f27e"},
+	{"name": "钻地弹", "hint": "命中后向地下钻进再爆炸", "radius": 78.0, "damage": 60.0, "color": "ffcd66"},
+	{"name": "造山弹", "hint": "抬升落点地形 · 低伤害改变掩体", "radius": 100.0, "damage": 16.0, "color": "74edcf"},
+	{"name": "虹吸弹", "hint": "造成伤害并回复射手部分生命", "radius": 60.0, "damage": 44.0, "color": "ff78ac"},
+	{"name":"滚地雷","hint":"触地后沿地面滑行，接近坦克或 1.5 秒后爆炸","radius":66,"damage":52,"color":"b6f578"},
+	{"name":"空爆弹雨","hint":"最高点向下散射七枚穿甲子弹","radius":30,"damage":19,"color":"73dfff"},
+	{"name":"燃烧弹","hint":"落点留下火区，之后三个回合各造成 12 伤害","radius":54,"damage":24,"color":"ff9649"},
+	{"name":"电磁脉冲","hint":"不破坏地形，命中者下次回合移动额度减半","radius":105,"damage":25,"color":"a7a1ff"},
+	{"name":"跃迁弹","hint":"将射手传送至落点，保留生命且不炸地形","radius":42,"damage":0,"color":"63ffe5"},
+	{"name":"连锁震爆","hint":"落点向两侧依次引爆五段震波","radius":45,"damage":23,"color":"ffba61"},
+	{"name":"感应雷","hint":"留在落点，敌人靠近触发，保留六个回合","radius":75,"damage":58,"color":"ff6c98"},
+	{"name":"护盾弹","hint":"给爆心附近的友军增加 60 护盾，上限 100","radius":95,"damage":0,"color":"7fb8ff"}
 ]
 var state: Dictionary = {}
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -38,7 +39,7 @@ var _impact_id: int = 0
 var _feedback_id: int = 0
 var _audio_id: int = 0
 
-func setup(players: Array[Dictionary], seed_value: int, mode: String) -> void:
+func setup(players: Array[Dictionary], seed_value: int, mode: String, configuration: Dictionary = {}) -> void:
 	rng.seed = seed_value
 	var terrain: PackedFloat32Array = PackedFloat32Array()
 	var phase_offset: float = rng.randf_range(0.0, TAU)
@@ -51,9 +52,9 @@ func setup(players: Array[Dictionary], seed_value: int, mode: String) -> void:
 		if mode == "teams":
 			var half: int = players.size() / 2
 			x = lerpf(140.0, 780.0, float(i / 2) / float(maxi(1, half - 1))) if i % 2 == 0 else lerpf(1140.0, 1780.0, float(i / 2) / float(maxi(1, half - 1)))
-		var ammo: Array[int] = []
-		for definition: Dictionary in WEAPONS:
-			ammo.append(-1 if mode == "training" else int(definition.ammo))
+		var ammo: Array[int] = Settings.initial_ammo(configuration)
+		if mode == "training":
+			ammo.fill(-1)
 		tanks.append({"id": players[i].player_id, "name": players[i].name,
 			"color": players[i].color, "x": x, "aim": 45.0 if x < WIDTH * 0.5 else 135.0, "shots": 0,
 			"hp": 200, "shield": 0, "jammed": false, "team": i % 2 if mode == "teams" else i,
