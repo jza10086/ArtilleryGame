@@ -1,6 +1,6 @@
 extends Node2D
 ## Chassis tilt carries the turret socket. Gun elevation is measured against the
-## world horizon; the sliding tube recoils along the bore independently of the hull.
+## chassis upper half-plane; the sliding tube recoils along the bore independently of the hull.
 const Battle: Script = preload("res://games/minigame/godot_party_default_artillery_game/battle.gd")
 const RECOIL_TIME: float = 0.19
 @onready var hull: Node2D = %Hull
@@ -32,7 +32,7 @@ func pose(tank: Dictionary, degrees: float, tint: Color, delta: float) -> void:
 		weight = 1.0
 	position = position.lerp(next_position, weight)
 	rotation = lerp_angle(rotation, tank.tilt, weight)
-	var relative: float = -deg_to_rad(degrees) - rotation
+	var relative: float = -deg_to_rad(clampf(degrees, 0.0, 180.0))
 	var facing: float = -1.0 if cos(relative) < 0.0 else 1.0
 	turret.scale = Vector2(facing, 1)
 	gun.rotation = atan2(sin(relative), facing * cos(relative))

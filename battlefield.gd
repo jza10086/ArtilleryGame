@@ -243,7 +243,7 @@ func _tank_label(index: int) -> void:
 
 ## A native Line2D supplies smooth joins and an editable taper from barrel to tip.
 func _update_aim() -> void:
-	var direction: Vector2 = Vector2.from_angle(-deg_to_rad(aim_angle))
+	var direction: Vector2 = Vector2.from_angle(models[aim_tank].rotation - deg_to_rad(aim_angle))
 	var pos: Vector2 = world.to_local(models[aim_tank].muzzle.global_position)
 	var velocity: Vector2 = direction * (270.0 + aim_power * 6.0) * (0.82 if weapon == 1 else 1.0)
 	aim_curve.points = Battle.aim_path(state, pos, velocity, weapon)

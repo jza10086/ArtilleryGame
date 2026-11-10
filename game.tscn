@@ -4,6 +4,7 @@
 [ext_resource type="Theme" uid="uid://uwnrdgk1k5uq" path="res://core/ui/ambient_reveal/ambient_theme.tres" id="2_8nvs8"]
 [ext_resource type="Script" uid="uid://qb4bypwgffjc" path="res://games/minigame/godot_party_default_artillery_game/combat_audio.gd" id="4_p2hp6"]
 [ext_resource type="Resource" uid="uid://cp8au7ssgavbs" path="res://games/minigame/godot_party_default_artillery_game/audio/engine.tres" id="5_ii4du"]
+[ext_resource type="Script" uid="uid://b8e8ifodc3mml" path="res://games/protocols/godot_party_default_protocol/audio/audio_cue.gd" id="6_p2hp6"]
 [ext_resource type="Resource" uid="uid://sdwfca2hk7c5" path="res://games/minigame/godot_party_default_artillery_game/audio/fire_cannon.tres" id="6_s6du4"]
 [ext_resource type="Resource" uid="uid://dx6566rgh7yjm" path="res://games/minigame/godot_party_default_artillery_game/audio/fire_heavy.tres" id="7_5b5ls"]
 [ext_resource type="Resource" uid="uid://dgksdr5cedwkm" path="res://games/minigame/godot_party_default_artillery_game/audio/fire_scatter.tres" id="8_pef78"]
@@ -33,6 +34,8 @@
 [ext_resource type="Resource" uid="uid://bknidjxx2inqv" path="res://games/minigame/godot_party_default_artillery_game/audio/mine_arm.tres" id="32_tb0gd"]
 [ext_resource type="PackedScene" uid="uid://dkvs0ys861xvk" path="res://games/protocols/godot_party_default_protocol/audio/game_audio.tscn" id="33_61nbx"]
 [ext_resource type="PackedScene" path="res://games/minigame/godot_party_default_artillery_game/battlefield.tscn" id="board"]
+
+[ext_resource type="Script" path="res://games/minigame/godot_party_default_artillery_game/ammo_cards.gd" id="ammo_cards"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_s44do"]
 content_margin_left = 14.0
@@ -78,7 +81,7 @@ corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
-[sub_resource type="Image" id="Image_wtgd2"]
+[sub_resource type="Image" id="Image_ii4du"]
 data = {
 "data": PackedByteArray(221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255, 221, 247, 255, 255),
 "format": "RGBA8",
@@ -88,7 +91,7 @@ data = {
 }
 
 [sub_resource type="ImageTexture" id="ImageTexture_ay15i"]
-image = SubResource("Image_wtgd2")
+image = SubResource("Image_ii4du")
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yua07"]
 content_margin_left = 0.0
@@ -239,8 +242,8 @@ text = "角度 45.0°"
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
-min_value = 5.0
-max_value = 175.0
+min_value = 0.0
+max_value = 180.0
 step = 0.0
 value = 45.0
 
@@ -535,8 +538,8 @@ grow_vertical = 2
 unique_name_in_owner = true
 script = ExtResource("4_p2hp6")
 engine_cue = ExtResource("5_ii4du")
-fire_cues = [ExtResource("6_s6du4"), ExtResource("7_5b5ls"), ExtResource("8_pef78"), ExtResource("8_pef78"), ExtResource("6_s6du4"), ExtResource("7_5b5ls"), ExtResource("7_5b5ls"), ExtResource("9_jx8e4"), ExtResource("10_1sxwt"), ExtResource("8_pef78"), ExtResource("11_gsslv"), ExtResource("11_gsslv"), ExtResource("9_jx8e4"), ExtResource("7_5b5ls"), ExtResource("10_1sxwt"), ExtResource("9_jx8e4")]
-impact_cues = [ExtResource("12_57x8p"), ExtResource("13_pn6er"), ExtResource("14_pts6j"), ExtResource("15_k0do7"), ExtResource("16_08kt6"), ExtResource("17_ryocn"), ExtResource("18_3jum3"), ExtResource("19_n3g05"), ExtResource("20_d6qko"), ExtResource("21_rfg1k"), ExtResource("22_4uqep"), ExtResource("23_0knu8"), ExtResource("24_gbpne"), ExtResource("25_jv237"), ExtResource("26_bdosc"), ExtResource("27_rdf2b")]
+fire_cues = Array[ExtResource("6_p2hp6")]([ExtResource("6_s6du4"), ExtResource("7_5b5ls"), ExtResource("8_pef78"), ExtResource("8_pef78"), ExtResource("6_s6du4"), ExtResource("7_5b5ls"), ExtResource("7_5b5ls"), ExtResource("9_jx8e4"), ExtResource("10_1sxwt"), ExtResource("8_pef78"), ExtResource("11_gsslv"), ExtResource("11_gsslv"), ExtResource("9_jx8e4"), ExtResource("7_5b5ls"), ExtResource("10_1sxwt"), ExtResource("9_jx8e4")])
+impact_cues = Array[ExtResource("6_p2hp6")]([ExtResource("12_57x8p"), ExtResource("13_pn6er"), ExtResource("14_pts6j"), ExtResource("15_k0do7"), ExtResource("16_08kt6"), ExtResource("17_ryocn"), ExtResource("18_3jum3"), ExtResource("19_n3g05"), ExtResource("20_d6qko"), ExtResource("21_rfg1k"), ExtResource("22_4uqep"), ExtResource("23_0knu8"), ExtResource("24_gbpne"), ExtResource("25_jv237"), ExtResource("26_bdosc"), ExtResource("27_rdf2b")])
 cluster_split = ExtResource("28_bowx8")
 rain_split = ExtResource("29_jdqjv")
 bounce_cue = ExtResource("30_ewb6d")
@@ -545,4 +548,19 @@ mine_arm = ExtResource("32_tb0gd")
 
 [node name="Engine" type="AudioStreamPlayer" parent="CombatAudio" unique_id=59776409]
 
-[node name="GameAudio" type="Node" parent="CombatAudio" unique_id=1528834399 instance=ExtResource("33_61nbx")]
+[node name="GameAudio" parent="CombatAudio" unique_id=1528834399 instance=ExtResource("33_61nbx")]
+
+[node name="AmmoCards" type="HBoxContainer" parent="GameHUD"]
+unique_name_in_owner = true
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -420.0
+offset_right = 420.0
+offset_top = 158.0
+offset_bottom = 242.0
+grow_horizontal = 2
+mouse_filter = 2
+theme = ExtResource("2_8nvs8")
+theme_override_constants/separation = 12
+alignment = 1
+script = ExtResource("ammo_cards")

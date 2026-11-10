@@ -39,6 +39,8 @@ var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _impact_id: int = 0
 var _feedback_id: int = 0
 var _audio_id: int = 0
+var _ammo_id: int = 0
+var _projectile_id: int = 0
 
 func setup(players: Array[Dictionary], seed_value: int, mode: String, configuration: Dictionary = {}) -> void:
 	rules = configuration.duplicate(true)
@@ -68,7 +70,7 @@ func setup(players: Array[Dictionary], seed_value: int, mode: String, configurat
 				"x": x, "aim": 45.0 if x < WIDTH * 0.5 else 135.0, "shots": 0, "fuel": 90.0, "acted": false, "hp": 200, "shield": 0, "jammed": false, "team": i + 1,
 				"ammo": [], "damage": 0, "eliminated": 0, "withdrawn": false})
 	state = {"mode": mode, "terrain": terrain, "terrain_origin": terrain.duplicate(), "tanks": tanks, "projectiles": [],
-		"impacts": [], "health_feedback": [], "audio_events": [], "events": [], "hazards": [], "bursts": [], "notice": "", "notice_left": 0.0, "turn": 0, "round": 0, "active_team": -1, "active": -1, "phase": "aim", "time": TURN_SECONDS,
+		"impacts": [], "health_feedback": [], "audio_events": [], "ammo_events": [], "events": [], "hazards": [], "bursts": [], "notice": "", "notice_left": 0.0, "turn": 0, "round": 0, "active_team": -1, "active": -1, "phase": "aim", "time": TURN_SECONDS,
 		"wind": Vector2.ZERO, "wait": 0.0, "winner": -2, "revision": 0}
 	for tank: Dictionary in tanks:
 		_seat_on_ground(tank)
@@ -91,8 +93,29 @@ func _seat_on_ground(tank: Dictionary) -> void:
 static func gun_pivot(tank: Dictionary) -> Vector2:
 	return Vector2(tank.x, tank.y) + GUN_MOUNT.rotated(tank.tilt)
 
+static func aim_direction(tank: Dictionary, degrees: float) -> Vector2:
+	return Vector2.from_angle(float(tank.tilt) - deg_to_rad(clampf(degrees, 0.0, 180.0)))
+
+static func local_aim(tank: Dictionary, velocity: Vector2) -> float:
+	var local: Vector2 = velocity.rotated(-float(tank.tilt))
+	if local.y > 0.0:
+		return 0.0 if local.x >= 0.0 else 180.0
+	return clampf(rad_to_deg(atan2(-local.y, local.x)), 0.0, 180.0)
+
 static func muzzle_position(tank: Dictionary, degrees: float) -> Vector2:
-	return gun_pivot(tank) + Vector2.from_angle(-deg_to_rad(degrees)) * BARREL_LENGTH
+	return gun_pivot(tank) + aim_direction(tank, degrees) * BARREL_LENGTH
+
+## Check uphill travel at terrain-cell intervals; downward travel and sharp crests
+## do not fail solely because the chassis rotation changes abruptly.
+func can_traverse(from_x: float, to_x: float) -> bool:
+	var direction: float = signf(to_x - from_x)
+	var first: int = floori(minf(from_x, to_x) / CELL)
+	var last: int = ceili(maxf(from_x, to_x) / CELL)
+	for cell: int in range(first, last):
+		var rise: float = (state.terrain[cell] - state.terrain[cell + 1]) * direction
+		if rise > CELL * tan(deg_to_rad(80.0)) + 0.001:
+			return false
+	return true
 
 func ground(x: float) -> float:
 	var cell: float = clampf(x / CELL, 0.0, 480.0)
@@ -121,7 +144,7 @@ func _next_turn() -> void:
 	if state.mode == "teams" and state.turn == 2:
 		for tank: Dictionary in state.tanks:
 			if tank.team == 1 and tank.hp > 0:
-				tank.ammo[Settings.TIERS[0][rng.randi_range(0, Settings.TIERS[0].size() - 1)]] += 1
+				_grant_ammo(tank, [Settings.TIERS[0][rng.randi_range(0, Settings.TIERS[0].size() - 1)]])
 	for i: int in state.tanks.size():
 		var tank: Dictionary = state.tanks[i]
 		tank.acted = false
@@ -155,8 +178,21 @@ func _distribute_ammo() -> void:
 	var stage: String = "late" if state.round >= 7 else ("middle" if state.round >= 5 else "early")
 	for tank: Dictionary in state.tanks:
 		if tank.hp > 0 and not tank.withdrawn:
-			for weapon: int in _draw_supply(stage):
-				tank.ammo[weapon] += 1
+			_grant_ammo(tank, _draw_supply(stage))
+
+## Retain grant identity so snapshots show each recipient's cards exactly once.
+func _grant_ammo(tank: Dictionary, weapons: Array[int]) -> void:
+	var received: Array[int] = []
+	for weapon: int in weapons:
+		if tank.ammo[weapon] >= 0:
+			tank.ammo[weapon] += 1
+			received.append(weapon)
+	if received.is_empty():
+		return
+	_ammo_id += 1
+	state.ammo_events.append({"id":_ammo_id, "player":tank.id, "weapons":received})
+	if state.ammo_events.size() > 64:
+		state.ammo_events.pop_front()
 
 func _draw_supply(stage: String) -> Array[int]:
 	var grant: Array[int] = []
@@ -197,7 +233,7 @@ func command(player_id: String, turn_number: int, action: String, values: Dictio
 		"move":
 			var dx: float = float(values.direction) * minf(12.0, tank.fuel)
 			var x: float = clampf(tank.x + dx, 40.0, WIDTH - 40.0)
-			if tank.fuel <= 0.0 or absf(ground(x) - ground(tank.x)) > 32.0:
+			if tank.fuel <= 0.0 or not can_traverse(tank.x, x):
 				return false
 			for other: Dictionary in state.tanks:
 				if other.id != tank.id and other.hp > 0 and absf(other.x - x) < 42.0:
@@ -248,9 +284,8 @@ func _launch(actor: int, values: Dictionary) -> void:
 	var weapon: int = values.weapon
 	tank.shots += 1
 	_sound("fire", weapon)
-	var angle: float = deg_to_rad(tank.aim)
 	var speed: float = (270.0 + float(values.power) * 6.0) * (0.82 if weapon == 1 else 1.0)
-	var direction: Vector2 = Vector2(cos(angle), -sin(angle))
+	var direction: Vector2 = aim_direction(tank, tank.aim)
 	var muzzle: Vector2 = muzzle_position(tank, tank.aim)
 	if weapon == 2:
 		for offset: float in [-0.085, 0.0, 0.085]:
@@ -259,7 +294,8 @@ func _launch(actor: int, values: Dictionary) -> void:
 		_spawn(muzzle, direction * speed, weapon, false, actor)
 
 func _projectile(pos: Vector2, velocity: Vector2, weapon: int, child: bool, boost: float = 1.0, owner: int = -1) -> Dictionary:
-	return {"owner": state.active if owner < 0 else owner, "pos": pos, "vel": velocity, "weapon": weapon, "child": child,
+	_projectile_id += 1
+	return {"id": _projectile_id, "owner": state.active if owner < 0 else owner, "pos": pos, "vel": velocity, "weapon": weapon, "child": child,
 		"age": 0.0, "bounces": 0, "drilling": false, "rolling": 0.0, "boost": boost,
 		"lock_until": 0.0, "support": false, "trail": []}
 
@@ -702,9 +738,9 @@ func _claim_supply(event: Dictionary, index: int) -> void:
 	_heal(tank, 35)
 	_sound("supply")
 	var names: Array[String] = []
-	for weapon: int in _draw_supply("crate"):
-		if tank.ammo[weapon] >= 0:
-			tank.ammo[weapon] += 1
+	var grant: Array[int] = _draw_supply("crate")
+	_grant_ammo(tank, grant)
+	for weapon: int in grant:
 		names.append(WEAPONS[weapon].name)
 	_notify("%s 获得补给 · 生命 +35 · %s" % [tank.name, " / ".join(names)])
 
@@ -766,13 +802,14 @@ static func aim_at(snapshot: Dictionary, tank: Dictionary, weapon: int, target: 
 	var acceleration: Vector2 = snapshot.wind + Vector2(0.0, GRAVITY)
 	var velocity: Vector2 = (target - pivot - acceleration * visible_duration * (duration - (visible_duration - 1.0 / 60.0) * 0.5)) / duration
 	for correction: int in 6:
-		var degrees: float = clampf(rad_to_deg(atan2(-velocity.y, velocity.x)), 5.0, 175.0)
+		var degrees: float = local_aim(tank, velocity)
+		velocity = aim_direction(tank, degrees) * velocity.length()
 		var muzzle: Vector2 = muzzle_position(tank, degrees)
 		var path: PackedVector2Array = aim_path(snapshot, muzzle, velocity, weapon, steps)
 		var tangent: Vector2 = (path[-1] - path[-2]) * 60.0 if path.size() > 1 else velocity
 		var projection: Vector2 = path[-1] + tangent * (duration - (path.size() - 1) / 60.0)
 		velocity += (target - projection) / duration
-	var angle: float = clampf(rad_to_deg(atan2(-velocity.y, velocity.x)), 5.0, 175.0)
+	var angle: float = local_aim(tank, velocity)
 	var speed_scale: float = 0.82 if weapon == 1 else 1.0
 	var power: float = clampf((velocity.length() / speed_scale - 270.0) / 6.0, 10.0, 100.0)
 	return Vector2(angle, power)

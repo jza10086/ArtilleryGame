@@ -25,6 +25,7 @@ var move_delay: float = 0.0
 var held_direction: int = 0
 var mouse_aiming: bool = false
 var display_time: float = 0.0
+@onready var ammo_cards: HBoxContainer = %AmmoCards
 @onready var top_status: VBoxContainer = %TopStatus
 @onready var countdown: Label = %Countdown
 @onready var wind_arrow: Polygon2D = %WindArrow
@@ -183,6 +184,7 @@ func _aim_mouse(target: Vector2) -> void:
 
 func _sync_status() -> void:
 	top_status.visible = preview or (running and not stopped and not finished)
+	ammo_cards.visible = top_status.visible
 	countdown.text = "∞" if state.mode == "training" else (str(ceili(display_time)) if state.phase == "aim" else "—")
 	countdown.modulate = Color("#ff515b") if state.mode != "training" and state.phase == "aim" and display_time <= 10.0 else Color.WHITE
 	wind_arrow.rotation = state.wind.angle()
@@ -209,6 +211,7 @@ func _receive_state(value: Dictionary) -> void:
 	state = value
 	display_time = state.time
 	board.update_state(state)
+	ammo_cards.update_state(state, "preview" if preview else local_id)
 	var audio_error: Error = combat_audio.update_state(state)
 	if audio_error != OK:
 		if preview:
@@ -284,7 +287,7 @@ func _valid_action(payload: Dictionary) -> bool:
 				var number: Variant = values.get(key)
 				if not (number is float or number is int) or not is_finite(float(number)):
 					return false
-			return values.angle >= 5 and values.angle <= 175 and values.power >= 10 and values.power <= 100
+			return values.angle >= 0 and values.angle <= 180 and values.power >= 10 and values.power <= 100
 		"pass", "reset", "finish":
 			return values.is_empty()
 	return false
