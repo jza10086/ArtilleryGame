@@ -4,7 +4,8 @@ const CombatAudio: Script = preload("res://games/minigame/godot_party_default_ar
 const Battle: Script = preload("res://games/minigame/godot_party_default_artillery_game/battle.gd")
 const Battlefield: Script = preload("res://games/minigame/godot_party_default_artillery_game/battlefield.gd")
 const ACTION: StringName = &"artillery/action"
-const SNAPSHOT: StringName = &"artillery_state"
+const EVENTS: StringName = &"artillery/events"
+const MOTION: StringName = &"artillery/motion"
 const FINAL: StringName = &"artillery/final"
 var api: PartyAPI
 var request: Dictionary
@@ -17,7 +18,22 @@ var finished: bool = false
 var preview: bool = false
 var local_id: String = ""
 var revision: int = 0
-var snapshot_time: float = 0.0
+var network_time: float = 0.0
+var _published_facts: Dictionary = {}
+var _published_tanks: Array = []
+var _published_terrain: PackedFloat32Array = PackedFloat32Array()
+var _published_shots: Dictionary = {}
+var _event_ids: Dictionary = {}
+var _environment_id: int = 0
+var _published_environment: Dictionary = {}
+var _environment: Dictionary = {}
+var _shots: Dictionary = {}
+var _motion_targets: Dictionary = {}
+var _pending_motion: Dictionary = {}
+var _motion_sequence: int = 0
+var _received_motion: int = 0
+var _phase_key: String = ""
+var _phase_end_msec: int = 0
 var last_turn: int = -1
 var selected: int = 0
 var pending_fire: bool = false
@@ -123,9 +139,9 @@ func _physics_process(delta: float) -> void:
 		return
 	if api.is_host():
 		battle.step(delta)
-		snapshot_time += delta
-		if snapshot_time >= 0.08 or battle.state.phase == "over":
-			snapshot_time = 0.0
+		network_time += delta
+		if network_time >= 0.05 or battle.state.phase == "over":
+			network_time = 0.0
 			_publish()
 
 func _process(delta: float) -> void:
@@ -151,7 +167,10 @@ func _process(delta: float) -> void:
 	board.show_aim = _can_act() or preview
 	_sync_labels()
 	if state.phase == "aim" and state.mode != "training":
-		display_time = maxf(0.0, display_time - delta)
+		display_time = maxf(0.0, float(_phase_end_msec - api.net.host_time_msec()) / 1000.0)
+	if not preview and not api.is_host():
+		_animate_projectiles(delta)
+		_animate_environment()
 	_sync_status()
 
 ## Repeat bounded logical movement commands; the host still owns fuel and collisions.
@@ -190,26 +209,200 @@ func _sync_status() -> void:
 	wind_arrow.rotation = state.wind.angle()
 	wind_strength.text = str(roundi(state.wind.length()))
 
+## Discrete facts use reliable events; only projectile motion uses replaceable 20 Hz samples.
 func _publish() -> void:
-	revision += 1
-	battle.state.revision = revision
-	var snapshot: Dictionary = battle.state.duplicate(true)
-	_receive_state(snapshot)
-	var error: Error = api.net.broadcast_stream(SNAPSHOT, {"session": api.session_id, "scope": api.scope_id, "state": snapshot}, "instance", true)
-	if error != OK:
-		_fail("state_send_failed", error_string(error))
-		return
-	if battle.state.phase == "over" and not finished:
+	var current: Dictionary = battle.state
+	var phase_key: String = "%d/%s" % [current.turn, current.phase]
+	if phase_key != _phase_key:
+		_phase_key = phase_key
+		_phase_end_msec = api.net.host_time_msec() + roundi(float(current.time) * 1000.0)
+	var facts: Dictionary = {}
+	for key: String in ["mode", "turn", "round", "active_team", "active", "phase", "wind", "winner", "hazards", "notice"]:
+		if not _published_facts.has(key) or _published_facts[key] != current[key]:
+			facts[key] = current[key]
+	if facts.has("phase") or facts.has("turn"):
+		facts["end_msec"] = _phase_end_msec
+	var tanks: Array[Dictionary] = []
+	for index: int in current.tanks.size():
+		var changes: Dictionary = {}
+		for key: String in current.tanks[index]:
+			if _published_tanks.is_empty() or current.tanks[index][key] != _published_tanks[index][key]:
+				changes[key] = current.tanks[index][key]
+		if not changes.is_empty():
+			tanks.append({"index": index, "changes": changes})
+	var terrain: Array = []
+	if _published_terrain.is_empty():
+		_published_terrain = state.terrain.duplicate()
+	for index: int in current.terrain.size():
+		if current.terrain[index] != _published_terrain[index]:
+			terrain.append([index, current.terrain[index]])
+	var environment_changes: Dictionary = _environment_changes(current.events)
+	var events: Dictionary = {}
+	for key: String in ["impacts", "health_feedback", "audio_events", "ammo_events"]:
+		var additions: Array = []
+		for event: Dictionary in current[key]:
+			if event.id > int(_event_ids.get(key, 0)):
+				additions.append(event)
+		if not additions.is_empty():
+			events[key] = additions
+			_event_ids[key] = additions.back().id
+	var spawned: Array[Dictionary] = []
+	var removed: Array = []
+	var alive: Dictionary = {}
+	var motion: Array[Dictionary] = []
+	for shot: Dictionary in current.projectiles:
+		alive[shot.id] = true
+		var sample: Dictionary = {"id": shot.id, "pos": shot.pos, "vel": shot.vel, "boost": shot.boost, "support": shot.support}
+		motion.append(sample)
+		if not _published_shots.has(shot.id):
+			var initial: Dictionary = sample.duplicate()
+			initial["weapon"] = shot.weapon
+			spawned.append(initial)
+	for id: int in _published_shots:
+		if not alive.has(id):
+			removed.append(id)
+	if not facts.is_empty() or not tanks.is_empty() or not terrain.is_empty() or not events.is_empty() or not spawned.is_empty() or not removed.is_empty() or not environment_changes.upsert.is_empty() or not environment_changes.removed.is_empty():
+		revision += 1
+		var message: Dictionary = {"session": api.session_id, "scope": api.scope_id, "revision": revision,
+			"facts": facts, "tanks": tanks, "terrain": terrain, "events": events, "spawned": spawned, "removed": removed, "environment": environment_changes}
+		var error: Error = api.net.broadcast(EVENTS, message, MultiplayerPeer.TRANSFER_MODE_RELIABLE, false)
+		if error != OK:
+			_fail("events_send_failed", error_string(error))
+			return
+		for key: String in facts:
+			if key != "end_msec":
+				_published_facts[key] = current[key].duplicate(true) if current[key] is Array or current[key] is Dictionary else current[key]
+		_published_tanks = current.tanks.duplicate(true)
+		_published_terrain = current.terrain.duplicate()
+		_published_shots = alive
+	if not motion.is_empty():
+		_motion_sequence += 1
+		var message: Dictionary = {"session": api.session_id, "scope": api.scope_id, "revision": revision,
+			"sample": _motion_sequence, "at_msec": api.net.host_time_msec(), "shots": motion}
+		var error: Error = api.net.broadcast(MOTION, message, MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED, false, "instance", 1)
+		if error != OK:
+			_fail("motion_send_failed", error_string(error))
+			return
+	_receive_state(current.duplicate(true))
+	if current.phase == "over" and not finished:
 		var result: Dictionary = battle.result(request.request_id)
-		error = api.net.broadcast(FINAL, {"session": api.session_id, "scope": api.scope_id, "state": snapshot, "result": result}, true)
+		var error: Error = api.net.broadcast(FINAL, {"session": api.session_id, "scope": api.scope_id, "result": result}, MultiplayerPeer.TRANSFER_MODE_RELIABLE, false)
 		if error != OK:
 			_fail("result_send_failed", error_string(error))
 			return
 		_open_result(result)
 
+func _receive_events(payload: Dictionary) -> void:
+	if not payload.get("revision") is int or payload.revision <= revision:
+		return
+	if not payload.get("facts") is Dictionary or not payload.get("events") is Dictionary or not payload.get("environment") is Dictionary:
+		return
+	for key: String in ["tanks", "terrain", "spawned", "removed"]:
+		if not payload.get(key) is Array:
+			return
+	if not payload.environment.get("upsert") is Array or not payload.environment.get("removed") is Array:
+		return
+	for key: String in payload.facts:
+		if key == "end_msec":
+			if not payload.facts[key] is int:
+				return
+		elif key not in ["mode", "turn", "round", "active_team", "active", "phase", "wind", "winner", "hazards", "notice"] or typeof(payload.facts[key]) != typeof(state[key]):
+			return
+	for entry: Variant in payload.environment.upsert:
+		if not entry is Dictionary or not entry.get("id") is int or not entry.get("pos") is Vector2 or not entry.pos.is_finite() or entry.get("kind") not in ["supply", "black_hole", "portal", "bumper", "amplifier", "drone"] or not entry.get("expires") is int:
+			return
+		if entry.kind == "supply" and (not entry.get("start_msec") is int or not (entry.get("land_y") is float or entry.get("land_y") is int) or not is_finite(float(entry.land_y))):
+			return
+	for id: Variant in payload.environment.removed:
+		if not id is int:
+			return
+	for shot: Variant in payload.spawned:
+		if not _valid_projectile_sample(shot) or not shot.get("weapon") is int or shot.weapon < 0 or shot.weapon >= Battle.WEAPONS.size():
+			return
+	for id: Variant in payload.removed:
+		if not id is int:
+			return
+	for key: String in payload.events:
+		if key not in ["impacts", "health_feedback", "audio_events", "ammo_events"] or not payload.events[key] is Array:
+			return
+		for event: Variant in payload.events[key]:
+			if not event is Dictionary or not event.get("id") is int:
+				return
+	# Messages are host-authored; array indices still cross an external boundary.
+	for row: Variant in payload.tanks:
+		if not row is Dictionary or not row.get("index") is int or row.index < 0 or row.index >= state.tanks.size() or not row.get("changes") is Dictionary:
+			return
+	for cell: Variant in payload.terrain:
+		if not cell is Array or cell.size() != 2 or not cell[0] is int or cell[0] < 0 or cell[0] >= state.terrain.size() or not (cell[1] is float or cell[1] is int) or not is_finite(float(cell[1])):
+			return
+	for entry: Dictionary in payload.environment.upsert:
+		_environment[entry.id] = entry.duplicate(true)
+		if entry.kind == "supply":
+			_environment[entry.id]["origin_y"] = entry.pos.y
+	for id: int in payload.environment.removed:
+		_environment.erase(id)
+	state.events = _environment.values()
+	revision = payload.revision
+	if payload.facts.has("end_msec"):
+		_phase_end_msec = payload.facts.end_msec
+	state.merge(payload.facts, true)
+	for row: Dictionary in payload.tanks:
+		state.tanks[row.index].merge(row.changes, true)
+	for cell: Array in payload.terrain:
+		state.terrain[cell[0]] = cell[1]
+	for key: String in ["impacts", "health_feedback", "audio_events", "ammo_events"]:
+		if payload.events.has(key):
+			state[key].append_array(payload.events[key])
+			while state[key].size() > 96:
+				state[key].pop_front()
+	for id: int in payload.removed:
+		_shots.erase(id)
+		_motion_targets.erase(id)
+	for shot: Dictionary in payload.spawned:
+		shot["trail"] = []
+		_shots[shot.id] = shot
+	state.projectiles = _shots.values()
+	_receive_state(state)
+	if not _pending_motion.is_empty() and _pending_motion.revision <= revision:
+		_receive_motion(_pending_motion)
+		_pending_motion = {}
+
+func _receive_motion(payload: Dictionary) -> void:
+	if not payload.get("revision") is int or not payload.get("sample") is int or not payload.get("at_msec") is int or not payload.get("shots") is Array:
+		return
+	if payload.sample <= _received_motion:
+		return
+	if payload.revision > revision:
+		if not _pending_motion.is_empty() and payload.sample <= _pending_motion.sample:
+			return
+		_pending_motion = payload
+		return
+	_received_motion = payload.sample
+	for sample: Variant in payload.shots:
+		if not _valid_projectile_sample(sample):
+			return
+		if _shots.has(sample.id):
+			var target: Dictionary = sample.duplicate()
+			target["at_msec"] = payload.at_msec
+			_motion_targets[sample.id] = target
+
+## Short bounded extrapolation hides sample spacing; impacts and despawns remain host events.
+func _animate_projectiles(delta: float) -> void:
+	for id: int in _motion_targets:
+		var target: Dictionary = _motion_targets[id]
+		var shot: Dictionary = _shots[id]
+		var ahead: float = clampf(float(api.net.host_time_msec() - target.at_msec) / 1000.0, 0.0, 0.1)
+		var position: Vector2 = target.pos + target.vel * ahead
+		shot.pos = position if shot.pos.distance_to(position) > 180.0 else shot.pos.lerp(position, 1.0 - exp(-delta * 30.0))
+		shot.boost = target.boost
+		shot.support = target.support
+		shot.trail.append(shot.pos)
+		if shot.trail.size() > 24:
+			shot.trail.pop_front()
+
 func _receive_state(value: Dictionary) -> void:
 	state = value
-	display_time = state.time
+	display_time = state.time if preview else maxf(0.0, float(_phase_end_msec - api.net.host_time_msec()) / 1000.0)
 	board.update_state(state)
 	ammo_cards.update_state(state, "preview" if preview else local_id)
 	var audio_error: Error = combat_audio.update_state(state)
@@ -252,15 +445,11 @@ func _message(sender: Dictionary, topic: StringName, payload: Variant) -> void:
 	# Only the framework host can publish simulation state or a final result.
 	if sender.peer_id != 1 or api.is_host() or finished:
 		return
-	if topic == SNAPSHOT:
-		if not payload.get("state") is Dictionary:
-			return
-		var snapshot: Dictionary = payload.state
-		if not snapshot.get("revision") is int or snapshot.revision <= revision:
-			return
-		revision = snapshot.revision
-		_receive_state(snapshot)
-	elif topic == FINAL and payload.get("result") is Dictionary and payload.get("state") is Dictionary:
+	if topic == EVENTS:
+		_receive_events(payload)
+	elif topic == MOTION:
+		_receive_motion(payload)
+	elif topic == FINAL and payload.get("result") is Dictionary:
 		var contract: Script = api.load_asset({"package_id": api.protocol_id, "resource_key": "contract"}) as Script
 		if contract == null:
 			_fail("contract_missing", "原版协议缺少结果契约")
@@ -269,7 +458,6 @@ func _message(sender: Dictionary, topic: StringName, payload: Variant) -> void:
 		if not checked.ok:
 			_fail(checked.code, checked.message)
 			return
-		_receive_state(payload.state)
 		_open_result(payload.result)
 
 ## Validate untrusted peer payloads once, before entering the simulation.
@@ -443,3 +631,41 @@ func _sync_ui() -> void:
 		weapon_buttons[index].tooltip_text = definition.hint
 		weapon_buttons[index].modulate = Color(definition.color)
 		weapon_buttons[index].disabled = not can_act or ammo == 0
+
+## Falling supplies are a birth position, speed and landing height, never a stream of reliable positions.
+func _environment_changes(objects: Array) -> Dictionary:
+	var live: Dictionary = {}
+	var upsert: Array = []
+	for object: Dictionary in objects:
+		if not object.has("id"):
+			_environment_id += 1
+			object["id"] = _environment_id
+		var value: Dictionary = object.duplicate(true)
+		if object.kind == "supply":
+			var landing: float = battle.ground(object.pos.x) - 18.0
+			var previous: Dictionary = _published_environment.get(object.id, {})
+			if previous.is_empty() or not is_equal_approx(previous.land_y, landing):
+				value["start_msec"] = api.net.host_time_msec()
+				value["land_y"] = landing
+			else:
+				value.pos = previous.pos
+				value["start_msec"] = previous.start_msec
+				value["land_y"] = previous.land_y
+		live[object.id] = value
+		if not _published_environment.has(object.id) or _published_environment[object.id] != value:
+			upsert.append(value)
+	var removed: Array[int] = []
+	for id: int in _published_environment:
+		if not live.has(id):
+			removed.append(id)
+	_published_environment = live
+	return {"upsert": upsert, "removed": removed}
+
+func _animate_environment() -> void:
+	var now: int = api.net.host_time_msec()
+	for object: Dictionary in _environment.values():
+		if object.kind == "supply":
+			object.pos.y = minf(object.land_y, object.origin_y + maxf(0.0, float(now - object.start_msec) / 1000.0) * 100.0)
+
+func _valid_projectile_sample(value: Variant) -> bool:
+	return value is Dictionary and value.get("id") is int and value.get("pos") is Vector2 and value.pos.is_finite() and value.get("vel") is Vector2 and value.vel.is_finite() and (value.get("boost") is float or value.get("boost") is int) and is_finite(float(value.boost)) and value.get("support") is bool
