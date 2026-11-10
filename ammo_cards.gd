@@ -1,6 +1,6 @@
 extends HBoxContainer
 ## Local ammunition receipts. Snapshot event IDs prevent repeated notifications.
-const Battle: Script = preload("res://games/minigame/godot_party_default_artillery_game/battle.gd")
+const Battle: Script = preload("res://games/minigame/gp_artillery/battle.gd")
 @export var hold_seconds: float = 2.0
 var last_id: int = -1
 var last_turn: int = -1

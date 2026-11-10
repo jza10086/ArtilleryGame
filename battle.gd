@@ -1,7 +1,7 @@
 extends RefCounted
 ## Host-owned artillery rules and fixed-step ballistics; no input, UI or transport.
 ## The terrain is a solid heightfield: explosions excavate bowls, construction raises banks.
-const Settings: Script = preload("res://games/minigame/godot_party_default_artillery_game/settings.gd")
+const Settings: Script = preload("res://games/minigame/gp_artillery/settings.gd")
 const WIDTH: float = 1920.0
 const FLOOR: float = 970.0
 const CELL: float = 4.0

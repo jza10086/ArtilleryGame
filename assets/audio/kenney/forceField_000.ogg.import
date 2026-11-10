@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://djc0rw7kdk660"
-path="res://.godot/imported/forceField_000.ogg-9e194ca022ee22d0bdcb42df9328e88e.oggvorbisstr"
+path="res://.godot/imported/forceField_000.ogg-859d26d306f2679e02cbb192674885b0.oggvorbisstr"
 
 [deps]
 
-source_file="res://games/minigame/godot_party_default_artillery_game/assets/audio/kenney/forceField_000.ogg"
-dest_files=["res://.godot/imported/forceField_000.ogg-9e194ca022ee22d0bdcb42df9328e88e.oggvorbisstr"]
+source_file="res://games/minigame/gp_artillery/assets/audio/kenney/forceField_000.ogg"
+dest_files=["res://.godot/imported/forceField_000.ogg-859d26d306f2679e02cbb192674885b0.oggvorbisstr"]
 
 [params]
 

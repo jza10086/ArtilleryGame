@@ -1,7 +1,7 @@
 extends Node2D
 ## Chassis tilt carries the turret socket. Gun elevation is measured against the
 ## chassis upper half-plane; the sliding tube recoils along the bore independently of the hull.
-const Battle: Script = preload("res://games/minigame/godot_party_default_artillery_game/battle.gd")
+const Battle: Script = preload("res://games/minigame/gp_artillery/battle.gd")
 const RECOIL_TIME: float = 0.19
 @onready var hull: Node2D = %Hull
 @onready var turret: Node2D = %Turret

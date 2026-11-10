@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://dfibg3msqyl1s"
-path="res://.godot/imported/lowFrequency_explosion_000.ogg-cd86afd43990e5775130537abcbe380f.oggvorbisstr"
+path="res://.godot/imported/lowFrequency_explosion_000.ogg-b19c7ca123c34dbb9da75999c69d385b.oggvorbisstr"
 
 [deps]
 
-source_file="res://games/minigame/godot_party_default_artillery_game/assets/audio/kenney/lowFrequency_explosion_000.ogg"
-dest_files=["res://.godot/imported/lowFrequency_explosion_000.ogg-cd86afd43990e5775130537abcbe380f.oggvorbisstr"]
+source_file="res://games/minigame/gp_artillery/assets/audio/kenney/lowFrequency_explosion_000.ogg"
+dest_files=["res://.godot/imported/lowFrequency_explosion_000.ogg-b19c7ca123c34dbb9da75999c69d385b.oggvorbisstr"]
 
 [params]
 

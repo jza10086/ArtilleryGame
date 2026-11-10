@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://djdana8kyi4wj"
-path="res://.godot/imported/explosion3.ogg-511e19cd1ba544d6b553473e85378f6d.oggvorbisstr"
+path="res://.godot/imported/explosion3.ogg-f73aaaf67a696e308e8ffe9c43123cf0.oggvorbisstr"
 
 [deps]
 
-source_file="res://games/minigame/godot_party_default_artillery_game/assets/audio/explosions/explosion3.ogg"
-dest_files=["res://.godot/imported/explosion3.ogg-511e19cd1ba544d6b553473e85378f6d.oggvorbisstr"]
+source_file="res://games/minigame/gp_artillery/assets/audio/explosions/explosion3.ogg"
+dest_files=["res://.godot/imported/explosion3.ogg-f73aaaf67a696e308e8ffe9c43123cf0.oggvorbisstr"]
 
 [params]
 

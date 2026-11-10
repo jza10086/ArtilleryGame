@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="PartyAudioCue" format=3 uid="uid://chahfg1oyljqi"]
 
 [ext_resource type="Script" uid="uid://b8e8ifodc3mml" path="res://games/protocols/godot_party_default_protocol/audio/audio_cue.gd" id="1_hofcc"]
-[ext_resource type="AudioStream" uid="uid://t6gosnjyl8gt" path="res://games/minigame/godot_party_default_artillery_game/assets/audio/kenney/thrusterFire_000_short.wav" id="2_dkk3r"]
+[ext_resource type="AudioStream" uid="uid://t6gosnjyl8gt" path="res://games/minigame/gp_artillery/assets/audio/kenney/thrusterFire_000_short.wav" id="2_dkk3r"]
 
 [resource]
 script = ExtResource("1_hofcc")

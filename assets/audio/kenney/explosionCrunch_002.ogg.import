@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://jjhhious8fqi"
-path="res://.godot/imported/explosionCrunch_002.ogg-c3706cbddd33e84221c79ff79c008ced.oggvorbisstr"
+path="res://.godot/imported/explosionCrunch_002.ogg-4fb46a8f7ee3db16137ad309be918bed.oggvorbisstr"
 
 [deps]
 
-source_file="res://games/minigame/godot_party_default_artillery_game/assets/audio/kenney/explosionCrunch_002.ogg"
-dest_files=["res://.godot/imported/explosionCrunch_002.ogg-c3706cbddd33e84221c79ff79c008ced.oggvorbisstr"]
+source_file="res://games/minigame/gp_artillery/assets/audio/kenney/explosionCrunch_002.ogg"
+dest_files=["res://.godot/imported/explosionCrunch_002.ogg-4fb46a8f7ee3db16137ad309be918bed.oggvorbisstr"]
 
 [params]
 

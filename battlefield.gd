@@ -1,8 +1,8 @@
 extends Control
 ## Flat vector battlefield in the same 1920 × 1080 coordinate space as the shot simulation.
-const Battle: Script = preload("res://games/minigame/godot_party_default_artillery_game/battle.gd")
-const TankScene: PackedScene = preload("res://games/minigame/godot_party_default_artillery_game/tank_model.tscn")
-const TankModel: Script = preload("res://games/minigame/godot_party_default_artillery_game/tank_model.gd")
+const Battle: Script = preload("res://games/minigame/gp_artillery/battle.gd")
+const TankScene: PackedScene = preload("res://games/minigame/gp_artillery/tank_model.tscn")
+const TankModel: Script = preload("res://games/minigame/gp_artillery/tank_model.gd")
 const SKY: Color = Color("#070d1d")
 const GROUND: Color = Color("#083660")
 const INK: Color = Color("#e4faff")

@@ -1,8 +1,8 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://games/minigame/godot_party_default_artillery_game/battlefield.gd" id="script"]
-[ext_resource type="Curve" uid="uid://7ykrayrs44l1" path="res://games/minigame/godot_party_default_artillery_game/aim_taper.tres" id="2_86f1o"]
-[ext_resource type="Shader" uid="uid://drjwm03edmxrs" path="res://games/minigame/godot_party_default_artillery_game/terrain_fill.gdshader" id="2_5wmmb"]
+[ext_resource type="Script" path="res://games/minigame/gp_artillery/battlefield.gd" id="script"]
+[ext_resource type="Curve" uid="uid://7ykrayrs44l1" path="res://games/minigame/gp_artillery/aim_taper.tres" id="2_86f1o"]
+[ext_resource type="Shader" uid="uid://drjwm03edmxrs" path="res://games/minigame/gp_artillery/terrain_fill.gdshader" id="2_5wmmb"]
 
 [sub_resource type="Gradient" id="Glow"]
 offsets = PackedFloat32Array(0, 0.18, 0.46, 0.76, 1)

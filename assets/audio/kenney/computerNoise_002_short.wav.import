@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://f0ljffmw64a6"
-path="res://.godot/imported/computerNoise_002_short.wav-cdedd3f29be0abc68cc50c77760c4cd5.sample"
+path="res://.godot/imported/computerNoise_002_short.wav-3717b35219da97e4209256378e364259.sample"
 
 [deps]
 
-source_file="res://games/minigame/godot_party_default_artillery_game/assets/audio/kenney/computerNoise_002_short.wav"
-dest_files=["res://.godot/imported/computerNoise_002_short.wav-cdedd3f29be0abc68cc50c77760c4cd5.sample"]
+source_file="res://games/minigame/gp_artillery/assets/audio/kenney/computerNoise_002_short.wav"
+dest_files=["res://.godot/imported/computerNoise_002_short.wav-3717b35219da97e4209256378e364259.sample"]
 
 [params]
 

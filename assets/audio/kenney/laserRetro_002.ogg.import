@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://dxphhge4og07q"
-path="res://.godot/imported/laserRetro_002.ogg-670028dbf714147dc4af65751304c3d1.oggvorbisstr"
+path="res://.godot/imported/laserRetro_002.ogg-083de084900d3061eef905ffed39a3dc.oggvorbisstr"
 
 [deps]
 
-source_file="res://games/minigame/godot_party_default_artillery_game/assets/audio/kenney/laserRetro_002.ogg"
-dest_files=["res://.godot/imported/laserRetro_002.ogg-670028dbf714147dc4af65751304c3d1.oggvorbisstr"]
+source_file="res://games/minigame/gp_artillery/assets/audio/kenney/laserRetro_002.ogg"
+dest_files=["res://.godot/imported/laserRetro_002.ogg-083de084900d3061eef905ffed39a3dc.oggvorbisstr"]
 
 [params]
 

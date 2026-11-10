@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="PartyAudioCue" format=3 uid="uid://cqg1whwplmbff"]
 
 [ext_resource type="Script" uid="uid://b8e8ifodc3mml" path="res://games/protocols/godot_party_default_protocol/audio/audio_cue.gd" id="1_n46wm"]
-[ext_resource type="AudioStream" uid="uid://bn8rjvk4vefi5" path="res://games/minigame/godot_party_default_artillery_game/assets/audio/explosions/explosion2.ogg" id="2_l8hb0"]
+[ext_resource type="AudioStream" uid="uid://bn8rjvk4vefi5" path="res://games/minigame/gp_artillery/assets/audio/explosions/explosion2.ogg" id="2_l8hb0"]
 
 [resource]
 script = ExtResource("1_n46wm")

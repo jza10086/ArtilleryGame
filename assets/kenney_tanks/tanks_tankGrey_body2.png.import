@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cm36h0uhvaaye"
-path="res://.godot/imported/tanks_tankGrey_body2.png-51a1de3408d1628f5c8db77f3feee09a.ctex"
+path="res://.godot/imported/tanks_tankGrey_body2.png-3925fe5bea09f2f4c44e1279bbb7cc71.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://games/minigame/godot_party_default_artillery_game/assets/kenney_tanks/tanks_tankGrey_body2.png"
-dest_files=["res://.godot/imported/tanks_tankGrey_body2.png-51a1de3408d1628f5c8db77f3feee09a.ctex"]
+source_file="res://games/minigame/gp_artillery/assets/kenney_tanks/tanks_tankGrey_body2.png"
+dest_files=["res://.godot/imported/tanks_tankGrey_body2.png-3925fe5bea09f2f4c44e1279bbb7cc71.ctex"]
 
 [params]
 

@@ -1,8 +1,8 @@
 extends Control
 ## Party scope integration. Only the host simulates; clients send logical turn actions.
-const CombatAudio: Script = preload("res://games/minigame/godot_party_default_artillery_game/combat_audio.gd")
-const Battle: Script = preload("res://games/minigame/godot_party_default_artillery_game/battle.gd")
-const Battlefield: Script = preload("res://games/minigame/godot_party_default_artillery_game/battlefield.gd")
+const CombatAudio: Script = preload("res://games/minigame/gp_artillery/combat_audio.gd")
+const Battle: Script = preload("res://games/minigame/gp_artillery/battle.gd")
+const Battlefield: Script = preload("res://games/minigame/gp_artillery/battlefield.gd")
 const ACTION: StringName = &"artillery/action"
 const EVENTS: StringName = &"artillery/events"
 const MOTION: StringName = &"artillery/motion"
@@ -590,7 +590,7 @@ func _select(index: int) -> void:
 	arsenal.hide()
 	_sync_ui()
 
-const DefaultText: Translation = preload("res://games/minigame/godot_party_default_artillery_game/i18n/zh_Hans.po")
+const DefaultText: Translation = preload("res://games/minigame/gp_artillery/i18n/zh_Hans.po")
 
 func hud_text(key: StringName, values: Dictionary) -> String:
 	return DefaultText.get_message(key).format(values) if api == null else api.i18n.text(key, values)

@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://dgokwy1jpjvdn"
-path="res://.godot/imported/engineCircular_002.ogg-d39ca01783f695297e64499af94db26a.oggvorbisstr"
+path="res://.godot/imported/engineCircular_002.ogg-b7cc8cbae03eb90c3528de36056d9d59.oggvorbisstr"
 
 [deps]
 
-source_file="res://games/minigame/godot_party_default_artillery_game/assets/audio/kenney/engineCircular_002.ogg"
-dest_files=["res://.godot/imported/engineCircular_002.ogg-d39ca01783f695297e64499af94db26a.oggvorbisstr"]
+source_file="res://games/minigame/gp_artillery/assets/audio/kenney/engineCircular_002.ogg"
+dest_files=["res://.godot/imported/engineCircular_002.ogg-b7cc8cbae03eb90c3528de36056d9d59.oggvorbisstr"]
 
 [params]
 

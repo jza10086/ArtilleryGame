@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://bwltcvdcp7p64"
-path="res://.godot/imported/computerNoise_002.ogg-592ea37f07d286d64ad839fe46665ac2.oggvorbisstr"
+path="res://.godot/imported/computerNoise_002.ogg-99792ff35265ec7567dd00fcccd3f31d.oggvorbisstr"
 
 [deps]
 
-source_file="res://games/minigame/godot_party_default_artillery_game/assets/audio/kenney/computerNoise_002.ogg"
-dest_files=["res://.godot/imported/computerNoise_002.ogg-592ea37f07d286d64ad839fe46665ac2.oggvorbisstr"]
+source_file="res://games/minigame/gp_artillery/assets/audio/kenney/computerNoise_002.ogg"
+dest_files=["res://.godot/imported/computerNoise_002.ogg-99792ff35265ec7567dd00fcccd3f31d.oggvorbisstr"]
 
 [params]
 

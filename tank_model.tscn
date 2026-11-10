@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://31bt0smp1aw6"]
 
-[ext_resource type="Script" uid="uid://b26lth3vilyxh" path="res://games/minigame/godot_party_default_artillery_game/tank_model.gd" id="1_n3pah"]
-[ext_resource type="Texture2D" uid="uid://c6wv7hjlantp0" path="res://games/minigame/godot_party_default_artillery_game/assets/kenney_tanks/tanks_tankTracks2.png" id="2_s5qgu"]
-[ext_resource type="Texture2D" uid="uid://cm36h0uhvaaye" path="res://games/minigame/godot_party_default_artillery_game/assets/kenney_tanks/tanks_tankGrey_body2.png" id="3_0k4n5"]
-[ext_resource type="Texture2D" uid="uid://bw3npy2hkgq8g" path="res://games/minigame/godot_party_default_artillery_game/assets/kenney_tanks/tanks_turret1.png" id="4_7d6fy"]
+[ext_resource type="Script" uid="uid://b26lth3vilyxh" path="res://games/minigame/gp_artillery/tank_model.gd" id="1_n3pah"]
+[ext_resource type="Texture2D" uid="uid://c6wv7hjlantp0" path="res://games/minigame/gp_artillery/assets/kenney_tanks/tanks_tankTracks2.png" id="2_s5qgu"]
+[ext_resource type="Texture2D" uid="uid://cm36h0uhvaaye" path="res://games/minigame/gp_artillery/assets/kenney_tanks/tanks_tankGrey_body2.png" id="3_0k4n5"]
+[ext_resource type="Texture2D" uid="uid://bw3npy2hkgq8g" path="res://games/minigame/gp_artillery/assets/kenney_tanks/tanks_turret1.png" id="4_7d6fy"]
 
 [node name="TankModel" type="Node2D" unique_id=1218207356]
 script = ExtResource("1_n3pah")
