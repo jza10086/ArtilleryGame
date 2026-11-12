@@ -61,8 +61,8 @@ var display_time: float = 0.0
 @onready var arsenal: PanelContainer = %Arsenal
 var weapon_buttons: Array[Button] = []
 @onready var hud: MarginContainer = %Hud
-var briefing: Control
-var settlement: Control
+@export var briefing: Control
+@export var settlement: Control
 var final_result: Dictionary = {}
 @onready var combat_audio: CombatAudio = %CombatAudio
 
@@ -109,17 +109,11 @@ func _ready() -> void:
 		return
 	battle.setup(players, api.get_seed(), mode, api.get_settings())
 	_receive_state(battle.state.duplicate(true))
-	var gate_script: Script = api.load_asset({"package_id": api.protocol_id, "resource_key": "briefing_gate"}) as Script
-	if gate_script == null:
-		_fail("briefing_missing", "原版协议缺少准备界面")
-		return
-	briefing = gate_script.new()
-	var content: Dictionary = gate_script.read_content(get_script().resource_path.get_base_dir().path_join("manifest.json"), api)
+	var content: Dictionary = briefing.read_content(get_script().resource_path.get_base_dir().path_join("manifest.json"), api)
 	content["controls"] = [{"binding": "A / D · W / S · Q / E", "description": "按住移动 · 调整角度 · 减小 / 增大力度"},
 		{"binding": "鼠标左键长按", "description": "同时调整角度与力度，使弹道靠近指针；Space / 开火按钮发射；1–8 快选弹药；Esc 菜单"}]
 	briefing.configure(api, content)
 	briefing.play_requested.connect(_begin)
-	add_child(briefing)
 	var error: Error = api.mark_ready()
 	if error != OK:
 		_fail("ready_failed", error_string(error))
@@ -518,14 +512,8 @@ func _open_result(result: Dictionary) -> void:
 	final_result = result.duplicate(true)
 	hud.hide()
 	arsenal.hide()
-	var gate_script: Script = api.load_asset({"package_id": api.protocol_id, "resource_key": "settlement_gate"}) as Script
-	if gate_script == null:
-		_fail("settlement_missing", "原版协议缺少结算界面")
-		return
-	settlement = gate_script.new()
 	settlement.configure(api, {"title": "炮火争锋 · 对局结果", "rows": result.rankings}, request.request_id)
 	settlement.continued.connect(_submit)
-	add_child(settlement)
 
 func _submit() -> void:
 	if not api.is_host() or stopped:

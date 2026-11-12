@@ -1,0 +1,14 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://games/minigame/gp_artillery/ui/briefing.tscn" id="briefing"]
+[ext_resource type="PackedScene" path="res://games/minigame/gp_artillery/ui/settlement.tscn" id="settlement"]
+
+[node name="ProtocolPages" type="CanvasLayer"]
+process_mode = 3
+layer = 32
+
+[node name="Briefing" parent="." instance=ExtResource("briefing")]
+visible = false
+
+[node name="Settlement" parent="." instance=ExtResource("settlement")]
+visible = false

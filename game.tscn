@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://e1jstpqw82l3"]
 
+[ext_resource type="PackedScene" path="res://games/minigame/gp_artillery/ui/round_pages.tscn" id="protocol_pages"]
+
 [ext_resource type="Script" uid="uid://bb8fxkpjr4it" path="res://games/minigame/gp_artillery/game.gd" id="1_hqb37"]
 [ext_resource type="Theme" uid="uid://uwnrdgk1k5uq" path="res://core/ui/ambient_reveal/ambient_theme.tres" id="2_8nvs8"]
 [ext_resource type="Script" uid="uid://qb4bypwgffjc" path="res://games/minigame/gp_artillery/combat_audio.gd" id="4_p2hp6"]
@@ -173,7 +175,9 @@ corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
-[node name="ArtilleryBattle" type="Control" unique_id=1332144389]
+[node name="ArtilleryBattle" type="Control" unique_id=1332144389 node_paths=PackedStringArray("briefing", "settlement")]
+briefing = NodePath("ProtocolPages/Briefing")
+settlement = NodePath("ProtocolPages/Settlement")
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -564,3 +568,6 @@ theme = ExtResource("2_8nvs8")
 theme_override_constants/separation = 12
 alignment = 1
 script = ExtResource("ammo_cards")
+
+[node name="ProtocolPages" parent="." instance=ExtResource("protocol_pages")]
+unique_name_in_owner = true

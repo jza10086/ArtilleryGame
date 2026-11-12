@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://games/protocols/godot_party_default_protocol/briefing/briefing_page.tscn" id="1"]
+
+[node name="Briefing" instance=ExtResource("1")]
+
+[node name="Title" parent="View/Layout/Center/Content" index="0"]
+text = "炮火争锋"
+
+[node name="Introduction" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information/Rules/InformationScroll" index="0"]
+text = "1–8 人回合制炮击。自由混战、偶数人数团队对抗与单人试射；风力弹道、可破坏地形、16 种弹药，以及黑洞、空投、增伤、传送、反弹与无人机事件。"
+
+[editable path="View"]
