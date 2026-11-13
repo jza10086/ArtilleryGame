@@ -1,83 +1,10 @@
 {
-  "manifest_version": 2,
-  "core_api_major": 6,
-  "package_version": "1.1.12",
-  "id": "gp_artillery",
   "name": "炮火争锋",
   "kind": "minigame",
-  "supported_systems": [
-    "windows"
-  ],
-  "introduction": "1–8 人回合制炮击。自由混战、偶数人数团队对抗与单人试射；风力弹道、可破坏地形、16 种弹药，以及黑洞、空投、增伤、传送、反弹与无人机事件。",
-  "entry": "game.tscn",
-  "player_counts": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8
-  ],
-  "playable": true,
-  "adapters": [
-    {
-      "id": "standard",
-      "protocol": {
-        "id": "godot_party_default_protocol",
-        "api_major": 1,
-        "min_api_minor": 0
-      },
-      "entry": "adapter.gd"
-    }
-  ],
-  "localization": {
-    "supported_locales": [
-      "zh_Hans"
-    ],
-    "fallback_locale": "zh_Hans",
-    "translations": {
-      "zh_Hans": "i18n/zh_Hans.po"
-    }
-  },
-  "config_schema": "settings.gd",
+  "package_version": "0.0.1",
+  "framework_version": "0.0.1",
+  "remark": "",
   "dependencies": {
-    "godot_party_default_protocol": "1.0.14"
-  },
-  "player_count_rules": [
-    {
-      "when": {
-        "mode": "ffa"
-      },
-      "counts": [
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8
-      ]
-    },
-    {
-      "when": {
-        "mode": "teams"
-      },
-      "counts": [
-        2,
-        4,
-        6,
-        8
-      ]
-    },
-    {
-      "when": {
-        "mode": "training"
-      },
-      "counts": [
-        1
-      ]
-    }
-  ]
+    "godot_party_default_protocol": "~0.0.1"
+  }
 }

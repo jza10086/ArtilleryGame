@@ -1,4 +1,9 @@
 extends Control
+
+## Content-owned gameplay rules, independent of package compatibility.
+static func party_definition() -> Dictionary:
+	return {"player_counts": [1, 2, 3, 4, 5, 6, 7, 8], "player_count_rules": [{"when": {"mode": "ffa"}, "counts": [2, 3, 4, 5, 6, 7, 8]}, {"when": {"mode": "teams"}, "counts": [2, 4, 6, 8]}, {"when": {"mode": "training"}, "counts": [1]}]}
+
 ## Party scope integration. Only the host simulates; clients send logical turn actions.
 const CombatAudio: Script = preload("res://games/minigame/gp_artillery/combat_audio.gd")
 const Battle: Script = preload("res://games/minigame/gp_artillery/battle.gd")

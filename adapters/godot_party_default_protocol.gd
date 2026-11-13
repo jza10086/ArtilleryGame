@@ -1,4 +1,9 @@
 extends RefCounted
+
+## Content-owned gameplay rules, independent of package compatibility.
+static func party_definition() -> Dictionary:
+	return {"dependencies": {}}
+
 ## Artillery supports the standard ranking contract; it does not consume resources.
 func check_request(request: Dictionary) -> Dictionary:
 	if request.mode != "standard":
