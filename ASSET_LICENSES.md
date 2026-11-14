@@ -25,3 +25,5 @@ CC0 仅适用于声明人有权处分的原创部分；第三方字体、采样�
 | --- | --- | --- | --- |
 | A13 · Tanks（侧视车体、履带、炮管 PNG） | Kenney / Kenney Vleugels | `assets/kenney_tanks/tanks_tankGrey_body2.png`<br>`assets/kenney_tanks/tanks_tankTracks2.png`<br>`assets/kenney_tanks/tanks_turret1.png` | CC0 1.0；派生、裁选或运行时调色不改变原作者署名。 |
 | F07 · DejaVu Sans / Sans Bold（Display.ttf、ui.ttf、ui_bold.ttf） | Bitstream、DejaVu 贡献者；版权元数据亦列 Tavmjong Bah | `prototype/assets/ui.ttf`<br>`prototype/assets/ui_bold.ttf` | Bitstream Vera 字体许可；DejaVu 修改部分为公有领域。不是 OFL 或统一 CC0。 |
+
+| Apex Pursuit、Heavy Ordnance、Impact Horizon | 用户提供，Google AI Lyria 生成（原始说明） | `assets/music/*.mp3`；原始说明 `assets/music/credit.txt`；来源 `F:/GodotProjects/Assets/ai_generated/bgm/炮火争锋BGM` | 原始说明未附具体许可条款；不纳入本包 CC0 声明。 |

@@ -1,5 +1,14 @@
 extends Node
-## Present host-issued sound events through the blank template's scoped audio component.
+## Scoped combat audio and a local shuffled music playlist through the blank template's mixer.
+@export var music_streams: Array[AudioStream] = [
+	preload("res://games/minigame/gp_artillery/assets/music/Apex_Pursuit.mp3"),
+	preload("res://games/minigame/gp_artillery/assets/music/Heavy_Ordnance.mp3"),
+	preload("res://games/minigame/gp_artillery/assets/music/Impact_Horizon.mp3")]
+@export_range(-60.0, 0.0) var music_volume_db: float = -14.0
+var music_queue: Array[int] = []
+var last_music: int = -1
+var music_handle: PartyAudioHandle
+var music_random: RandomNumberGenerator = RandomNumberGenerator.new()
 @export var engine_cue: PartyAudioCue
 @export var fire_cues: Array[PartyAudioCue] = []
 @export var impact_cues: Array[PartyAudioCue] = []
@@ -21,6 +30,10 @@ var move_left: float = 0.0
 var engine_gain: float = 0.0
 
 func _ready() -> void:
+	assert(not music_streams.is_empty())
+	for stream: AudioStream in music_streams:
+		assert(stream != null)
+	music_random.randomize()
 	assert(engine_cue != null and engine_cue.validate() == OK)
 	assert(fire_cues.size() == 16 and impact_cues.size() == 16)
 	for cue: PartyAudioCue in fire_cues + impact_cues + [cluster_split, rain_split, bounce_cue, drill_cue, mine_arm, black_hole_cue, portal_cue, amplifier_cue, supply_cue]:
@@ -29,11 +42,15 @@ func _ready() -> void:
 	engine.pitch_scale = engine_cue.pitch_scale
 
 func start() -> void:
+	if enabled:
+		return
 	mixer.route_player(engine, PartyGameAudio.Category.SFX)
 	enabled = true
+	_play_next_music()
 
 func finish() -> void:
 	enabled = false
+	mixer.stop_music(0.5)
 	move_left = 0.0
 	engine_gain = 0.0
 	engine.stop()
@@ -41,6 +58,38 @@ func finish() -> void:
 func close() -> void:
 	finish()
 	mixer.close_scope()
+
+## Shuffle without touching gameplay RNG, including the boundary between two playlists.
+func _next_music_index() -> int:
+	if music_queue.is_empty():
+		for index: int in music_streams.size():
+			music_queue.append(index)
+		for index: int in range(music_queue.size() - 1, 0, -1):
+			var other: int = music_random.randi_range(0, index)
+			var saved: int = music_queue[index]
+			music_queue[index] = music_queue[other]
+			music_queue[other] = saved
+		if music_queue.size() > 1 and music_queue.back() == last_music:
+			music_queue[music_queue.size() - 1] = music_queue[0]
+			music_queue[0] = last_music
+	last_music = music_queue.pop_back()
+	return last_music
+
+func _play_next_music() -> void:
+	var cue: PartyAudioCue = PartyAudioCue.new()
+	cue.stream = music_streams[_next_music_index()]
+	cue.volume_db = music_volume_db
+	cue.loop_mode = PartyAudioCue.LoopMode.DISABLED
+	music_handle = mixer.play_music(cue, 0.6)
+	if music_handle.error != OK:
+		push_error("Artillery music playback failed: " + error_string(music_handle.error))
+		finish()
+		return
+	music_handle.ended.connect(_music_ended.bind(music_handle), CONNECT_ONE_SHOT)
+
+func _music_ended(reason: PartyAudioHandle.EndReason, handle: PartyAudioHandle) -> void:
+	if enabled and handle == music_handle and reason == PartyAudioHandle.EndReason.COMPLETED:
+		_play_next_music()
 
 func _process(delta: float) -> void:
 	if not enabled:
@@ -79,7 +128,7 @@ func update_state(snapshot: Dictionary) -> Error:
 			"reset":
 				move_left = 0.0
 				engine_gain = 0.0
-				mixer.stop_all()
+				mixer.stop_category(PartyGameAudio.Category.SFX)
 				continue
 			"fire":
 				cue = fire_cues[event.weapon]
