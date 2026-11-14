@@ -81,6 +81,7 @@ func party_setup(value: PartyAPI, config: Dictionary) -> void:
 			local_id = player.player_id
 
 func _ready() -> void:
+	board.extrapolate_physics = api == null or api.is_host()
 	add_to_group("party_minimal_hud")
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -138,6 +139,9 @@ func _physics_process(delta: float) -> void:
 		if network_time >= 0.05 or battle.state.phase == "over":
 			network_time = 0.0
 			_publish()
+		else:
+			# Local presentation follows physics, independently of the network send rate.
+			_receive_state(battle.state.duplicate(true))
 
 func _process(delta: float) -> void:
 	if state.is_empty():
@@ -391,9 +395,6 @@ func _animate_projectiles(delta: float) -> void:
 		shot.pos = position if shot.pos.distance_to(position) > 180.0 else shot.pos.lerp(position, 1.0 - exp(-delta * 30.0))
 		shot.boost = target.boost
 		shot.support = target.support
-		shot.trail.append(shot.pos)
-		if shot.trail.size() > 24:
-			shot.trail.pop_front()
 
 func _receive_state(value: Dictionary) -> void:
 	state = value

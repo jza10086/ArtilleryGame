@@ -7,6 +7,11 @@ const SKY: Color = Color("#070d1d")
 const GROUND: Color = Color("#083660")
 const INK: Color = Color("#e4faff")
 var state: Dictionary = {}
+var extrapolate_physics: bool = false
+var rendered_shots: Array[Dictionary] = []
+var shot_trails: Dictionary[int, Array] = {}
+const TRAIL_SECONDS: float = 0.28
+const TRAIL_INTERVAL: float = 1.0 / 120.0
 var ground_profile: PackedFloat32Array = PackedFloat32Array()
 var initial_profile: PackedFloat32Array = PackedFloat32Array()
 var previous_msaa: Viewport.MSAA = Viewport.MSAA_DISABLED
@@ -100,6 +105,7 @@ func _process(delta: float) -> void:
 	if state.is_empty():
 		return
 	effect_time += delta
+	_update_projectile_visuals()
 	for i: int in range(health_numbers.size() - 1, -1, -1):
 		health_numbers[i].age += delta
 		if health_numbers[i].age >= number_enter_seconds + number_hold_seconds + number_exit_seconds:
@@ -124,6 +130,34 @@ func _process(delta: float) -> void:
 		_update_aim()
 	light_layer.queue_redraw()
 	foreground.queue_redraw()
+
+## Render-rate positions and time-based trails are independent of network and physics cadence.
+func _update_projectile_visuals() -> void:
+	rendered_shots.clear()
+	var alive: Dictionary[int, bool] = {}
+	var ahead: float = Engine.get_physics_interpolation_fraction() / Engine.physics_ticks_per_second if extrapolate_physics else 0.0
+	for shot: Dictionary in state.projectiles:
+		var id: int = shot.id
+		alive[id] = true
+		var visual: Dictionary = shot.duplicate()
+		visual.pos = shot.pos + shot.vel * ahead
+		var samples: Array = shot_trails.get(id, [])
+		if not samples.is_empty() and samples.back().pos.distance_to(visual.pos) > 180.0:
+			samples.clear()
+		while not samples.is_empty() and effect_time - float(samples[0].time) > TRAIL_SECONDS:
+			samples.pop_front()
+		if samples.is_empty() or effect_time - float(samples.back().time) >= TRAIL_INTERVAL:
+			samples.append({"pos": visual.pos, "time": effect_time})
+		shot_trails[id] = samples
+		var points: PackedVector2Array = PackedVector2Array()
+		for sample: Dictionary in samples:
+			points.append(sample.pos)
+		points.append(visual.pos)
+		visual.trail = points
+		rendered_shots.append(visual)
+	for id: int in shot_trails.keys():
+		if not alive.has(id):
+			shot_trails.erase(id)
 
 func update_state(value: Dictionary) -> void:
 	var first_snapshot: bool = state.is_empty()
@@ -185,7 +219,7 @@ func _draw_lights() -> void:
 	if state.is_empty():
 		return
 	_event_lights()
-	for shot: Dictionary in state.projectiles:
+	for shot: Dictionary in rendered_shots:
 		var tint: Color = Color("#8cffe0") if shot.support else Color(Battle.WEAPONS[shot.weapon].color)
 		_glow(shot.pos, 39.0 * shot.boost, Color(tint, 0.92))
 		for i: int in range(0, shot.trail.size(), 3):
@@ -203,7 +237,7 @@ func _draw_foreground() -> void:
 	_draw_events()
 	for i: int in state.tanks.size():
 		_tank_label(i)
-	for shot: Dictionary in state.projectiles:
+	for shot: Dictionary in rendered_shots:
 		var tint: Color = Color("#8cffe0") if shot.support else Color(Battle.WEAPONS[shot.weapon].color)
 		for i: int in range(1, shot.trail.size()):
 			var strength: float = float(i) / (shot.trail.size() - 1)

@@ -82,3 +82,5 @@ F6 运行 `game.tscn` 可查看 1920×1080 构图；实际试射从大厅选择�
 - [Original artwork](gp_artillery_prototype_assets_guide.md)
 - [References and asset provenance](gp_artillery_references.md)
 - [炮火争锋验证](gp_artillery_testing.md)
+
+动画由本地渲染帧推进：坦克在相邻移动位置间连续插值；房主画面跟随物理状态而非网络发布频率，炮弹补间至当前渲染帧。拖尾按 0.28 秒保留，传送时断开；爆炸、后坐、光效和飘字逐帧播放，网络运动采样仍为 20 Hz。
