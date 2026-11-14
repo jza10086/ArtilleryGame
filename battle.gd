@@ -60,14 +60,14 @@ func setup(players: Array[Dictionary], seed_value: int, mode: String, configurat
 		if mode == "training":
 			ammo.fill(-1)
 		tanks.append({"id": players[i].player_id, "name": players[i].name,
-			"color": players[i].color, "x": x, "aim": 45.0 if x < WIDTH * 0.5 else 135.0, "shots": 0, "fuel": 90.0, "acted": false,
+			"color": players[i].color, "x": x, "aim": 45.0 if x < WIDTH * 0.5 else 135.0, "shots": 0, "fuel": 90.0, "pose_epoch": 0, "acted": false,
 			"hp": 200, "shield": 0, "jammed": false, "team": i % 2 if mode == "teams" else i,
 			"ammo": ammo, "damage": 0, "eliminated": 0, "withdrawn": false})
 	if mode == "training":
 		for i: int in 3:
 			var x: float = 860.0 + i * 330.0
 			tanks.append({"id": "target_%d" % i, "name": "靶标 %d" % (i + 1), "color": "ff7d91",
-				"x": x, "aim": 45.0 if x < WIDTH * 0.5 else 135.0, "shots": 0, "fuel": 90.0, "acted": false, "hp": 200, "shield": 0, "jammed": false, "team": i + 1,
+				"x": x, "aim": 45.0 if x < WIDTH * 0.5 else 135.0, "shots": 0, "fuel": 90.0, "pose_epoch": 0, "acted": false, "hp": 200, "shield": 0, "jammed": false, "team": i + 1,
 				"ammo": [], "damage": 0, "eliminated": 0, "withdrawn": false})
 	state = {"mode": mode, "terrain": terrain, "terrain_origin": terrain.duplicate(), "tanks": tanks, "projectiles": [],
 		"impacts": [], "health_feedback": [], "audio_events": [], "ammo_events": [], "events": [], "hazards": [], "bursts": [], "notice": "", "notice_left": 0.0, "turn": 0, "round": 0, "active_team": -1, "active": -1, "phase": "aim", "time": TURN_SECONDS,
@@ -147,6 +147,7 @@ func _next_turn() -> void:
 				_grant_ammo(tank, [Settings.TIERS[0][rng.randi_range(0, Settings.TIERS[0].size() - 1)]])
 	for i: int in state.tanks.size():
 		var tank: Dictionary = state.tanks[i]
+		tank.pose_epoch += 1
 		tank.acted = false
 		if tank.team == state.active_team if state.mode == "teams" else i == state.active:
 			tank.fuel = 45.0 if tank.jammed else 90.0
@@ -231,22 +232,9 @@ func command(player_id: String, turn_number: int, action: String, values: Dictio
 	var tank: Dictionary = state.tanks[actor]
 	match action:
 		"move":
-			var dx: float = float(values.direction) * minf(12.0, tank.fuel)
-			var x: float = clampf(tank.x + dx, 40.0, WIDTH - 40.0)
-			if tank.fuel <= 0.0 or not can_traverse(tank.x, x):
+			if not move_tank(tank, float(values.direction) * 12.0):
 				return false
-			for other: Dictionary in state.tanks:
-				if other.id != tank.id and other.hp > 0 and absf(other.x - x) < 42.0:
-					return false
-			tank.fuel -= absf(x - float(tank.x))
-			if x != tank.x:
-				_sound("move")
-			tank.x = x
-			_seat_on_ground(tank)
-			_collect_supplies(actor)
-			_trigger_mines()
-			if tank.hp <= 0:
-				_team_ready()
+			movement_effects(actor)
 		"fire":
 			var weapon: int = values.weapon
 			if tank.ammo[weapon] == 0:
@@ -278,6 +266,27 @@ func command(player_id: String, turn_number: int, action: String, values: Dictio
 		_:
 			return false
 	return true
+
+## Shared owner-side movement rule: no damage, pickup, audio or network side effects.
+func move_tank(tank: Dictionary, distance: float) -> bool:
+	var dx: float = signf(distance) * minf(absf(distance), float(tank.fuel))
+	var x: float = clampf(float(tank.x) + dx, 40.0, WIDTH - 40.0)
+	if is_zero_approx(dx) or x == tank.x or not can_traverse(tank.x, x):
+		return false
+	for other: Dictionary in state.tanks:
+		if other.id != tank.id and other.hp > 0 and float(other.x) > minf(float(tank.x), x) - 42.0 and float(other.x) < maxf(float(tank.x), x) + 42.0:
+			return false
+	tank.fuel = maxf(0.0, float(tank.fuel) - absf(x - float(tank.x)))
+	tank.x = x
+	_seat_on_ground(tank)
+	return true
+
+## Host resolves shared consequences once an owner's new position arrives.
+func movement_effects(actor: int) -> void:
+	_collect_supplies(actor)
+	_trigger_mines()
+	if state.tanks[actor].hp <= 0:
+		_team_ready()
 
 func _launch(actor: int, values: Dictionary) -> void:
 	var tank: Dictionary = state.tanks[actor]
@@ -443,6 +452,7 @@ func _blast(pos: Vector2, weapon: int, owner: int = -1, damage_scale: float = 1.
 		if ground(destination) >= FLOOR - 15.0 or shooter.hp <= 0:
 			_notify("跃迁落点不可用")
 			return
+		shooter.pose_epoch += 1
 		shooter.x = destination
 		_seat_on_ground(shooter)
 		_collect_supplies(state.active if owner < 0 else owner)
@@ -485,7 +495,10 @@ func _blast(pos: Vector2, weapon: int, owner: int = -1, damage_scale: float = 1.
 		if tank.hp <= 0:
 			continue
 		var old_y: float = tank.y
+		var old_tilt: float = tank.tilt
 		_seat_on_ground(tank)
+		if not is_equal_approx(float(tank.y), old_y) or not is_equal_approx(float(tank.tilt), old_tilt):
+			tank.pose_epoch += 1
 		var fall: float = tank.y - old_y
 		if state.mode != "training" or tank.id.begins_with("target_"):
 			_hurt(tank, maxi(0, roundi((fall - 65.0) * 0.32)))

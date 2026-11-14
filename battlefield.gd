@@ -17,6 +17,7 @@ var initial_profile: PackedFloat32Array = PackedFloat32Array()
 var previous_msaa: Viewport.MSAA = Viewport.MSAA_DISABLED
 var render_viewport: Viewport
 var aim_tank: int = 0
+var local_tank: int = -1
 var aim_angle: float = 45.0
 var aim_power: float = 60.0
 var weapon: int = 0
@@ -120,7 +121,7 @@ func _process(delta: float) -> void:
 		var tint: Color = Color(tank.color)
 		if state.mode == "teams":
 			tint = [Color("#73d9ed"), Color("#ff947d")][tank.team]
-		models[i].pose(tank, degrees, tint, delta)
+		models[i].pose(tank, degrees, tint, delta, i == local_tank)
 	for event: Dictionary in state.events:
 		if event.kind == "supply":
 			var key: Vector2 = Vector2(event.pos.x, event.expires)
