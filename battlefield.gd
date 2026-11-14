@@ -1,5 +1,5 @@
 extends Control
-## Flat vector battlefield in the same 1920 × 1080 coordinate space as the shot simulation.
+## World-space battlefield with a local smooth zoom; HUD stays in viewport space.
 const Battle: Script = preload("res://games/minigame/gp_artillery/battle.gd")
 const TankScene: PackedScene = preload("res://games/minigame/gp_artillery/tank_model.tscn")
 const TankModel: Script = preload("res://games/minigame/gp_artillery/tank_model.gd")
@@ -7,6 +7,13 @@ const SKY: Color = Color("#070d1d")
 const GROUND: Color = Color("#083660")
 const INK: Color = Color("#e4faff")
 var state: Dictionary = {}
+@export_range(1.0, 5.0) var maximum_zoom: float = 3.0
+@export_range(1.0, 30.0) var zoom_response: float = 12.0
+var view_zoom: float = 1.0
+var target_zoom: float = 1.0
+var view_size: Vector2 = Vector2(1920, 1080)
+var zoom_anchor: Vector2
+var screen_anchor: Vector2
 var extrapolate_physics: bool = false
 var rendered_shots: Array[Dictionary] = []
 var shot_trails: Dictionary[int, Array] = {}
@@ -100,11 +107,30 @@ func _exit_tree() -> void:
 	render_viewport.msaa_2d = previous_msaa
 
 func _resize_world() -> void:
-	world.scale = size / Vector2(1920, 1080)
+	zoom_anchor = view_size * 0.5
+	screen_anchor = size * 0.5
+	_apply_view()
+
+func mouse_world_position() -> Vector2:
+	return world.get_local_mouse_position()
+
+## Preserve the point under the pointer while zooming; clamp the view inside the map.
+func zoom_at(steps: float, pointer: Vector2) -> void:
+	zoom_anchor = (pointer - world.position) / world.scale
+	screen_anchor = pointer
+	target_zoom = clampf(target_zoom * pow(1.16, steps), 1.0, maximum_zoom)
+
+func _apply_view() -> void:
+	world.scale = size / view_size * view_zoom
+	var desired: Vector2 = screen_anchor - zoom_anchor * world.scale
+	var minimum: Vector2 = size - view_size * world.scale
+	world.position = Vector2(clampf(desired.x, minimum.x, 0.0), clampf(desired.y, minimum.y, 0.0))
 
 func _process(delta: float) -> void:
 	if state.is_empty():
 		return
+	view_zoom = lerpf(view_zoom, target_zoom, 1.0 - exp(-delta * zoom_response))
+	_apply_view()
 	effect_time += delta
 	_update_projectile_visuals()
 	for i: int in range(health_numbers.size() - 1, -1, -1):
@@ -163,6 +189,12 @@ func _update_projectile_visuals() -> void:
 func update_state(value: Dictionary) -> void:
 	var first_snapshot: bool = state.is_empty()
 	state = value
+	if first_snapshot or view_size != state.world_size:
+		view_size = state.world_size
+		view_zoom = 1.0
+		target_zoom = 1.0
+		$World/Scenery.scale = view_size / Vector2(1920, 1080)
+		_resize_world()
 	# A newly opened view starts from the current state rather than replaying old hits.
 	if first_snapshot and not state.health_feedback.is_empty():
 		last_health_feedback = state.health_feedback.back().id
@@ -180,6 +212,8 @@ func update_state(value: Dictionary) -> void:
 		initial_profile = state.terrain_origin.duplicate()
 		var profile_image: Image = Image.create_from_data(initial_profile.size(), 1, false, Image.FORMAT_RF, initial_profile.to_byte_array())
 		terrain_material.set_shader_parameter("initial_surface", ImageTexture.create_from_image(profile_image))
+		terrain_material.set_shader_parameter("sample_count", initial_profile.size())
+		terrain_material.set_shader_parameter("gradient_depth", 179.0 * view_size.y / 1080.0)
 	if ground_profile != state.terrain:
 		ground_profile = state.terrain
 		terrain.queue_redraw()
@@ -195,10 +229,10 @@ func update_state(value: Dictionary) -> void:
 func _draw_terrain() -> void:
 	if state.is_empty():
 		return
-	var land: PackedVector2Array = PackedVector2Array([Vector2(0, 1080)])
+	var land: PackedVector2Array = PackedVector2Array([Vector2(0, view_size.y)])
 	for i: int in state.terrain.size():
 		land.append(Vector2(i * Battle.CELL, state.terrain[i]))
-	land.append(Vector2(1920, 1080))
+	land.append(Vector2(view_size.x, view_size.y))
 	terrain.draw_colored_polygon(land, Color.WHITE)
 
 func _glow(point: Vector2, radius: float, tint: Color) -> void:
@@ -244,7 +278,7 @@ func _draw_foreground() -> void:
 			var strength: float = float(i) / (shot.trail.size() - 1)
 			foreground.draw_line(shot.trail[i - 1], shot.trail[i], Color(tint, strength * 0.88), 1.0 + strength * 2.0, true)
 		if shot.pos.y < 0.0:
-			var x: float = clampf(shot.pos.x, 12.0, 1908.0)
+			var x: float = clampf(shot.pos.x, 12.0, view_size.x - 12.0)
 			foreground.draw_colored_polygon(PackedVector2Array([Vector2(x, 8), Vector2(x - 6, 18), Vector2(x + 6, 18)]), tint)
 		foreground.draw_circle(shot.pos, 5.0 * shot.boost, tint, true, -1, true)
 		foreground.draw_circle(shot.pos, 2.8, tint.lerp(Color.WHITE, 0.88), true, -1, true)
@@ -333,7 +367,7 @@ func _event_lights() -> void:
 		_glow(p, 75.0 if hazard.kind == "fire" else 25.0, Color(1, 0.3, 0.1, 0.55) if hazard.kind == "fire" else Color(1, 0.15, 0.4, 0.6))
 
 func _surface_y(x: float) -> float:
-	return state.terrain[clampi(roundi(x / Battle.CELL), 0, 480)]
+	return state.terrain[clampi(roundi(x / Battle.CELL), 0, state.terrain.size() - 1)]
 
 ## Blue/orange portals are dark apertures, distinct from the spiral gravity well.
 func _portal(point: Vector2, tint: Color, phase: float) -> void:

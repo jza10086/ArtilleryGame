@@ -2,8 +2,7 @@ extends RefCounted
 ## Host-owned artillery rules and fixed-step ballistics; no input, UI or transport.
 ## The terrain is a solid heightfield: explosions excavate bowls, construction raises banks.
 const Settings: Script = preload("res://games/minigame/gp_artillery/settings.gd")
-const WIDTH: float = 1920.0
-const FLOOR: float = 970.0
+const BASE_SIZE: Vector2 = Vector2(1920, 1080)
 const CELL: float = 4.0
 const GUN_MOUNT: Vector2 = Vector2(0, -23)
 const BARREL_LENGTH: float = 38.0
@@ -45,31 +44,34 @@ var _projectile_id: int = 0
 func setup(players: Array[Dictionary], seed_value: int, mode: String, configuration: Dictionary = {}) -> void:
 	rules = configuration.duplicate(true)
 	rng.seed = seed_value
+	var map_scale: float = float(configuration.get("map_scale", Settings.DEFAULT_MAP_SCALE))
+	var map_size: Vector2 = BASE_SIZE * map_scale
 	var terrain: PackedFloat32Array = PackedFloat32Array()
 	var phase_offset: float = rng.randf_range(0.0, TAU)
-	for i: int in 481:
-		var x: float = float(i) * CELL
-		terrain.append(690.0 + sin(x * 0.0045 + phase_offset) * 100.0 + sin(x * 0.012 + phase_offset) * 35.0)
+	for i: int in roundi(map_size.x / CELL) + 1:
+		var x: float = float(i) * CELL / map_scale
+		terrain.append((690.0 + sin(x * 0.0045 + phase_offset) * 100.0 + sin(x * 0.012 + phase_offset) * 35.0) * map_scale)
 	var tanks: Array[Dictionary] = []
 	for i: int in players.size():
 		var x: float = 180.0 if mode == "training" else lerpf(160.0, 1760.0, float(i) / float(maxi(1, players.size() - 1)))
 		if mode == "teams":
 			var half: int = players.size() / 2
 			x = lerpf(140.0, 780.0, float(i / 2) / float(maxi(1, half - 1))) if i % 2 == 0 else lerpf(1140.0, 1780.0, float(i / 2) / float(maxi(1, half - 1)))
+		x *= map_scale
 		var ammo: Array[int] = Settings.initial_ammo(configuration)
 		if mode == "training":
 			ammo.fill(-1)
 		tanks.append({"id": players[i].player_id, "name": players[i].name,
-			"color": players[i].color, "x": x, "aim": 45.0 if x < WIDTH * 0.5 else 135.0, "shots": 0, "fuel": 90.0, "pose_epoch": 0, "acted": false,
+			"color": players[i].color, "x": x, "aim": 45.0 if x < map_size.x * 0.5 else 135.0, "shots": 0, "fuel": 90.0, "pose_epoch": 0, "acted": false,
 			"hp": 200, "shield": 0, "jammed": false, "team": i % 2 if mode == "teams" else i,
 			"ammo": ammo, "damage": 0, "eliminated": 0, "withdrawn": false})
 	if mode == "training":
 		for i: int in 3:
-			var x: float = 860.0 + i * 330.0
+			var x: float = (860.0 + i * 330.0) * map_scale
 			tanks.append({"id": "target_%d" % i, "name": "靶标 %d" % (i + 1), "color": "ff7d91",
-				"x": x, "aim": 45.0 if x < WIDTH * 0.5 else 135.0, "shots": 0, "fuel": 90.0, "pose_epoch": 0, "acted": false, "hp": 200, "shield": 0, "jammed": false, "team": i + 1,
+				"x": x, "aim": 45.0 if x < map_size.x * 0.5 else 135.0, "shots": 0, "fuel": 90.0, "pose_epoch": 0, "acted": false, "hp": 200, "shield": 0, "jammed": false, "team": i + 1,
 				"ammo": [], "damage": 0, "eliminated": 0, "withdrawn": false})
-	state = {"mode": mode, "terrain": terrain, "terrain_origin": terrain.duplicate(), "tanks": tanks, "projectiles": [],
+	state = {"world_size": map_size, "floor_y": 970.0 * map_scale, "mode": mode, "terrain": terrain, "terrain_origin": terrain.duplicate(), "tanks": tanks, "projectiles": [],
 		"impacts": [], "health_feedback": [], "audio_events": [], "ammo_events": [], "events": [], "hazards": [], "bursts": [], "notice": "", "notice_left": 0.0, "turn": 0, "round": 0, "active_team": -1, "active": -1, "phase": "aim", "time": TURN_SECONDS,
 		"wind": Vector2.ZERO, "wait": 0.0, "winner": -2, "revision": 0}
 	for tank: Dictionary in tanks:
@@ -118,8 +120,8 @@ func can_traverse(from_x: float, to_x: float) -> bool:
 	return true
 
 func ground(x: float) -> float:
-	var cell: float = clampf(x / CELL, 0.0, 480.0)
-	var left: int = mini(479, int(cell))
+	var cell: float = clampf(x / CELL, 0.0, float(state.terrain.size() - 1))
+	var left: int = mini(state.terrain.size() - 2, int(cell))
 	return lerpf(state.terrain[left], state.terrain[left + 1], cell - left)
 
 func _next_turn() -> void:
@@ -270,7 +272,7 @@ func command(player_id: String, turn_number: int, action: String, values: Dictio
 ## Shared owner-side movement rule: no damage, pickup, audio or network side effects.
 func move_tank(tank: Dictionary, distance: float) -> bool:
 	var dx: float = signf(distance) * minf(absf(distance), float(tank.fuel))
-	var x: float = clampf(float(tank.x) + dx, 40.0, WIDTH - 40.0)
+	var x: float = clampf(float(tank.x) + dx, 40.0, state.world_size.x - 40.0)
 	if is_zero_approx(dx) or x == tank.x or not can_traverse(tank.x, x):
 		return false
 	for other: Dictionary in state.tanks:
@@ -343,7 +345,7 @@ func _fly(delta: float) -> void:
 		var previous_y: float = shot.vel.y
 		if shot.rolling > 0.0:
 			shot.rolling += delta
-			shot.pos.x = clampf(shot.pos.x + signf(shot.vel.x) * 145.0 * delta, 1.0, WIDTH - 1.0)
+			shot.pos.x = clampf(shot.pos.x + signf(shot.vel.x) * 145.0 * delta, 1.0, state.world_size.x - 1.0)
 			shot.pos.y = ground(shot.pos.x) - 5.0
 			var near_tank: bool = false
 			for tank: Dictionary in state.tanks:
@@ -367,7 +369,7 @@ func _fly(delta: float) -> void:
 		var absorbed: bool = false
 		for s: int in steps:
 			var next: Vector2 = shot.pos + displacement / float(steps)
-			if next.x < 0.0 or next.x > WIDTH or next.y > FLOOR:
+			if next.x < 0.0 or next.x > state.world_size.x or next.y > state.floor_y:
 				shot.pos = next
 				hit = true
 				break
@@ -410,10 +412,10 @@ func _fly(delta: float) -> void:
 			shot.trail.pop_front()
 		if shot.weapon == 4 and shot.age >= 3.0:
 			hit = true
-		if absorbed or shot.age > 12.0 or shot.pos.y < -1400.0:
+		if absorbed or shot.age > 12.0 or shot.pos.y < -1400.0 * state.world_size.y / BASE_SIZE.y:
 			state.projectiles.remove_at(i)
 		elif hit:
-			if shot.pos.x >= 0.0 and shot.pos.x <= WIDTH and shot.pos.y <= FLOOR:
+			if shot.pos.x >= 0.0 and shot.pos.x <= state.world_size.x and shot.pos.y <= state.floor_y:
 				_resolve_hit(shot)
 			state.projectiles.remove_at(i)
 	state.projectiles.append_array(children)
@@ -428,7 +430,7 @@ func _resolve_hit(shot: Dictionary) -> void:
 			return
 	if weapon == 13:
 		for index: int in 5:
-			var x: float = clampf(shot.pos.x + (index - 2) * 64.0, 1.0, WIDTH - 1.0)
+			var x: float = clampf(shot.pos.x + (index - 2) * 64.0, 1.0, state.world_size.x - 1.0)
 			state.bursts.append({"owner": shot.owner, "x": x, "delay": absf(index - 2) * 0.18, "boost": shot.boost})
 		return
 	_blast(shot.pos, weapon, shot.owner, shot.boost)
@@ -444,12 +446,12 @@ func _blast(pos: Vector2, weapon: int, owner: int = -1, damage_scale: float = 1.
 	var total: int = 0
 	var shooter: Dictionary = state.tanks[state.active if owner < 0 else owner]
 	if weapon == 12:
-		var destination: float = clampf(pos.x, 40.0, WIDTH - 40.0)
+		var destination: float = clampf(pos.x, 40.0, state.world_size.x - 40.0)
 		for other: Dictionary in state.tanks:
 			if other != shooter and other.hp > 0 and absf(other.x - destination) < 48.0:
 				_notify("跃迁落点被占据")
 				return
-		if ground(destination) >= FLOOR - 15.0 or shooter.hp <= 0:
+		if ground(destination) >= state.floor_y - 15.0 or shooter.hp <= 0:
 			_notify("跃迁落点不可用")
 			return
 		shooter.pose_epoch += 1
@@ -481,16 +483,16 @@ func _blast(pos: Vector2, weapon: int, owner: int = -1, damage_scale: float = 1.
 	if weapon in [11, 15]:
 		return
 	var first: int = maxi(0, floori((pos.x - radius) / CELL))
-	var last: int = mini(480, ceili((pos.x + radius) / CELL))
+	var last: int = mini(state.terrain.size() - 1, ceili((pos.x + radius) / CELL))
 	for cell: int in range(first, last + 1):
 		var horizontal: float = float(cell) * CELL - pos.x
 		if absf(horizontal) > radius:
 			continue
 		var depth: float = sqrt(maxf(0.0, radius * radius - horizontal * horizontal))
 		if weapon == 6:
-			state.terrain[cell] = maxf(280.0, minf(state.terrain[cell], pos.y - depth * 0.85))
+			state.terrain[cell] = maxf(280.0 * state.world_size.y / BASE_SIZE.y, minf(state.terrain[cell], pos.y - depth * 0.85))
 		else:
-			state.terrain[cell] = minf(FLOOR, maxf(state.terrain[cell], pos.y + depth))
+			state.terrain[cell] = minf(state.floor_y, maxf(state.terrain[cell], pos.y + depth))
 	for tank: Dictionary in state.tanks:
 		if tank.hp <= 0:
 			continue
@@ -502,7 +504,7 @@ func _blast(pos: Vector2, weapon: int, owner: int = -1, damage_scale: float = 1.
 		var fall: float = tank.y - old_y
 		if state.mode != "training" or tank.id.begins_with("target_"):
 			_hurt(tank, maxi(0, roundi((fall - 65.0) * 0.32)))
-			if tank.y >= FLOOR - 15.0:
+			if tank.y >= state.floor_y - 15.0:
 				_hurt(tank, 200)
 
 func _hurt(tank: Dictionary, amount: int) -> void:
@@ -620,31 +622,31 @@ func _advance_events() -> void:
 						owner.damage += before - int(tank.hp) - int(tank.shield)
 	var cycle: int = (int(state.turn) - 1) % 8
 	if cycle == 0:
-		var x: float = rng.randf_range(650.0, 1270.0)
+		var x: float = rng.randf_range(650.0, 1270.0) * state.world_size.x / BASE_SIZE.x
 		state.events.append({"kind": "black_hole", "pos": Vector2(x, ground(x) - 240.0), "expires": state.turn + 3})
 		_notify("黑洞出现 · 引力弯曲弹道，核心吞噬炮弹")
 	if cycle in [0, 3, 6]:
-		var x: float = rng.randf_range(260.0, 1660.0)
+		var x: float = rng.randf_range(260.0, 1660.0) * state.world_size.x / BASE_SIZE.x
 		state.events.append({"kind": "supply", "pos": Vector2(x, 100.0), "expires": state.turn + 5})
 		_notify("黑洞扭曲弹道、吞噬炮弹 · 补给靠近或射中领取" if cycle == 0 else "补给空投 · 靠近或射中领取生命和弹药")
 	if cycle == 1:
-		var left: float = rng.randf_range(380.0, 680.0)
-		var right: float = rng.randf_range(1240.0, 1540.0)
+		var left: float = rng.randf_range(380.0, 680.0) * state.world_size.x / BASE_SIZE.x
+		var right: float = rng.randf_range(1240.0, 1540.0) * state.world_size.x / BASE_SIZE.x
 		state.events.append({"kind": "portal", "pos": Vector2(left, ground(left) - 165.0),
 			"exit": Vector2(right, ground(right) - 165.0), "expires": state.turn + 3})
 		_notify("双向传送门 · 炮弹保留速度，从另一端飞出")
 	if cycle == 2:
-		var x: float = rng.randf_range(820.0, 1100.0)
+		var x: float = rng.randf_range(820.0, 1100.0) * state.world_size.x / BASE_SIZE.x
 		state.events.append({"kind": "bumper", "pos": Vector2(x, ground(x) - 100.0), "expires": state.turn + 3})
 		_notify("反弹障碍 · 碰到洋红光环会反射弹道")
 	if cycle == 4:
-		var x: float = rng.randf_range(500.0, 1420.0)
+		var x: float = rng.randf_range(500.0, 1420.0) * state.world_size.x / BASE_SIZE.x
 		var factor: float = 3.0 if rng.randf() < 0.2 else 2.0
 		state.events.append({"kind": "amplifier", "pos": Vector2(x, ground(x) - 200.0),
 			"factor": factor, "radius": 26.0 if factor == 3.0 else 42.0, "expires": state.turn + 3})
 		_notify("增伤标记 ×%d · 首枚命中的炮弹领取，倍率取最高值" % int(factor))
 	if cycle == 5:
-		var x: float = rng.randf_range(460.0, 1460.0)
+		var x: float = rng.randf_range(460.0, 1460.0) * state.world_size.x / BASE_SIZE.x
 		state.events.append({"kind": "drone", "pos": Vector2(x, ground(x) - 330.0), "expires": state.turn + 2})
 		_notify("支援无人机 · 射中后向最近的敌人发射三枚炮弹")
 	_trigger_mines()
@@ -794,7 +796,7 @@ static func aim_path(snapshot: Dictionary, pos: Vector2, velocity: Vector2, weap
 				obstacle = obstacle or next.distance_to(event.pos) < BUMPER_RADIUS
 			elif event.kind == "black_hole":
 				obstacle = obstacle or next.distance_to(event.pos) < BLACK_HOLE_CORE
-		if obstacle or next.x < 0.0 or next.x > WIDTH:
+		if obstacle or next.x < 0.0 or next.x > snapshot.world_size.x:
 			break
 		if next.y >= snapshot.terrain[roundi(next.x / CELL)]:
 			break

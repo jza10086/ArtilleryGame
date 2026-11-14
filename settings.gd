@@ -1,5 +1,6 @@
 extends RefCounted
 ## Room-owned mode and local keyboard bindings; the manifest constrains player counts.
+const DEFAULT_MAP_SCALE: float = 1.5
 const AMMO_NAMES: Array[String] = ["标准弹", "重型爆破", "三重散射", "集束花火", "跳弹", "钻地弹", "造山弹", "虹吸弹", "滚地雷", "空爆弹雨", "燃烧弹", "电磁脉冲", "跃迁弹", "连锁震爆", "感应雷", "护盾弹"]
 
 static func initial_ammo(values: Dictionary) -> Array[int]:
@@ -24,8 +25,10 @@ static func schema() -> Dictionary:
 			"audience": "room", "apply": "next_round", "control": "select",
 			"values": ["ffa", "teams", "training"], "labels": ["自由混战", "团队对抗", "单人测试"]}
 	}, "layout": [{"id": "battle", "title": "对战规则", "expanded": true,
-		"children": [{"field": "mode"}]}]}
+		"children": [{"field": "mode"}, {"field": "map_scale"}]}]}
 
+	config.fields["map_scale"] = {"type": "float", "default": DEFAULT_MAP_SCALE, "title": "地图倍率",
+		"min": 1.0, "max": 3.0, "step": 0.25, "audience": "room", "apply": "next_round", "control": "number"}
 	var ammunition: Array[Dictionary] = []
 	var defaults: Array[int] = initial_ammo({})
 	for i: int in range(1, AMMO_NAMES.size()):

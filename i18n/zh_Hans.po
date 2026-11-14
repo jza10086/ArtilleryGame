@@ -132,3 +132,6 @@ msgstr "第 7 轮起每两轮配给"
 
 msgid "补给箱弹药"
 msgstr "补给箱弹药"
+
+msgid "地图倍率"
+msgstr "地图倍率"

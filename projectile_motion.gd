@@ -20,7 +20,7 @@ static func render(shot: Dictionary, snapshot: Dictionary, now_msec: int) -> Dic
 	var target_step: int = floori(elapsed / STEP)
 	while int(shot.steps) < target_step:
 		if shot.rolling:
-			shot.pos.x = clampf(shot.pos.x + signf(shot.vel.x) * 145.0 * STEP, 1.0, Battle.WIDTH - 1.0)
+			shot.pos.x = clampf(shot.pos.x + signf(shot.vel.x) * 145.0 * STEP, 1.0, snapshot.world_size.x - 1.0)
 			shot.pos.y = surface(snapshot, shot.pos.x) - 5.0
 		else:
 			shot.vel += Battle.projectile_acceleration(snapshot, shot.pos) * STEP
@@ -29,13 +29,13 @@ static func render(shot: Dictionary, snapshot: Dictionary, now_msec: int) -> Dic
 	var visual: Dictionary = shot.duplicate()
 	var remainder: float = elapsed - int(shot.steps) * STEP
 	if shot.rolling:
-		visual.pos.x = clampf(shot.pos.x + signf(shot.vel.x) * 145.0 * remainder, 1.0, Battle.WIDTH - 1.0)
+		visual.pos.x = clampf(shot.pos.x + signf(shot.vel.x) * 145.0 * remainder, 1.0, snapshot.world_size.x - 1.0)
 		visual.pos.y = surface(snapshot, visual.pos.x) - 5.0
 	else:
 		visual.pos += shot.vel * remainder
 	return visual
 
 static func surface(snapshot: Dictionary, x: float) -> float:
-	var cell: float = clampf(x / Battle.CELL, 0.0, 480.0)
-	var left: int = mini(479, int(cell))
+	var cell: float = clampf(x / Battle.CELL, 0.0, float(snapshot.terrain.size() - 1))
+	var left: int = mini(snapshot.terrain.size() - 2, int(cell))
 	return lerpf(snapshot.terrain[left], snapshot.terrain[left + 1], cell - left)

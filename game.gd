@@ -160,7 +160,7 @@ func _process(delta: float) -> void:
 		var power_axis: float = float(api.input.is_pressed(&"artillery_power_up")) - float(api.input.is_pressed(&"artillery_power_down"))
 		_apply_controls(delta, move_axis, angle_axis, power_axis)
 		if mouse_aiming and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-			_aim_mouse(board.get_local_mouse_position() * Vector2(1920, 1080) / board.size)
+			_aim_mouse(board.mouse_world_position())
 		else:
 			mouse_aiming = false
 	else:
@@ -244,7 +244,7 @@ func _valid_pose(value: Variant) -> bool:
 	for key: String in ["x", "fuel", "aim"]:
 		if not (value.get(key) is float or value.get(key) is int) or not is_finite(float(value[key])):
 			return false
-	return value.x >= 40.0 and value.x <= Battle.WIDTH - 40.0 and value.fuel >= 0.0 and value.fuel <= 90.0 and value.aim >= 0.0 and value.aim <= 180.0
+	return value.x >= 40.0 and value.x <= state.world_size.x - 40.0 and value.fuel >= 0.0 and value.fuel <= 90.0 and value.aim >= 0.0 and value.aim <= 180.0
 
 ## Trust ownership, not arbitrary sender IDs. Epochs reject movement predating a fall or teleport.
 func _accept_pose(actor: String, value: Dictionary) -> void:
@@ -304,7 +304,7 @@ func _publish() -> void:
 		_phase_key = phase_key
 		_phase_end_msec = api.net.host_time_msec() + roundi(float(current.time) * 1000.0)
 	var facts: Dictionary = {}
-	for key: String in ["mode", "turn", "round", "active_team", "active", "phase", "wind", "winner", "hazards", "notice"]:
+	for key: String in ["world_size", "floor_y", "mode", "turn", "round", "active_team", "active", "phase", "wind", "winner", "hazards", "notice"]:
 		if not _published_facts.has(key) or _published_facts[key] != current[key]:
 			facts[key] = current[key]
 	if facts.has("phase") or facts.has("turn"):
@@ -386,7 +386,7 @@ func _receive_events(payload: Dictionary) -> void:
 		if key == "end_msec":
 			if not payload.facts[key] is int:
 				return
-		elif key not in ["mode", "turn", "round", "active_team", "active", "phase", "wind", "winner", "hazards", "notice"] or typeof(payload.facts[key]) != typeof(state[key]):
+		elif key not in ["world_size", "floor_y", "mode", "turn", "round", "active_team", "active", "phase", "wind", "winner", "hazards", "notice"] or typeof(payload.facts[key]) != typeof(state[key]):
 			return
 	for entry: Variant in payload.environment.upsert:
 		if not entry is Dictionary or not entry.get("id") is int or not entry.get("pos") is Vector2 or not entry.pos.is_finite() or entry.get("kind") not in ["supply", "black_hole", "portal", "bumper", "amplifier", "drone"] or not entry.get("expires") is int:
@@ -616,6 +616,11 @@ func _notification(what: int) -> void:
 		held_direction = 0
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+		if (preview or (running and not stopped and not finished and not api.input.input_blocked)) and not arsenal.visible:
+			board.zoom_at(1.0 if event.button_index == MOUSE_BUTTON_WHEEL_UP else -1.0, board.get_local_mouse_position())
+			get_viewport().set_input_as_handled()
+		return
 	if not _can_act() or arsenal.visible:
 		return
 	if api.input.event_matches(event, &"artillery_fire"):
@@ -626,7 +631,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_select(event.physical_keycode - KEY_1)
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		mouse_aiming = true
-		_aim_mouse(board.get_local_mouse_position() * Vector2(1920, 1080) / board.size)
+		_aim_mouse(board.mouse_world_position())
 		get_viewport().set_input_as_handled()
 
 func _fire() -> void:
