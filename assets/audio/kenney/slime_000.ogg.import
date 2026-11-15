@@ -7,7 +7,7 @@ path="res://.godot/imported/slime_000.ogg-d167e971bb7b28f1cb60fa1221806cf1.oggvo
 
 [deps]
 
-source_file="res://games/minigame/gp_artillery/assets/audio/kenney/slime_000.ogg"
+source_file="res://games/minigame/GP_artillery/assets/audio/kenney/slime_000.ogg"
 dest_files=["res://.godot/imported/slime_000.ogg-d167e971bb7b28f1cb60fa1221806cf1.oggvorbisstr"]
 
 [params]

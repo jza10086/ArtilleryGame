@@ -7,7 +7,7 @@ path="res://.godot/imported/explosion2.ogg-aa1da719b981092b882095077b199fd5.oggv
 
 [deps]
 
-source_file="res://games/minigame/gp_artillery/assets/audio/explosions/explosion2.ogg"
+source_file="res://games/minigame/GP_artillery/assets/audio/explosions/explosion2.ogg"
 dest_files=["res://.godot/imported/explosion2.ogg-aa1da719b981092b882095077b199fd5.oggvorbisstr"]
 
 [params]

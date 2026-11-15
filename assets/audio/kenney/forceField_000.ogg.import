@@ -7,7 +7,7 @@ path="res://.godot/imported/forceField_000.ogg-859d26d306f2679e02cbb192674885b0.
 
 [deps]
 
-source_file="res://games/minigame/gp_artillery/assets/audio/kenney/forceField_000.ogg"
+source_file="res://games/minigame/GP_artillery/assets/audio/kenney/forceField_000.ogg"
 dest_files=["res://.godot/imported/forceField_000.ogg-859d26d306f2679e02cbb192674885b0.oggvorbisstr"]
 
 [params]

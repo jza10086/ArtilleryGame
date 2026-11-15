@@ -1,8 +1,8 @@
 extends Control
 ## World-space battlefield with a local smooth zoom; HUD stays in viewport space.
-const Battle: Script = preload("res://games/minigame/gp_artillery/battle.gd")
-const TankScene: PackedScene = preload("res://games/minigame/gp_artillery/tank_model.tscn")
-const TankModel: Script = preload("res://games/minigame/gp_artillery/tank_model.gd")
+const Battle: Script = preload("res://games/minigame/GP_artillery/battle.gd")
+const TankScene: PackedScene = preload("res://games/minigame/GP_artillery/tank_model.tscn")
+const TankModel: Script = preload("res://games/minigame/GP_artillery/tank_model.gd")
 const SKY: Color = Color("#070d1d")
 const GROUND: Color = Color("#083660")
 const INK: Color = Color("#e4faff")

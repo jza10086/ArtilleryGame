@@ -7,7 +7,7 @@ path="res://.godot/imported/explosionCrunch_004.ogg-75b4caedc127d744bc164e9369eb
 
 [deps]
 
-source_file="res://games/minigame/gp_artillery/assets/audio/kenney/explosionCrunch_004.ogg"
+source_file="res://games/minigame/GP_artillery/assets/audio/kenney/explosionCrunch_004.ogg"
 dest_files=["res://.godot/imported/explosionCrunch_004.ogg-75b4caedc127d744bc164e9369ebf0c9.oggvorbisstr"]
 
 [params]

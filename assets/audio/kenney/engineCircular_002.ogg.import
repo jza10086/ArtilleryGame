@@ -7,7 +7,7 @@ path="res://.godot/imported/engineCircular_002.ogg-b7cc8cbae03eb90c3528de36056d9
 
 [deps]
 
-source_file="res://games/minigame/gp_artillery/assets/audio/kenney/engineCircular_002.ogg"
+source_file="res://games/minigame/GP_artillery/assets/audio/kenney/engineCircular_002.ogg"
 dest_files=["res://.godot/imported/engineCircular_002.ogg-b7cc8cbae03eb90c3528de36056d9d59.oggvorbisstr"]
 
 [params]

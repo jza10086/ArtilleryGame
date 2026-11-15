@@ -63,9 +63,9 @@ GodotParty 原版协议的 1–8 人回合制炮击游戏。从正式主菜单�
 
 美术与玩法概念参考 [ShellShock Live 官方介绍](https://www.shellshocklive.com/)，未使用其素材或源码。坦克使用 [Kenney Tanks](https://kenney.nl/assets/tanks) 的 CC0 侧视素材，保留原始高清 PNG，以 Sprite2D 区域拆分车体和炮塔，独立绑定炮管。素材与许可位于 `assets/kenney_tanks/`；战场和事件光效由 Godot 绘制。原型中的字体许可仍见 `prototype/assets/FONT_LICENSE.txt`。
 
-F6 运行 `game.tscn` 可查看 1920×1080 构图；实际试射从大厅选择单人测试。验证命令与范围见 [TESTING.md](gp_artillery_testing.md)。
+F6 运行 `game.tscn` 可查看 1920×1080 构图；实际试射从大厅选择单人测试。验证命令与范围见 [TESTING.md](GP_artillery_testing.md)。
 
-音效沿用空白模板的 PartyGameAudio / PartyAudioCue：成功移动时播放连续发动机，开炮与 16 种命中音色按主机事件同步，子母弹分裂、子弹爆炸、跳弹、钻地、布雷与连锁震爆独立发声。音量沿用协议 SFX 设置，退出关闭作用域。音效可在 game.tscn 的 CombatAudio 节点和 audio/*.tres 中替换与调参；素材商用许可与逐文件来源见 [assets/audio/SOURCES.md](gp_artillery_assets_audio_sources.md)。
+音效沿用空白模板的 PartyGameAudio / PartyAudioCue：成功移动时播放连续发动机，开炮与 16 种命中音色按主机事件同步，子母弹分裂、子弹爆炸、跳弹、钻地、布雷与连锁震爆独立发声。音量沿用协议 SFX 设置，退出关闭作用域。音效可在 game.tscn 的 CombatAudio 节点和 audio/*.tres 中替换与调参；素材商用许可与逐文件来源见 [assets/audio/SOURCES.md](GP_artillery_assets_audio_sources.md)。
 
 多人配给按完整轮次计算：混战为所有存活玩家各行动一次；团队赛为两队各行动一次。第 3 轮默认每人领取基础 1＋进阶 1；第 5 轮基础 1＋进阶 1＋高级 1；第 7 轮起每两轮基础 1＋进阶 2＋高级 1。房主可分别配置这三个阶段以及补给箱的各品质数量（每品质 0–10 发）。每名玩家独立随机抽取，品质数量一致，弹种允许偶然重复；淘汰玩家不领取。基础池：重型／散射／跳弹／造山／滚地雷／感应雷；进阶池：钻地／虹吸／燃烧／EMP／跃迁／护盾；高级池：集束花火／空爆弹雨／连锁震爆。单人测试仍全部无限。
 
@@ -77,11 +77,11 @@ F6 运行 `game.tscn` 可查看 1920×1080 构图；实际试射从大厅选择�
 
 未带 `res://` 的源码路径以本包根目录为基准。
 
-- [炮火争锋音效来源](gp_artillery_assets_audio_sources.md)
-- [M21 炮火争锋　B](gp_artillery_development.md)
-- [Original artwork](gp_artillery_prototype_assets_guide.md)
-- [References and asset provenance](gp_artillery_references.md)
-- [炮火争锋验证](gp_artillery_testing.md)
+- [炮火争锋音效来源](GP_artillery_assets_audio_sources.md)
+- [M21 炮火争锋　B](GP_artillery_development.md)
+- [Original artwork](GP_artillery_prototype_assets_guide.md)
+- [References and asset provenance](GP_artillery_references.md)
+- [炮火争锋验证](GP_artillery_testing.md)
 
 动画由本地渲染帧推进：坦克在相邻移动位置间连续插值；房主画面跟随物理状态而非网络发布频率，炮弹补间至当前渲染帧。拖尾按 0.28 秒保留，传送时断开；爆炸、后坐、光效和飘字逐帧播放，只有玩家姿态按最多 20 Hz 采样，炮弹不持续发送运动样本。
 

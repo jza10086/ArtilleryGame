@@ -1,9 +1,9 @@
 extends Node
 ## Scoped combat audio and a local shuffled music playlist through the blank template's mixer.
 @export var music_streams: Array[AudioStream] = [
-	preload("res://games/minigame/gp_artillery/assets/music/Apex_Pursuit.mp3"),
-	preload("res://games/minigame/gp_artillery/assets/music/Heavy_Ordnance.mp3"),
-	preload("res://games/minigame/gp_artillery/assets/music/Impact_Horizon.mp3")]
+	preload("res://games/minigame/GP_artillery/assets/music/Apex_Pursuit.mp3"),
+	preload("res://games/minigame/GP_artillery/assets/music/Heavy_Ordnance.mp3"),
+	preload("res://games/minigame/GP_artillery/assets/music/Impact_Horizon.mp3")]
 @export_range(-60.0, 0.0) var music_volume_db: float = -14.0
 var music_queue: Array[int] = []
 var last_music: int = -1
@@ -17,10 +17,10 @@ var music_random: RandomNumberGenerator = RandomNumberGenerator.new()
 @export var bounce_cue: PartyAudioCue
 @export var drill_cue: PartyAudioCue
 @export var mine_arm: PartyAudioCue
-@export var black_hole_cue: PartyAudioCue = preload("res://games/minigame/gp_artillery/audio/event_black_hole.tres")
-@export var portal_cue: PartyAudioCue = preload("res://games/minigame/gp_artillery/audio/event_portal.tres")
-@export var amplifier_cue: PartyAudioCue = preload("res://games/minigame/gp_artillery/audio/event_amplifier.tres")
-@export var supply_cue: PartyAudioCue = preload("res://games/minigame/gp_artillery/audio/event_supply.tres")
+@export var black_hole_cue: PartyAudioCue = preload("res://games/minigame/GP_artillery/audio/event_black_hole.tres")
+@export var portal_cue: PartyAudioCue = preload("res://games/minigame/GP_artillery/audio/event_portal.tres")
+@export var amplifier_cue: PartyAudioCue = preload("res://games/minigame/GP_artillery/audio/event_amplifier.tres")
+@export var supply_cue: PartyAudioCue = preload("res://games/minigame/GP_artillery/audio/event_supply.tres")
 @onready var mixer: PartyGameAudio = $GameAudio
 @onready var engine: AudioStreamPlayer = $Engine
 var last_event: int = 0

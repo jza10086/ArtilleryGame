@@ -10,7 +10,7 @@ metadata={
 
 [deps]
 
-source_file="res://games/minigame/gp_artillery/assets/kenney_tanks/tanks_tankTracks2.png"
+source_file="res://games/minigame/GP_artillery/assets/kenney_tanks/tanks_tankTracks2.png"
 dest_files=["res://.godot/imported/tanks_tankTracks2.png-3866e2d5857ce3070166ade1ede8e6e7.ctex"]
 
 [params]

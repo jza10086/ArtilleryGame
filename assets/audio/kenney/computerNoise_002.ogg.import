@@ -7,7 +7,7 @@ path="res://.godot/imported/computerNoise_002.ogg-99792ff35265ec7567dd00fcccd3f3
 
 [deps]
 
-source_file="res://games/minigame/gp_artillery/assets/audio/kenney/computerNoise_002.ogg"
+source_file="res://games/minigame/GP_artillery/assets/audio/kenney/computerNoise_002.ogg"
 dest_files=["res://.godot/imported/computerNoise_002.ogg-99792ff35265ec7567dd00fcccd3f31d.oggvorbisstr"]
 
 [params]

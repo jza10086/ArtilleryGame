@@ -135,3 +135,6 @@ msgstr "补给箱弹药"
 
 msgid "地图倍率"
 msgstr "地图倍率"
+
+msgid "package.name"
+msgstr "炮火争锋"

@@ -1,13 +1,13 @@
 extends Control
 
 ## Owners control movement and aim immediately; the host resolves shared combat outcomes.
-const CombatAudio: Script = preload("res://games/minigame/gp_artillery/combat_audio.gd")
-const Battle: Script = preload("res://games/minigame/gp_artillery/battle.gd")
-const Battlefield: Script = preload("res://games/minigame/gp_artillery/battlefield.gd")
+const CombatAudio: Script = preload("res://games/minigame/GP_artillery/combat_audio.gd")
+const Battle: Script = preload("res://games/minigame/GP_artillery/battle.gd")
+const Battlefield: Script = preload("res://games/minigame/GP_artillery/battlefield.gd")
 const ACTION: StringName = &"artillery/action"
 const EVENTS: StringName = &"artillery/events"
 const POSE: StringName = &"artillery/pose"
-const ProjectileMotion: Script = preload("res://games/minigame/gp_artillery/projectile_motion.gd")
+const ProjectileMotion: Script = preload("res://games/minigame/GP_artillery/projectile_motion.gd")
 const POSE_FIELDS: Array[String] = ["x", "y", "tilt", "fuel", "aim"]
 const FINAL: StringName = &"artillery/final"
 var api: PartyAPI
@@ -645,7 +645,7 @@ func _select(index: int) -> void:
 	arsenal.hide()
 	_sync_ui()
 
-const DefaultText: Translation = preload("res://games/minigame/gp_artillery/i18n/zh_Hans.po")
+const DefaultText: Translation = preload("res://games/minigame/GP_artillery/i18n/zh_Hans.po")
 
 func hud_text(key: StringName, values: Dictionary) -> String:
 	return DefaultText.get_message(key).format(values) if api == null else api.i18n.text(key, values)

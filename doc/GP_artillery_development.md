@@ -2,10 +2,10 @@
 
 来源：2026-11-07 架构审查及其最后实施记录。整理日期：2026-11-14。下列待办保留原状态；实施前核对本包源码与工作区，不以历史检查代替本次验收。
 
-[共享 G01–G03 任务](../../../protocols/godot_party_default_protocol/doc/godot_party_default_protocol_development.md) · [包说明](gp_artillery_guide.md)
+[共享 G01–G03 任务](../../../protocols/GP_default_protocol/doc/GP_default_protocol_development.md) · [包说明](GP_artillery_guide.md)
 
 
-包：`gp_artillery`。定位：[game.gd](../game.gd)、`battle.gd`、`battlefield.gd`。
+包：`GP_artillery`。定位：[game.gd](../game.gd)、`battle.gd`、`battlefield.gd`。
 
 - [ ] 保留独立 gate、host 模拟和当前载荷校验；入口里的训练 F6 分支明确隔离为本机预览配置，不能影响正式 request/settings。
 - [ ] 角度/力度、弹药详情、回合及结果文字补稳定模板；固定 16 种弹药按钮用显式绑定/资源配置，不再依赖容器子节点顺序隐式决定武器身份。

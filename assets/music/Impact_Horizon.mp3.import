@@ -7,7 +7,7 @@ path="res://.godot/imported/Impact_Horizon.mp3-db8fe89fca89c946edbf4c32bb7a1a3f.
 
 [deps]
 
-source_file="res://games/minigame/gp_artillery/assets/music/Impact_Horizon.mp3"
+source_file="res://games/minigame/GP_artillery/assets/music/Impact_Horizon.mp3"
 dest_files=["res://.godot/imported/Impact_Horizon.mp3-db8fe89fca89c946edbf4c32bb7a1a3f.mp3str"]
 
 [params]

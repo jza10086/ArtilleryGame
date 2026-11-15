@@ -7,7 +7,7 @@ path="res://.godot/imported/laserSmall_002.ogg-0af2fa0bb5ed3fe9c9a3ece24d8701da.
 
 [deps]
 
-source_file="res://games/minigame/gp_artillery/assets/audio/kenney/laserSmall_002.ogg"
+source_file="res://games/minigame/GP_artillery/assets/audio/kenney/laserSmall_002.ogg"
 dest_files=["res://.godot/imported/laserSmall_002.ogg-0af2fa0bb5ed3fe9c9a3ece24d8701da.oggvorbisstr"]
 
 [params]

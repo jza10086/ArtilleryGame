@@ -7,7 +7,7 @@ path="res://.godot/imported/Heavy_Ordnance.mp3-163587734d1595af229d2a53860693bf.
 
 [deps]
 
-source_file="res://games/minigame/gp_artillery/assets/music/Heavy_Ordnance.mp3"
+source_file="res://games/minigame/GP_artillery/assets/music/Heavy_Ordnance.mp3"
 dest_files=["res://.godot/imported/Heavy_Ordnance.mp3-163587734d1595af229d2a53860693bf.mp3str"]
 
 [params]

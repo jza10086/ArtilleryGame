@@ -1,6 +1,6 @@
 extends RefCounted
 ## Visual-only flight from reliable trajectory segments. Never applies damage or claims pickups.
-const Battle: Script = preload("res://games/minigame/gp_artillery/battle.gd")
+const Battle: Script = preload("res://games/minigame/GP_artillery/battle.gd")
 const STEP: float = 1.0 / 60.0
 
 static func signature(shot: Dictionary) -> Array:

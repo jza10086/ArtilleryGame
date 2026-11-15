@@ -7,7 +7,7 @@ path="res://.godot/imported/lowFrequency_explosion_001.ogg-0d91956d70f648c020211
 
 [deps]
 
-source_file="res://games/minigame/gp_artillery/assets/audio/kenney/lowFrequency_explosion_001.ogg"
+source_file="res://games/minigame/GP_artillery/assets/audio/kenney/lowFrequency_explosion_001.ogg"
 dest_files=["res://.godot/imported/lowFrequency_explosion_001.ogg-0d91956d70f648c0202117411038ab35.oggvorbisstr"]
 
 [params]

@@ -1,7 +1,7 @@
 extends RefCounted
 ## Host-owned artillery rules and fixed-step ballistics; no input, UI or transport.
 ## The terrain is a solid heightfield: explosions excavate bowls, construction raises banks.
-const Settings: Script = preload("res://games/minigame/gp_artillery/settings.gd")
+const Settings: Script = preload("res://games/minigame/GP_artillery/settings.gd")
 const BASE_SIZE: Vector2 = Vector2(1920, 1080)
 const CELL: float = 4.0
 const GUN_MOUNT: Vector2 = Vector2(0, -23)
