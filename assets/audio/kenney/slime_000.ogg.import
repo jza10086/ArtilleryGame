@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://dba0gdichvo2m"
-path="res://.godot/imported/slime_000.ogg-d167e971bb7b28f1cb60fa1221806cf1.oggvorbisstr"
+path="res://.godot/imported/slime_000.ogg-f8f1bc7599285c8f82ef41c42fc73311.oggvorbisstr"
 
 [deps]
 
 source_file="res://games/minigame/GP_artillery/assets/audio/kenney/slime_000.ogg"
-dest_files=["res://.godot/imported/slime_000.ogg-d167e971bb7b28f1cb60fa1221806cf1.oggvorbisstr"]
+dest_files=["res://.godot/imported/slime_000.ogg-f8f1bc7599285c8f82ef41c42fc73311.oggvorbisstr"]
 
 [params]
 

@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://s84fho5vpkoo"
-path="res://.godot/imported/laserLarge_000.ogg-f263a827eff00079365613a752c4f80f.oggvorbisstr"
+path="res://.godot/imported/laserLarge_000.ogg-5c8310e71f25e715f5d4fbf56b7cb14a.oggvorbisstr"
 
 [deps]
 
 source_file="res://games/minigame/GP_artillery/assets/audio/kenney/laserLarge_000.ogg"
-dest_files=["res://.godot/imported/laserLarge_000.ogg-f263a827eff00079365613a752c4f80f.oggvorbisstr"]
+dest_files=["res://.godot/imported/laserLarge_000.ogg-5c8310e71f25e715f5d4fbf56b7cb14a.oggvorbisstr"]
 
 [params]
 

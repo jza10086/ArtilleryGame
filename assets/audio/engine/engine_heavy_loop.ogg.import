@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://s3jbfvh3kuck"
-path="res://.godot/imported/engine_heavy_loop.ogg-419f83aaddde7f12cb6a7dde75657f23.oggvorbisstr"
+path="res://.godot/imported/engine_heavy_loop.ogg-e69fe6e7af0856c1734b637a09db0fb0.oggvorbisstr"
 
 [deps]
 
 source_file="res://games/minigame/GP_artillery/assets/audio/engine/engine_heavy_loop.ogg"
-dest_files=["res://.godot/imported/engine_heavy_loop.ogg-419f83aaddde7f12cb6a7dde75657f23.oggvorbisstr"]
+dest_files=["res://.godot/imported/engine_heavy_loop.ogg-e69fe6e7af0856c1734b637a09db0fb0.oggvorbisstr"]
 
 [params]
 

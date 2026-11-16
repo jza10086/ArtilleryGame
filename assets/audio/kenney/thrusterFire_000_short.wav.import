@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://t6gosnjyl8gt"
-path="res://.godot/imported/thrusterFire_000_short.wav-18ed7505250ff98e5454b31bed16b2f3.sample"
+path="res://.godot/imported/thrusterFire_000_short.wav-a747b27f260b02dad07c841526008e11.sample"
 
 [deps]
 
 source_file="res://games/minigame/GP_artillery/assets/audio/kenney/thrusterFire_000_short.wav"
-dest_files=["res://.godot/imported/thrusterFire_000_short.wav-18ed7505250ff98e5454b31bed16b2f3.sample"]
+dest_files=["res://.godot/imported/thrusterFire_000_short.wav-a747b27f260b02dad07c841526008e11.sample"]
 
 [params]
 
