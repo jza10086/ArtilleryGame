@@ -290,12 +290,27 @@ func movement_effects(actor: int) -> void:
 	if state.tanks[actor].hp <= 0:
 		_team_ready()
 
+## Calibrate a full-power standard shell to 75% map width at equal muzzle/landing height,
+## without wind. The fixed 60 Hz semi-implicit step slightly shortens the analytic parabola.
+static func maximum_launch_speed(snapshot: Dictionary) -> float:
+	var distance: float = float(snapshot.world_size.x) * 0.75
+	var step_loss: float = GRAVITY / (60.0 * sqrt(2.0))
+	return (step_loss + sqrt(step_loss * step_loss + 4.0 * GRAVITY * distance)) * 0.5
+
+static func launch_speed(snapshot: Dictionary, weapon: int, power: float) -> float:
+	var amount: float = inverse_lerp(10.0, 100.0, clampf(power, 10.0, 100.0))
+	return lerpf(330.0, maximum_launch_speed(snapshot), amount) * (0.82 if weapon == 1 else 1.0)
+
+static func power_for_speed(snapshot: Dictionary, weapon: int, speed: float) -> float:
+	var standard_speed: float = speed / (0.82 if weapon == 1 else 1.0)
+	return clampf(10.0 + 90.0 * inverse_lerp(330.0, maximum_launch_speed(snapshot), standard_speed), 10.0, 100.0)
+
 func _launch(actor: int, values: Dictionary) -> void:
 	var tank: Dictionary = state.tanks[actor]
 	var weapon: int = values.weapon
 	tank.shots += 1
 	_sound("fire", weapon)
-	var speed: float = (270.0 + float(values.power) * 6.0) * (0.82 if weapon == 1 else 1.0)
+	var speed: float = launch_speed(state, weapon, float(values.power))
 	var direction: Vector2 = aim_direction(tank, tank.aim)
 	var muzzle: Vector2 = muzzle_position(tank, tank.aim)
 	if weapon == 2:
@@ -825,6 +840,5 @@ static func aim_at(snapshot: Dictionary, tank: Dictionary, weapon: int, target: 
 		var projection: Vector2 = path[-1] + tangent * (duration - (path.size() - 1) / 60.0)
 		velocity += (target - projection) / duration
 	var angle: float = local_aim(tank, velocity)
-	var speed_scale: float = 0.82 if weapon == 1 else 1.0
-	var power: float = clampf((velocity.length() / speed_scale - 270.0) / 6.0, 10.0, 100.0)
+	var power: float = power_for_speed(snapshot, weapon, velocity.length())
 	return Vector2(angle, power)

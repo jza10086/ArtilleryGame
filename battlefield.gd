@@ -314,7 +314,7 @@ func _tank_label(index: int) -> void:
 func _update_aim() -> void:
 	var direction: Vector2 = Vector2.from_angle(models[aim_tank].rotation - deg_to_rad(aim_angle))
 	var pos: Vector2 = world.to_local(models[aim_tank].muzzle.global_position)
-	var velocity: Vector2 = direction * (270.0 + aim_power * 6.0) * (0.82 if weapon == 1 else 1.0)
+	var velocity: Vector2 = direction * Battle.launch_speed(state, weapon, aim_power)
 	aim_curve.points = Battle.aim_path(state, pos, velocity, weapon)
 
 func _blast(flash: Dictionary) -> void:
