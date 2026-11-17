@@ -244,7 +244,7 @@ func _valid_pose(value: Variant) -> bool:
 	for key: String in ["x", "fuel", "aim"]:
 		if not (value.get(key) is float or value.get(key) is int) or not is_finite(float(value[key])):
 			return false
-	return value.x >= 40.0 and value.x <= state.world_size.x - 40.0 and value.fuel >= 0.0 and value.fuel <= 90.0 and value.aim >= 0.0 and value.aim <= 180.0
+	return value.x >= 40.0 and value.x <= state.world_size.x - 40.0 and value.fuel >= 0.0 and value.fuel <= Battle.TURN_FUEL and value.aim >= 0.0 and value.aim <= 180.0
 
 ## Trust ownership, not arbitrary sender IDs. Epochs reject movement predating a fall or teleport.
 func _accept_pose(actor: String, value: Dictionary) -> void:

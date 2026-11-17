@@ -4,6 +4,7 @@ extends RefCounted
 const Settings: Script = preload("res://games/minigame/GP_artillery/settings.gd")
 const BASE_SIZE: Vector2 = Vector2(1920, 1080)
 const CELL: float = 4.0
+const TURN_FUEL: float = 180.0
 const GUN_MOUNT: Vector2 = Vector2(0, -23)
 const BARREL_LENGTH: float = 38.0
 const TRACK_HALF: float = 19.0
@@ -62,14 +63,14 @@ func setup(players: Array[Dictionary], seed_value: int, mode: String, configurat
 		if mode == "training":
 			ammo.fill(-1)
 		tanks.append({"id": players[i].player_id, "name": players[i].name,
-			"color": players[i].color, "x": x, "aim": 45.0 if x < map_size.x * 0.5 else 135.0, "shots": 0, "fuel": 90.0, "pose_epoch": 0, "acted": false,
+			"color": players[i].color, "x": x, "aim": 45.0 if x < map_size.x * 0.5 else 135.0, "shots": 0, "fuel": TURN_FUEL, "pose_epoch": 0, "acted": false,
 			"hp": 200, "shield": 0, "jammed": false, "team": i % 2 if mode == "teams" else i,
 			"ammo": ammo, "damage": 0, "eliminated": 0, "withdrawn": false})
 	if mode == "training":
 		for i: int in 3:
 			var x: float = (860.0 + i * 330.0) * map_scale
 			tanks.append({"id": "target_%d" % i, "name": "靶标 %d" % (i + 1), "color": "ff7d91",
-				"x": x, "aim": 45.0 if x < map_size.x * 0.5 else 135.0, "shots": 0, "fuel": 90.0, "pose_epoch": 0, "acted": false, "hp": 200, "shield": 0, "jammed": false, "team": i + 1,
+				"x": x, "aim": 45.0 if x < map_size.x * 0.5 else 135.0, "shots": 0, "fuel": TURN_FUEL, "pose_epoch": 0, "acted": false, "hp": 200, "shield": 0, "jammed": false, "team": i + 1,
 				"ammo": [], "damage": 0, "eliminated": 0, "withdrawn": false})
 	state = {"world_size": map_size, "floor_y": 970.0 * map_scale, "mode": mode, "terrain": terrain, "terrain_origin": terrain.duplicate(), "tanks": tanks, "projectiles": [],
 		"impacts": [], "health_feedback": [], "audio_events": [], "ammo_events": [], "events": [], "hazards": [], "bursts": [], "notice": "", "notice_left": 0.0, "turn": 0, "round": 0, "active_team": -1, "active": -1, "phase": "aim", "time": TURN_SECONDS,
@@ -107,15 +108,16 @@ static func local_aim(tank: Dictionary, velocity: Vector2) -> float:
 static func muzzle_position(tank: Dictionary, degrees: float) -> Vector2:
 	return gun_pivot(tank) + aim_direction(tank, degrees) * BARREL_LENGTH
 
-## Check uphill travel at terrain-cell intervals; downward travel and sharp crests
-## do not fail solely because the chassis rotation changes abruptly.
+## Evaluate slopes across the track footprint so narrow pits and crater lips
+## do not act like walls. Sustained uphill slopes above 80 degrees remain blocked.
 func can_traverse(from_x: float, to_x: float) -> bool:
 	var direction: float = signf(to_x - from_x)
 	var first: int = floori(minf(from_x, to_x) / CELL)
 	var last: int = ceili(maxf(from_x, to_x) / CELL)
-	for cell: int in range(first, last):
-		var rise: float = (state.terrain[cell] - state.terrain[cell + 1]) * direction
-		if rise > CELL * tan(deg_to_rad(80.0)) + 0.001:
+	for cell: int in range(first, last + 1):
+		var center: float = cell * CELL
+		var rise: float = (ground(center - TRACK_HALF) - ground(center + TRACK_HALF)) * direction
+		if rise > TRACK_HALF * 2.0 * tan(deg_to_rad(80.0)) + 0.001:
 			return false
 	return true
 
@@ -152,7 +154,7 @@ func _next_turn() -> void:
 		tank.pose_epoch += 1
 		tank.acted = false
 		if tank.team == state.active_team if state.mode == "teams" else i == state.active:
-			tank.fuel = 45.0 if tank.jammed else 90.0
+			tank.fuel = TURN_FUEL * 0.5 if tank.jammed else TURN_FUEL
 			tank.jammed = false
 	state.phase = "aim"
 	state.time = TURN_SECONDS
