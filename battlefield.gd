@@ -215,7 +215,7 @@ func update_state(value: Dictionary) -> void:
 		terrain_material.set_shader_parameter("sample_count", initial_profile.size())
 		terrain_material.set_shader_parameter("gradient_depth", 179.0 * view_size.y / 1080.0)
 	if ground_profile != state.terrain:
-		ground_profile = state.terrain
+		ground_profile = state.terrain.duplicate()
 		terrain.queue_redraw()
 	while models.size() < state.tanks.size():
 		var model: TankModel = TankScene.instantiate()
