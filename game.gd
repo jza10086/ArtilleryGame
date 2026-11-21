@@ -118,16 +118,30 @@ func _ready() -> void:
 
 func _briefing_content() -> Dictionary:
 	var view: Control = briefing.view
+	var hints: VBoxContainer = briefing.get_node("%BriefingHints")
+	for action: StringName in [&"move_left", &"move_right", &"artillery_angle_up", &"artillery_angle_down", &"artillery_power_down", &"artillery_power_up", &"artillery_fire"]:
+		var prompt: HBoxContainer = hints.get_node(NodePath(action))
+		var icons: Array[Texture2D] = []
+		for binding: Dictionary in api.input.get_bindings(action):
+			if binding.is_empty():
+				continue
+			var event: InputEventWithModifiers
+			if binding.kind == "mouse":
+				event = InputEventMouseButton.new()
+				(event as InputEventMouseButton).button_index = binding.code
+			else:
+				event = InputEventKey.new()
+				(event as InputEventKey).keycode = binding.code
+			for modifier: String in ["ctrl", "alt", "shift", "meta"]:
+				event.set(modifier + "_pressed", binding.get(modifier, false))
+			icons.append_array(preload("res://core/ui/ambient_reveal/components/navigation/prompt_icons.gd").for_event(event))
+		prompt.keyboard_icons = icons
+		prompt.tooltip_text = api.input.binding_text(action)
 	return {
 		"title": view.get_node("%Title").text,
 		"introduction": view.get_node("%Introduction").text,
 		"cover": preload("res://games/minigame/GP_artillery/cover.png"),
-		"controls": [
-			{"binding": "%s · %s" % [api.input.binding_text(&"move_left"), api.input.binding_text(&"move_right")], "description": "移动坦克"},
-			{"binding": "%s / %s · %s / %s" % [api.input.binding_text(&"artillery_angle_up"), api.input.binding_text(&"artillery_angle_down"), api.input.binding_text(&"artillery_power_down"), api.input.binding_text(&"artillery_power_up")], "description": "调整俯仰 · 调整力度"},
-			{"binding": "长按鼠标左键 · %s" % api.input.binding_text(&"artillery_fire"), "description": "指向瞄准 · 开火"},
-			{"binding": "1–8 · 滚轮", "description": "快选弹种 · 缩放视野"}
-		]
+
 	}
 
 func party_start() -> void:

@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://e1jstpqw82l3"]
 
+[ext_resource type="Texture2D" path="res://core/ui/ambient_reveal/icons/kenney_input/keyboard_mouse/mouse_scroll.svg" id="scroll"]
 [ext_resource type="Texture2D" path="res://games/minigame/GP_artillery/bolt.svg" id="bolt"]
 [ext_resource type="Texture2D" path="res://games/minigame/GP_artillery/heart.svg" id="heart"]
 [ext_resource type="PackedScene" path="res://games/assets/GP_default_ui/ambient_reveal/components/navigation/vertical_hints.tscn" id="hints"]
@@ -632,5 +633,10 @@ keyboard_icons = Array[Texture2D]([ExtResource("key_w"), ExtResource("key_s")])
 action = &""
 description = "力度"
 keyboard_icons = Array[Texture2D]([ExtResource("key_q"), ExtResource("key_e")])
+
+[node name="Zoom" parent="GameHUD/Hints/Prompts" index="4" instance=ExtResource("prompt")]
+action = &""
+description = "缩放视野"
+keyboard_icons = Array[Texture2D]([ExtResource("scroll")])
 
 [editable path="GameHUD/Hints"]
