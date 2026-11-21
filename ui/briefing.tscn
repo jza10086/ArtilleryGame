@@ -9,7 +9,7 @@
 [ext_resource type="Texture2D" path="res://core/ui/ambient_reveal/icons/kenney_input/keyboard_mouse/keyboard_s.svg" id="keyboard_s"]
 [ext_resource type="Texture2D" path="res://core/ui/ambient_reveal/icons/kenney_input/keyboard_mouse/keyboard_q.svg" id="keyboard_q"]
 [ext_resource type="Texture2D" path="res://core/ui/ambient_reveal/icons/kenney_input/keyboard_mouse/keyboard_e.svg" id="keyboard_e"]
-[ext_resource type="Texture2D" path="res://core/ui/ambient_reveal/icons/kenney_input/keyboard_mouse/keyboard_space.svg" id="keyboard_space"]
+[ext_resource type="Texture2D" path="res://games/minigame/GP_artillery/ui/space_key.tres" id="keyboard_space"]
 [ext_resource type="Texture2D" path="res://core/ui/ambient_reveal/icons/kenney_input/keyboard_mouse/mouse_left.svg" id="mouse_left"]
 [ext_resource type="Texture2D" path="res://core/ui/ambient_reveal/icons/kenney_input/keyboard_mouse/mouse_scroll.svg" id="mouse_scroll"]
 
@@ -33,41 +33,23 @@ size_flags_horizontal = 3
 theme_override_constants/separation = 4
 mouse_filter = 2
 
-[node name="move_left" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information/BriefingHints" instance=ExtResource("prompt")]
+[node name="Move" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information/BriefingHints" instance=ExtResource("prompt")]
 action = &""
-description = "向左移动"
+description = "移动"
 icon_size = 32
-keyboard_icons = Array[Texture2D]([ExtResource("keyboard_a")])
+keyboard_icons = Array[Texture2D]([ExtResource("keyboard_a"), ExtResource("keyboard_d")])
 
-[node name="move_right" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information/BriefingHints" instance=ExtResource("prompt")]
+[node name="Angle" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information/BriefingHints" instance=ExtResource("prompt")]
 action = &""
-description = "向右移动"
+description = "俯仰"
 icon_size = 32
-keyboard_icons = Array[Texture2D]([ExtResource("keyboard_d")])
+keyboard_icons = Array[Texture2D]([ExtResource("keyboard_w"), ExtResource("keyboard_s")])
 
-[node name="artillery_angle_up" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information/BriefingHints" instance=ExtResource("prompt")]
+[node name="Power" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information/BriefingHints" instance=ExtResource("prompt")]
 action = &""
-description = "增加俯仰角"
+description = "力度"
 icon_size = 32
-keyboard_icons = Array[Texture2D]([ExtResource("keyboard_w")])
-
-[node name="artillery_angle_down" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information/BriefingHints" instance=ExtResource("prompt")]
-action = &""
-description = "减小俯仰角"
-icon_size = 32
-keyboard_icons = Array[Texture2D]([ExtResource("keyboard_s")])
-
-[node name="artillery_power_down" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information/BriefingHints" instance=ExtResource("prompt")]
-action = &""
-description = "减小力度"
-icon_size = 32
-keyboard_icons = Array[Texture2D]([ExtResource("keyboard_q")])
-
-[node name="artillery_power_up" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information/BriefingHints" instance=ExtResource("prompt")]
-action = &""
-description = "增加力度"
-icon_size = 32
-keyboard_icons = Array[Texture2D]([ExtResource("keyboard_e")])
+keyboard_icons = Array[Texture2D]([ExtResource("keyboard_q"), ExtResource("keyboard_e")])
 
 [node name="artillery_fire" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information/BriefingHints" instance=ExtResource("prompt")]
 action = &""

@@ -119,24 +119,29 @@ func _ready() -> void:
 func _briefing_content() -> Dictionary:
 	var view: Control = briefing.view
 	var hints: VBoxContainer = briefing.get_node("%BriefingHints")
-	for action: StringName in [&"move_left", &"move_right", &"artillery_angle_up", &"artillery_angle_down", &"artillery_power_down", &"artillery_power_up", &"artillery_fire"]:
-		var prompt: HBoxContainer = hints.get_node(NodePath(action))
+	var groups: Dictionary = {"Move": [&"move_left", &"move_right"], "Angle": [&"artillery_angle_up", &"artillery_angle_down"], "Power": [&"artillery_power_down", &"artillery_power_up"], "artillery_fire": [&"artillery_fire"]}
+	for row: String in groups:
+		var prompt: HBoxContainer = hints.get_node(NodePath(row))
 		var icons: Array[Texture2D] = []
-		for binding: Dictionary in api.input.get_bindings(action):
-			if binding.is_empty():
-				continue
-			var event: InputEventWithModifiers
-			if binding.kind == "mouse":
-				event = InputEventMouseButton.new()
-				(event as InputEventMouseButton).button_index = binding.code
-			else:
-				event = InputEventKey.new()
-				(event as InputEventKey).keycode = binding.code
-			for modifier: String in ["ctrl", "alt", "shift", "meta"]:
-				event.set(modifier + "_pressed", binding.get(modifier, false))
-			icons.append_array(preload("res://core/ui/ambient_reveal/components/navigation/prompt_icons.gd").for_event(event))
+		var captions: PackedStringArray = []
+		for action: StringName in groups[row]:
+			captions.append(api.input.binding_text(action))
+			for binding: Dictionary in api.input.get_bindings(action):
+				if binding.is_empty():
+					continue
+				var event: InputEventWithModifiers
+				if binding.kind == "mouse":
+					event = InputEventMouseButton.new()
+					(event as InputEventMouseButton).button_index = binding.code
+				else:
+					event = InputEventKey.new()
+					(event as InputEventKey).keycode = binding.code
+				for modifier: String in ["ctrl", "alt", "shift", "meta"]:
+					event.set(modifier + "_pressed", binding.get(modifier, false))
+				for texture: Texture2D in preload("res://core/ui/ambient_reveal/components/navigation/prompt_icons.gd").for_event(event):
+					icons.append(preload("res://games/minigame/GP_artillery/ui/space_key.tres") if texture == preload("res://core/ui/ambient_reveal/icons/kenney_input/keyboard_mouse/keyboard_space.svg") else texture)
 		prompt.keyboard_icons = icons
-		prompt.tooltip_text = api.input.binding_text(action)
+		prompt.tooltip_text = " / ".join(captions)
 	return {
 		"title": view.get_node("%Title").text,
 		"introduction": view.get_node("%Introduction").text,
