@@ -15,7 +15,6 @@ var view_size: Vector2 = Vector2(1920, 1080)
 var zoom_anchor: Vector2
 var screen_anchor: Vector2
 var extrapolate_physics: bool = false
-var wind_offset: Vector2 = Vector2.ZERO
 var rendered_shots: Array[Dictionary] = []
 var shot_trails: Dictionary[int, Array] = {}
 const TRAIL_SECONDS: float = 0.28
@@ -133,7 +132,6 @@ func _process(delta: float) -> void:
 	view_zoom = lerpf(view_zoom, target_zoom, 1.0 - exp(-delta * zoom_response))
 	_apply_view()
 	effect_time += delta
-	wind_offset += Vector2(state.wind) * 5.0 * delta
 	_update_projectile_visuals()
 	for i: int in range(health_numbers.size() - 1, -1, -1):
 		health_numbers[i].age += delta
@@ -266,35 +264,9 @@ func _draw_lights() -> void:
 		_glow(flash.pos, flash.radius * (2.25 - 0.7 * life), Color(tint, 0.8 * life))
 		_glow(flash.pos, flash.radius * 0.85, Color(tint.lerp(Color.WHITE, 0.65), life))
 
-## Drift in world space so zoom and all 360 wind directions share the battlefield frame.
-func _draw_wind() -> void:
-	var strength: float = clampf(state.wind.length() / 38.0, 0.0, 1.0)
-	var direction: Vector2 = state.wind.normalized()
-	var across: Vector2 = direction.orthogonal()
-	for i: int in ceili(24.0 * strength):
-		var seed_pos: Vector2 = Vector2(fmod(i * 0.618034, 1.0), fmod(i * 0.414214 + 0.23, 1.0)) * view_size
-		var head: Vector2 = (seed_pos + wind_offset * (0.75 + 0.1 * (i % 5))).posmodv(view_size)
-		var phase: float = effect_time * (1.1 + 0.12 * (i % 4)) + i * 2.4
-		var gust: float = smoothstep(-0.8, 0.75, sin(phase))
-		if gust <= 0.0 or head.y > _surface_y(head.x) + 12.0:
-			continue
-		var length: float = lerpf(35.0, 170.0, strength) * (0.72 + 0.12 * (i % 5))
-		var points: PackedVector2Array = PackedVector2Array()
-		var colors: PackedColorArray = PackedColorArray()
-		for j: int in 17:
-			var t: float = j / 16.0
-			var bend: float = sin(t * TAU + phase * 0.6) * length * 0.055
-			var point: Vector2 = head - direction * (1.0 - t) * length + across * bend
-			points.append(point)
-			var clearance: float = smoothstep(0.0, 16.0, _surface_y(point.x) - point.y)
-			var opacity: float = sin(PI * t) * gust * clearance * (0.18 + 0.34 * strength)
-			colors.append(Color(0.74, 0.91, 1.0, opacity))
-		foreground.draw_polyline_colors(points, colors, 2.2, true)
-
 func _draw_foreground() -> void:
 	if state.is_empty():
 		return
-	_draw_wind()
 	_draw_events()
 	for i: int in state.tanks.size():
 		_tank_label(i)

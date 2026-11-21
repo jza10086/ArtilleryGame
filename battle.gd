@@ -74,7 +74,7 @@ func setup(players: Array[Dictionary], seed_value: int, mode: String, configurat
 				"ammo": [], "damage": 0, "eliminated": 0, "withdrawn": false})
 	state = {"world_size": map_size, "floor_y": 970.0 * map_scale, "mode": mode, "terrain": terrain, "terrain_origin": terrain.duplicate(), "tanks": tanks, "projectiles": [],
 		"impacts": [], "health_feedback": [], "audio_events": [], "ammo_events": [], "events": [], "hazards": [], "bursts": [], "notice": "", "notice_left": 0.0, "turn": 0, "round": 0, "active_team": -1, "active": -1, "phase": "aim", "time": TURN_SECONDS,
-		"wind": Vector2.ZERO, "wait": 0.0, "winner": -2, "revision": 0}
+		"wait": 0.0, "winner": -2, "revision": 0}
 	for tank: Dictionary in tanks:
 		_seat_on_ground(tank)
 	_next_turn()
@@ -164,7 +164,6 @@ func _next_turn() -> void:
 	if state.mode != "teams" and state.tanks[state.active].hp <= 0:
 		_next_turn()
 		return
-	state.wind = Vector2.from_angle(rng.randf_range(0.0, TAU)) * rng.randf_range(0.0, 38.0)
 	state.wait = 0.0
 	# Sudden death bounds multiplayer rounds even when every player passes.
 	if state.mode != "training" and state.round > 8:
@@ -730,14 +729,14 @@ func _activate_drone(event: Dictionary, children: Array[Dictionary], owner: int)
 	for index: int in 3:
 		var duration: float = 0.8 + index * 0.15
 		var destination: Vector2 = Vector2(enemy.x + (index - 1) * 20.0, enemy.y)
-		var velocity: Vector2 = (destination - event.pos) / duration - (state.wind + Vector2(0.0, GRAVITY)) * duration * 0.5
+		var velocity: Vector2 = (destination - event.pos) / duration - Vector2(0.0, GRAVITY) * duration * 0.5
 		var shot: Dictionary = _projectile(event.pos, velocity, 9, true, 1.0, owner)
 		shot.support = true
 		children.append(shot)
 	_notify("%s 激活无人机支援" % shooter.name)
 
 static func projectile_acceleration(snapshot: Dictionary, pos: Vector2) -> Vector2:
-	var force: Vector2 = snapshot.wind + Vector2(0.0, GRAVITY)
+	var force: Vector2 = Vector2(0.0, GRAVITY)
 	for event: Dictionary in snapshot.events:
 		if event.kind != "black_hole":
 			continue
@@ -831,7 +830,7 @@ static func aim_at(snapshot: Dictionary, tank: Dictionary, weapon: int, target: 
 	var steps: int = maxi(1, roundi(clampf(pivot.distance_to(target) / 600.0, 0.12, 3.0) * 60.0))
 	var duration: float = steps / 60.0
 	var visible_duration: float = mini(steps, AIM_STEPS) / 60.0
-	var acceleration: Vector2 = snapshot.wind + Vector2(0.0, GRAVITY)
+	var acceleration: Vector2 = Vector2(0.0, GRAVITY)
 	var velocity: Vector2 = (target - pivot - acceleration * visible_duration * (duration - (visible_duration - 1.0 / 60.0) * 0.5)) / duration
 	for correction: int in 6:
 		var degrees: float = local_aim(tank, velocity)

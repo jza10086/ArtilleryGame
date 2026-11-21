@@ -305,7 +305,7 @@ func _publish() -> void:
 		_phase_key = phase_key
 		_phase_end_msec = api.net.host_time_msec() + roundi(float(current.time) * 1000.0)
 	var facts: Dictionary = {}
-	for key: String in ["world_size", "floor_y", "mode", "turn", "round", "active_team", "active", "phase", "wind", "winner", "hazards", "notice"]:
+	for key: String in ["world_size", "floor_y", "mode", "turn", "round", "active_team", "active", "phase", "winner", "hazards", "notice"]:
 		if not _published_facts.has(key) or _published_facts[key] != current[key]:
 			facts[key] = current[key]
 	if facts.has("phase") or facts.has("turn"):
@@ -387,7 +387,7 @@ func _receive_events(payload: Dictionary) -> void:
 		if key == "end_msec":
 			if not payload.facts[key] is int:
 				return
-		elif key not in ["world_size", "floor_y", "mode", "turn", "round", "active_team", "active", "phase", "wind", "winner", "hazards", "notice"] or typeof(payload.facts[key]) != typeof(state[key]):
+		elif key not in ["world_size", "floor_y", "mode", "turn", "round", "active_team", "active", "phase", "winner", "hazards", "notice"] or typeof(payload.facts[key]) != typeof(state[key]):
 			return
 	for entry: Variant in payload.environment.upsert:
 		if not entry is Dictionary or not entry.get("id") is int or not entry.get("pos") is Vector2 or not entry.pos.is_finite() or entry.get("kind") not in ["supply", "black_hole", "portal", "bumper", "amplifier", "drone"] or not entry.get("expires") is int:

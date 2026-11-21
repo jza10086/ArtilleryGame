@@ -8,6 +8,6 @@
 text = "炮火争锋"
 
 [node name="Introduction" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information/Rules/InformationScroll" index="0"]
-text = "1–8 人回合制炮击。自由混战、偶数人数团队对抗与单人试射；风力弹道、可破坏地形、16 种弹药，以及黑洞、空投、增伤、传送、反弹与无人机事件。"
+text = "1–8 人回合制炮击。自由混战、偶数人数团队对抗与单人试射；可破坏地形、16 种弹药，以及黑洞、空投、增伤、传送、反弹与无人机事件。"
 
 [editable path="View"]
