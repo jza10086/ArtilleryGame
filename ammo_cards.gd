@@ -4,20 +4,26 @@ const Battle: Script = preload("res://games/minigame/GP_artillery/battle.gd")
 @export var hold_seconds: float = 2.0
 var last_id: int = -1
 var last_turn: int = -1
+var last_round: int = -1
 var pages: Array[Dictionary] = []
 var animation: Tween
 
 func update_state(snapshot: Dictionary, player_id: String) -> void:
 	if last_turn > int(snapshot.turn):
 		clear_cards()
+		last_round = -1
+		last_id = -1
 	if snapshot.turn != last_turn and snapshot.phase == "aim":
 		var turn_lines: Array[Dictionary] = []
 		for tank: Dictionary in snapshot.tanks:
 			if tank.hp <= 0 or (tank.team != snapshot.active_team if snapshot.mode == "teams" else tank != snapshot.tanks[snapshot.active]):
 				continue
-			turn_lines.append({"text": "轮到你了" if tank.id == player_id else "轮到%s了" % tank.name, "color": Color(tank.color)})
+			turn_lines.append({"text": "轮到 %s 了" % ("你" if tank.id == player_id else tank.name), "color": Color(tank.color)})
 		var number: int = snapshot.turn if snapshot.mode == "training" else snapshot.round
-		pages.push_front({"turn_lines": turn_lines, "round_text": "回合 %d/∞" % number})
+		pages.push_front({"turn_lines": turn_lines})
+		if last_round >= 0 and number > last_round:
+			pages.push_front({"turn_lines": [{"text": "回合 %d/∞" % number, "color": Color.WHITE}]})
+		last_round = number
 	last_turn = snapshot.turn
 	for event: Dictionary in snapshot.ammo_events:
 		if int(event.id) <= last_id:
@@ -60,7 +66,7 @@ func _show_page() -> void:
 		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		panel.add_child(column)
-		for line: Dictionary in page.turn_lines + [{"text": page.round_text, "color": Color.WHITE}]:
+		for line: Dictionary in page.turn_lines:
 			var label: Label = Label.new()
 			label.text = line.text
 			label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

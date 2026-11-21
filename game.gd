@@ -50,8 +50,6 @@ var display_time: float = 0.0
 @onready var ammo_cards: HBoxContainer = %AmmoCards
 @onready var top_status: VBoxContainer = %TopStatus
 @onready var countdown: Label = %Countdown
-@onready var wind_arrow: Polygon2D = %WindArrow
-@onready var wind_strength: Label = %WindStrength
 @onready var angle_slider: HSlider = %AngleSlider
 @onready var power_slider: HSlider = %PowerSlider
 @onready var angle_label: Label = %AngleLabel
@@ -292,14 +290,12 @@ func _sync_status() -> void:
 	var tank: Dictionary = state.tanks[_view_tank()]
 	%HealthBar.value = tank.hp
 	%FuelBar.value = tank.fuel
-	%HealthLabel.text = "血量  %d / 200" % tank.hp
-	fuel_label.text = "行动力  %d / %d" % [roundi(tank.fuel), int(Battle.TURN_FUEL)]
+	%HealthLabel.text = "%d / 200" % tank.hp
+	fuel_label.text = "%d / %d" % [roundi(tank.fuel), int(Battle.TURN_FUEL)]
 	if top_status.visible:
 		ammo_cards.update_state(state, "preview" if preview else local_id)
 	countdown.text = "∞" if state.mode == "training" else (str(ceili(display_time)) if state.phase == "aim" else "—")
 	countdown.modulate = Color("#ff515b") if state.mode != "training" and state.phase == "aim" and display_time <= 10.0 else Color.WHITE
-	wind_arrow.rotation = state.wind.angle()
-	wind_strength.text = str(roundi(state.wind.length()))
 
 ## Publish only changed combat facts and trajectory segments; ordinary flight sends no samples.
 func _publish() -> void:

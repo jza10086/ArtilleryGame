@@ -15,6 +15,7 @@ var view_size: Vector2 = Vector2(1920, 1080)
 var zoom_anchor: Vector2
 var screen_anchor: Vector2
 var extrapolate_physics: bool = false
+var wind_offset: Vector2 = Vector2.ZERO
 var rendered_shots: Array[Dictionary] = []
 var shot_trails: Dictionary[int, Array] = {}
 const TRAIL_SECONDS: float = 0.28
@@ -132,6 +133,7 @@ func _process(delta: float) -> void:
 	view_zoom = lerpf(view_zoom, target_zoom, 1.0 - exp(-delta * zoom_response))
 	_apply_view()
 	effect_time += delta
+	wind_offset += Vector2(state.wind) * 5.0 * delta
 	_update_projectile_visuals()
 	for i: int in range(health_numbers.size() - 1, -1, -1):
 		health_numbers[i].age += delta
@@ -179,7 +181,8 @@ func _update_projectile_visuals() -> void:
 		var points: PackedVector2Array = PackedVector2Array()
 		for sample: Dictionary in samples:
 			points.append(sample.pos)
-		points.append(visual.pos)
+		if points.is_empty() or points[-1] != visual.pos:
+			points.append(visual.pos)
 		visual.trail = points
 		rendered_shots.append(visual)
 	for id: int in shot_trails.keys():
@@ -257,26 +260,38 @@ func _draw_lights() -> void:
 	for shot: Dictionary in rendered_shots:
 		var tint: Color = Color("#8cffe0") if shot.support else Color(Battle.WEAPONS[shot.weapon].color)
 		_glow(shot.pos, 39.0 * shot.boost, Color(tint, 0.92))
-		for i: int in range(0, shot.trail.size(), 3):
-			var strength: float = (i + 1.0) / shot.trail.size()
-			_glow(shot.trail[i], 12.0 + 11.0 * strength, Color(tint, 0.32 * strength))
 	for flash: Dictionary in flashes:
 		var life: float = flash.life / 0.55
 		var tint: Color = Color(Battle.WEAPONS[flash.weapon].color)
 		_glow(flash.pos, flash.radius * (2.25 - 0.7 * life), Color(tint, 0.8 * life))
 		_glow(flash.pos, flash.radius * 0.85, Color(tint.lerp(Color.WHITE, 0.65), life))
 
+## Drift in world space so zoom and all 360 wind directions share the battlefield frame.
+func _draw_wind() -> void:
+	var strength: float = clampf(state.wind.length() / 38.0, 0.0, 1.0)
+	var direction: Vector2 = state.wind.normalized()
+	for i: int in ceili(44.0 * strength):
+		var seed_pos: Vector2 = Vector2(fmod(i * 0.618034, 1.0), fmod(i * 0.414214 + 0.23, 1.0)) * view_size
+		var head: Vector2 = (seed_pos + wind_offset * (0.75 + 0.1 * (i % 5))).posmodv(view_size)
+		if head.y > state.terrain[clampi(roundi(head.x / Battle.CELL), 0, state.terrain.size() - 1)] - 12.0:
+			continue
+		var alpha: float = strength * (0.22 + 0.12 * sin(effect_time * 1.7 + i))
+		foreground.draw_line(head - direction * lerpf(8.0, 60.0, strength), head, Color(0.74, 0.91, 1.0, alpha), 2.0, true)
+
 func _draw_foreground() -> void:
 	if state.is_empty():
 		return
+	_draw_wind()
 	_draw_events()
 	for i: int in state.tanks.size():
 		_tank_label(i)
 	for shot: Dictionary in rendered_shots:
 		var tint: Color = Color("#8cffe0") if shot.support else Color(Battle.WEAPONS[shot.weapon].color)
-		for i: int in range(1, shot.trail.size()):
-			var strength: float = float(i) / (shot.trail.size() - 1)
-			foreground.draw_line(shot.trail[i - 1], shot.trail[i], Color(tint, strength * 0.88), 1.0 + strength * 2.0, true)
+		if shot.trail.size() >= 2:
+			var colors: PackedColorArray = PackedColorArray()
+			for i: int in shot.trail.size():
+				colors.append(Color(tint, 0.9 * float(i) / (shot.trail.size() - 1)))
+			foreground.draw_polyline_colors(shot.trail, colors, 2.5, true)
 		if shot.pos.y < 0.0:
 			var x: float = clampf(shot.pos.x, 12.0, view_size.x - 12.0)
 			foreground.draw_colored_polygon(PackedVector2Array([Vector2(x, 8), Vector2(x - 6, 18), Vector2(x + 6, 18)]), tint)

@@ -1,7 +1,7 @@
 {
   "id": "GP_artillery",
   "kind": "minigame",
-  "package_version": "0.1.0",
+  "package_version": "0.2.0",
   "framework_version": "0.6.0",
   "remark": "",
   "supported_languages": [

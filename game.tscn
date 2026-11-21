@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://e1jstpqw82l3"]
 
+[ext_resource type="Texture2D" path="res://games/minigame/GP_artillery/bolt.svg" id="bolt"]
+[ext_resource type="Texture2D" path="res://games/minigame/GP_artillery/heart.svg" id="heart"]
 [ext_resource type="PackedScene" path="res://games/assets/GP_default_ui/ambient_reveal/components/navigation/vertical_hints.tscn" id="hints"]
 [ext_resource type="PackedScene" path="res://core/ui/ambient_reveal/components/navigation/action_prompt.tscn" id="prompt"]
 [ext_resource type="Texture2D" path="res://core/ui/ambient_reveal/icons/kenney_input/keyboard_mouse/keyboard_a.svg" id="key_a"]
@@ -485,30 +487,6 @@ text = "35"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Wind" type="HBoxContainer" parent="GameHUD/TopStatus" unique_id=525505183]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 6
-alignment = 1
-
-[node name="ArrowSlot" type="Control" parent="GameHUD/TopStatus/Wind" unique_id=243887825]
-custom_minimum_size = Vector2(36, 32)
-layout_mode = 2
-mouse_filter = 2
-
-[node name="WindArrow" type="Polygon2D" parent="GameHUD/TopStatus/Wind/ArrowSlot" unique_id=828069561]
-unique_name_in_owner = true
-position = Vector2(18, 16)
-color = Color(0.82, 0.94, 1, 1)
-polygon = PackedVector2Array(-13, -2, 4, -2, 4, -8, 14, 0, 4, 8, 4, 2, -13, 2)
-
-[node name="WindStrength" type="Label" parent="GameHUD/TopStatus/Wind" unique_id=583207917]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "18"
-vertical_alignment = 1
-
 [node name="GameCanvas" type="CanvasLayer" parent="." unique_id=1354447394]
 layer = -4
 
@@ -541,8 +519,8 @@ anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -420.0
 offset_right = 420.0
-offset_top = 158.0
-offset_bottom = 242.0
+offset_top = 110.0
+offset_bottom = 194.0
 grow_horizontal = 2
 mouse_filter = 2
 theme = ExtResource("2_8nvs8")
@@ -559,34 +537,62 @@ anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 28.0
 offset_right = 270.0
-offset_top = -132.0
+offset_top = -112.0
 offset_bottom = -24.0
 mouse_filter = 2
 theme = ExtResource("2_8nvs8")
 
-[node name="HealthLabel" type="Label" parent="GameHUD/TankStatus"]
-unique_name_in_owner = true
-text = "血量"
+[node name="Health" type="HBoxContainer" parent="GameHUD/TankStatus"]
+mouse_filter = 2
+theme_override_constants/separation = 10
 
-[node name="HealthBar" type="ProgressBar" parent="GameHUD/TankStatus"]
+[node name="Icon" type="TextureRect" parent="GameHUD/TankStatus/Health"]
+mouse_filter = 2
+texture = ExtResource("heart")
+stretch_mode = 5
+
+[node name="HealthBar" type="ProgressBar" parent="GameHUD/TankStatus/Health"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 10)
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(300, 36)
 mouse_filter = 2
 show_percentage = false
-self_modulate = Color(0.29, 0.84, 0.59, 1)
 max_value = 200.0
+self_modulate = Color(1, 0.6, 0.64, 1)
 
-[node name="FuelLabel" type="Label" parent="GameHUD/TankStatus"]
+[node name="HealthLabel" type="Label" parent="GameHUD/TankStatus/Health/HealthBar"]
 unique_name_in_owner = true
-text = "行动力"
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="FuelBar" type="ProgressBar" parent="GameHUD/TankStatus"]
+[node name="Fuel" type="HBoxContainer" parent="GameHUD/TankStatus"]
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="Icon" type="TextureRect" parent="GameHUD/TankStatus/Fuel"]
+mouse_filter = 2
+texture = ExtResource("bolt")
+stretch_mode = 5
+
+[node name="FuelBar" type="ProgressBar" parent="GameHUD/TankStatus/Fuel"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 10)
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(300, 36)
 mouse_filter = 2
 show_percentage = false
-self_modulate = Color(0.27, 0.74, 0.94, 1)
 max_value = 180.0
+self_modulate = Color(1, 0.86, 0.45, 1)
+
+[node name="FuelLabel" type="Label" parent="GameHUD/TankStatus/Fuel/FuelBar"]
+unique_name_in_owner = true
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Hints" parent="GameHUD" instance=ExtResource("hints")]
 unique_name_in_owner = true
