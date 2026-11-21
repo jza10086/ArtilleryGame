@@ -110,14 +110,25 @@ func _ready() -> void:
 		return
 	battle.setup(players, api.get_seed(), mode, api.get_settings())
 	_receive_state(battle.state.duplicate(true))
-	var content: Dictionary = briefing.read_content(get_script().resource_path.get_base_dir().path_join("manifest.json"), api)
-	content["controls"] = [{"binding": "A / D · W / S · Q / E", "description": "按住移动 · 调整角度 · 减小 / 增大力度"},
-		{"binding": "鼠标左键长按", "description": "同时调整角度与力度，使弹道靠近指针；Space / 开火按钮发射；1–8 快选弹药；Esc 菜单"}]
-	briefing.configure(api, content)
+	briefing.configure(api, _briefing_content())
 	briefing.play_requested.connect(_begin)
 	var error: Error = api.mark_ready()
 	if error != OK:
 		_fail("ready_failed", error_string(error))
+
+func _briefing_content() -> Dictionary:
+	var view: Control = briefing.view
+	return {
+		"title": view.get_node("%Title").text,
+		"introduction": view.get_node("%Introduction").text,
+		"cover": preload("res://games/minigame/GP_artillery/cover.png"),
+		"controls": [
+			{"binding": "%s · %s" % [api.input.binding_text(&"move_left"), api.input.binding_text(&"move_right")], "description": "移动坦克"},
+			{"binding": "%s / %s · %s / %s" % [api.input.binding_text(&"artillery_angle_up"), api.input.binding_text(&"artillery_angle_down"), api.input.binding_text(&"artillery_power_down"), api.input.binding_text(&"artillery_power_up")], "description": "调整俯仰 · 调整力度"},
+			{"binding": "长按鼠标左键 · %s" % api.input.binding_text(&"artillery_fire"), "description": "指向瞄准 · 开火"},
+			{"binding": "1–8 · 滚轮", "description": "快选弹种 · 缩放视野"}
+		]
+	}
 
 func party_start() -> void:
 	briefing.transport_started()

@@ -8,6 +8,15 @@
 text = "炮火争锋"
 
 [node name="Introduction" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information/Rules/InformationScroll" index="0"]
-text = "1–8 人回合制炮击。自由混战、偶数人数团队对抗与单人试射；可破坏地形、16 种弹药，以及黑洞、空投、增伤、传送、反弹与无人机事件。"
+text = "移动坦克，调整炮口角度与力度，击败对手。炮弹可以炸出掩体，也能穿过传送门。支持自由混战、团队对抗和单人试射。"
+
+[node name="PreviewPanel" parent="View/Layout/Center/Content/Columns/RightColumn" index="0"]
+custom_minimum_size = Vector2(0, 365)
+
+[node name="InformationPanel" parent="View/Layout/Center/Content/Columns/RightColumn" index="1"]
+custom_minimum_size = Vector2(0, 362)
+
+[node name="Controls" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information/ControlSection" index="1"]
+theme_override_constants/separation = 5
 
 [editable path="View"]
