@@ -187,6 +187,20 @@ corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
+[sub_resource type="StyleBoxFlat" id="heart_fill"]
+bg_color = Color(1, 0.388235, 0.474510, 0.8)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_left = 16
+corner_radius_bottom_right = 16
+
+[sub_resource type="StyleBoxFlat" id="bolt_fill"]
+bg_color = Color(1, 0.827451, 0.388235, 0.8)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_left = 16
+corner_radius_bottom_right = 16
+
 [node name="ArtilleryBattle" type="Control" unique_id=1332144389 node_paths=PackedStringArray("briefing", "settlement")]
 briefing = NodePath("ProtocolPages/Briefing")
 settlement = NodePath("ProtocolPages/Settlement")
@@ -558,7 +572,7 @@ custom_minimum_size = Vector2(300, 36)
 mouse_filter = 2
 show_percentage = false
 max_value = 200.0
-self_modulate = Color(1, 0.6, 0.64, 1)
+theme_override_styles/fill = SubResource("heart_fill")
 
 [node name="HealthLabel" type="Label" parent="GameHUD/TankStatus/Health/HealthBar"]
 unique_name_in_owner = true
@@ -584,7 +598,7 @@ custom_minimum_size = Vector2(300, 36)
 mouse_filter = 2
 show_percentage = false
 max_value = 180.0
-self_modulate = Color(1, 0.86, 0.45, 1)
+theme_override_styles/fill = SubResource("bolt_fill")
 
 [node name="FuelLabel" type="Label" parent="GameHUD/TankStatus/Fuel/FuelBar"]
 unique_name_in_owner = true

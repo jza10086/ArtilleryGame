@@ -270,13 +270,26 @@ func _draw_lights() -> void:
 func _draw_wind() -> void:
 	var strength: float = clampf(state.wind.length() / 38.0, 0.0, 1.0)
 	var direction: Vector2 = state.wind.normalized()
-	for i: int in ceili(44.0 * strength):
+	var across: Vector2 = direction.orthogonal()
+	for i: int in ceili(24.0 * strength):
 		var seed_pos: Vector2 = Vector2(fmod(i * 0.618034, 1.0), fmod(i * 0.414214 + 0.23, 1.0)) * view_size
 		var head: Vector2 = (seed_pos + wind_offset * (0.75 + 0.1 * (i % 5))).posmodv(view_size)
-		if head.y > state.terrain[clampi(roundi(head.x / Battle.CELL), 0, state.terrain.size() - 1)] - 12.0:
+		var phase: float = effect_time * (1.1 + 0.12 * (i % 4)) + i * 2.4
+		var gust: float = smoothstep(-0.8, 0.75, sin(phase))
+		if gust <= 0.0 or head.y > _surface_y(head.x) + 12.0:
 			continue
-		var alpha: float = strength * (0.22 + 0.12 * sin(effect_time * 1.7 + i))
-		foreground.draw_line(head - direction * lerpf(8.0, 60.0, strength), head, Color(0.74, 0.91, 1.0, alpha), 2.0, true)
+		var length: float = lerpf(35.0, 170.0, strength) * (0.72 + 0.12 * (i % 5))
+		var points: PackedVector2Array = PackedVector2Array()
+		var colors: PackedColorArray = PackedColorArray()
+		for j: int in 17:
+			var t: float = j / 16.0
+			var bend: float = sin(t * TAU + phase * 0.6) * length * 0.055
+			var point: Vector2 = head - direction * (1.0 - t) * length + across * bend
+			points.append(point)
+			var clearance: float = smoothstep(0.0, 16.0, _surface_y(point.x) - point.y)
+			var opacity: float = sin(PI * t) * gust * clearance * (0.18 + 0.34 * strength)
+			colors.append(Color(0.74, 0.91, 1.0, opacity))
+		foreground.draw_polyline_colors(points, colors, 2.2, true)
 
 func _draw_foreground() -> void:
 	if state.is_empty():

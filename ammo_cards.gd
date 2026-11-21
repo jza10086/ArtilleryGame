@@ -62,16 +62,16 @@ func _show_page() -> void:
 	var page: Dictionary = pages.pop_front()
 	if page.has("turn_lines"):
 		var panel: PanelContainer = PanelContainer.new()
-		var column: VBoxContainer = VBoxContainer.new()
+		var row: HBoxContainer = HBoxContainer.new()
 		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		column.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		panel.add_child(column)
+		panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		panel.add_child(row)
 		for line: Dictionary in page.turn_lines:
 			var label: Label = Label.new()
 			label.text = line.text
-			label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			label.add_theme_color_override("font_color", line.color)
-			column.add_child(label)
+			row.add_child(label)
 		add_child(panel)
 	else:
 		_show_ammo(page)
