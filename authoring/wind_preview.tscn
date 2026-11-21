@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://games/minigame/GP_artillery/game.tscn" id="game"]
+[ext_resource type="Script" path="res://games/minigame/GP_artillery/authoring/wind_styles.gd" id="styles"]
+
+[node name="WindPreview" instance=ExtResource("game")]
+
+[node name="WindStyles" type="Node2D" parent="."]
+script = ExtResource("styles")
