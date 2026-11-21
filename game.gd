@@ -58,9 +58,6 @@ var display_time: float = 0.0
 @onready var power_label: Label = %PowerLabel
 @onready var fuel_label: Label = %FuelLabel
 @onready var weapon_button: Button = %WeaponButton
-@onready var fire_button: Button = %FireButton
-@onready var left_button: Button = %LeftButton
-@onready var right_button: Button = %RightButton
 @onready var pass_button: Button = %PassButton
 @onready var reset_button: Button = %ResetButton
 @onready var finish_button: Button = %FinishButton
@@ -91,11 +88,10 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	weapon_button.pressed.connect(func() -> void: arsenal.visible = not arsenal.visible)
-	fire_button.pressed.connect(_fire)
 	pass_button.pressed.connect(_send.bind("pass"))
 	reset_button.pressed.connect(_send.bind("reset"))
 	finish_button.pressed.connect(_send.bind("finish"))
-	weapon_buttons.assign(arsenal.get_child(0).get_children())
+	weapon_buttons.assign(arsenal.get_node("Content/GridContainer1").get_children())
 	for index: int in weapon_buttons.size():
 		weapon_buttons[index].pressed.connect(_select.bind(index))
 	if api == null:
@@ -155,7 +151,7 @@ func _process(delta: float) -> void:
 	if state.is_empty():
 		return
 	if _can_act() and not arsenal.visible:
-		var move_axis: int = int(api.input.is_pressed(&"move_right") or right_button.is_pressed()) - int(api.input.is_pressed(&"move_left") or left_button.is_pressed())
+		var move_axis: int = int(api.input.is_pressed(&"move_right")) - int(api.input.is_pressed(&"move_left"))
 		var angle_axis: float = float(api.input.is_pressed(&"artillery_angle_up")) - float(api.input.is_pressed(&"artillery_angle_down"))
 		var power_axis: float = float(api.input.is_pressed(&"artillery_power_up")) - float(api.input.is_pressed(&"artillery_power_down"))
 		_apply_controls(delta, move_axis, angle_axis, power_axis)
@@ -291,6 +287,15 @@ func _aim_mouse(target: Vector2) -> void:
 func _sync_status() -> void:
 	top_status.visible = preview or (running and not stopped and not finished)
 	ammo_cards.visible = top_status.visible
+	%TankStatus.visible = top_status.visible
+	%Hints.visible = top_status.visible
+	var tank: Dictionary = state.tanks[_view_tank()]
+	%HealthBar.value = tank.hp
+	%FuelBar.value = tank.fuel
+	%HealthLabel.text = "血量  %d / 200" % tank.hp
+	fuel_label.text = "行动力  %d / %d" % [roundi(tank.fuel), int(Battle.TURN_FUEL)]
+	if top_status.visible:
+		ammo_cards.update_state(state, "preview" if preview else local_id)
 	countdown.text = "∞" if state.mode == "training" else (str(ceili(display_time)) if state.phase == "aim" else "—")
 	countdown.modulate = Color("#ff515b") if state.mode != "training" and state.phase == "aim" and display_time <= 10.0 else Color.WHITE
 	wind_arrow.rotation = state.wind.angle()
@@ -455,7 +460,6 @@ func _receive_state(value: Dictionary) -> void:
 	state = value
 	display_time = state.time if preview else maxf(0.0, float(_phase_end_msec - api.net.host_time_msec()) / 1000.0)
 	board.update_state(state)
-	ammo_cards.update_state(state, "preview" if preview else local_id)
 	var audio_error: Error = combat_audio.update_state(state)
 	if audio_error != OK:
 		if preview:
@@ -661,21 +665,17 @@ func _sync_ui() -> void:
 	_sync_status()
 	var can_act: bool = _can_act()
 	var tank: Dictionary = state.tanks[_view_tank()]
-	for button: Button in [left_button, right_button, fire_button, pass_button, reset_button, finish_button]:
+	for button: Button in [pass_button, reset_button, finish_button]:
 		button.disabled = not can_act
 	angle_slider.editable = can_act
 	power_slider.editable = can_act
-	left_button.disabled = not can_act or state.tanks[_view_tank()].fuel <= 0.0
-	right_button.disabled = left_button.disabled
 	reset_button.visible = state.mode == "training"
 	finish_button.visible = state.mode == "training"
 	pass_button.visible = state.mode != "training"
 	pass_button.text = "结束回合"
-	fire_button.text = "已行动" if tank.acted else "开火"
 	hud.visible = preview or (running and not finished and not stopped and state.phase == "aim" and tank.id == local_id)
 	if not hud.visible:
 		arsenal.hide()
-	fuel_label.text = hud_text(&"hud.fuel", {"fuel":roundi(state.tanks[_view_tank()].fuel)})
 	var stock: int = tank.ammo[selected] if not tank.ammo.is_empty() else 0
 	weapon_button.text = "%s   %s  ▾" % [Battle.WEAPONS[selected].name, "∞" if stock < 0 else str(stock)]
 	for index: int in weapon_buttons.size():

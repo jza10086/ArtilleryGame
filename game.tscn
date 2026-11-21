@@ -1,5 +1,15 @@
 [gd_scene format=3 uid="uid://e1jstpqw82l3"]
 
+[ext_resource type="PackedScene" path="res://games/assets/GP_default_ui/ambient_reveal/components/navigation/vertical_hints.tscn" id="hints"]
+[ext_resource type="PackedScene" path="res://core/ui/ambient_reveal/components/navigation/action_prompt.tscn" id="prompt"]
+[ext_resource type="Texture2D" path="res://core/ui/ambient_reveal/icons/kenney_input/keyboard_mouse/keyboard_a.svg" id="key_a"]
+[ext_resource type="Texture2D" path="res://core/ui/ambient_reveal/icons/kenney_input/keyboard_mouse/keyboard_d.svg" id="key_d"]
+[ext_resource type="Texture2D" path="res://core/ui/ambient_reveal/icons/kenney_input/keyboard_mouse/keyboard_space.svg" id="key_space"]
+[ext_resource type="Texture2D" path="res://core/ui/ambient_reveal/icons/kenney_input/keyboard_mouse/keyboard_w.svg" id="key_w"]
+[ext_resource type="Texture2D" path="res://core/ui/ambient_reveal/icons/kenney_input/keyboard_mouse/keyboard_s.svg" id="key_s"]
+[ext_resource type="Texture2D" path="res://core/ui/ambient_reveal/icons/kenney_input/keyboard_mouse/keyboard_q.svg" id="key_q"]
+[ext_resource type="Texture2D" path="res://core/ui/ambient_reveal/icons/kenney_input/keyboard_mouse/keyboard_e.svg" id="key_e"]
+
 [ext_resource type="PackedScene" path="res://games/minigame/GP_artillery/ui/round_pages.tscn" id="protocol_pages"]
 
 [ext_resource type="Script" uid="uid://bb8fxkpjr4it" path="res://games/minigame/GP_artillery/game.gd" id="1_hqb37"]
@@ -210,29 +220,6 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_8y8a2")
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="LeftButton" type="Button" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1" unique_id=1042804454]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(44, 46)
-layout_mode = 2
-tooltip_text = "向左移动（A）"
-focus_mode = 0
-theme_override_font_sizes/font_size = 19
-text = "◀"
-
-[node name="FuelLabel" type="Label" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1" unique_id=1098490356]
-unique_name_in_owner = true
-layout_mode = 2
-text = "移动 50"
-
-[node name="RightButton" type="Button" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1" unique_id=567962898]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(44, 46)
-layout_mode = 2
-tooltip_text = "向右移动（D）"
-focus_mode = 0
-theme_override_font_sizes/font_size = 19
-text = "▶"
-
 [node name="VBoxContainer4" type="VBoxContainer" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1" unique_id=1089494771]
 custom_minimum_size = Vector2(165, 0)
 layout_mode = 2
@@ -277,41 +264,6 @@ focus_mode = 0
 theme_override_font_sizes/font_size = 19
 text = "弹药库"
 
-[node name="FireButton" type="Button" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1" unique_id=1426729779]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(104, 46)
-layout_mode = 2
-tooltip_text = "发射炮弹（Space）"
-focus_mode = 0
-theme_override_font_sizes/font_size = 19
-theme_override_styles/normal = SubResource("StyleBoxFlat_fxntt")
-theme_override_styles/hover = SubResource("StyleBoxFlat_34r4h")
-text = "开火"
-
-[node name="PassButton" type="Button" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1" unique_id=943423675]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(105, 46)
-layout_mode = 2
-focus_mode = 0
-theme_override_font_sizes/font_size = 19
-text = "结束回合"
-
-[node name="ResetButton" type="Button" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1" unique_id=885014474]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(105, 46)
-layout_mode = 2
-focus_mode = 0
-theme_override_font_sizes/font_size = 19
-text = "重置靶场"
-
-[node name="FinishButton" type="Button" parent="GameHUD/Hud/PanelContainer1/HBoxContainer1" unique_id=1931525404]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(105, 46)
-layout_mode = 2
-focus_mode = 0
-theme_override_font_sizes/font_size = 19
-text = "结束测试"
-
 [node name="Arsenal" type="PanelContainer" parent="GameHUD" unique_id=845930770]
 unique_name_in_owner = true
 visible = false
@@ -327,13 +279,15 @@ offset_bottom = -100.0
 theme = SubResource("Theme_vnxd6")
 theme_override_styles/panel = SubResource("StyleBoxFlat_7k0ci")
 
-[node name="GridContainer1" type="GridContainer" parent="GameHUD/Arsenal" unique_id=2075435601]
+[node name="Content" type="VBoxContainer" parent="GameHUD/Arsenal"]
+
+[node name="GridContainer1" type="GridContainer" parent="GameHUD/Arsenal/Content" unique_id=2075435601]
 layout_mode = 2
 theme_override_constants/h_separation = 12
 theme_override_constants/v_separation = 10
 columns = 4
 
-[node name="Ammo1" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=329932159]
+[node name="Ammo1" type="Button" parent="GameHUD/Arsenal/Content/GridContainer1" unique_id=329932159]
 custom_minimum_size = Vector2(105, 52)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -342,7 +296,7 @@ theme_override_font_sizes/font_size = 18
 text = "标准弹"
 alignment = 0
 
-[node name="Ammo2" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=1011771302]
+[node name="Ammo2" type="Button" parent="GameHUD/Arsenal/Content/GridContainer1" unique_id=1011771302]
 custom_minimum_size = Vector2(105, 52)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -351,7 +305,7 @@ theme_override_font_sizes/font_size = 18
 text = "重型爆破"
 alignment = 0
 
-[node name="Ammo3" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=2078410983]
+[node name="Ammo3" type="Button" parent="GameHUD/Arsenal/Content/GridContainer1" unique_id=2078410983]
 custom_minimum_size = Vector2(105, 52)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -360,7 +314,7 @@ theme_override_font_sizes/font_size = 18
 text = "三重散射"
 alignment = 0
 
-[node name="Ammo4" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=232187562]
+[node name="Ammo4" type="Button" parent="GameHUD/Arsenal/Content/GridContainer1" unique_id=232187562]
 custom_minimum_size = Vector2(105, 52)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -369,7 +323,7 @@ theme_override_font_sizes/font_size = 18
 text = "集束花火"
 alignment = 0
 
-[node name="Ammo5" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=283000095]
+[node name="Ammo5" type="Button" parent="GameHUD/Arsenal/Content/GridContainer1" unique_id=283000095]
 custom_minimum_size = Vector2(105, 52)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -378,7 +332,7 @@ theme_override_font_sizes/font_size = 18
 text = "跳弹"
 alignment = 0
 
-[node name="Ammo6" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=1834141148]
+[node name="Ammo6" type="Button" parent="GameHUD/Arsenal/Content/GridContainer1" unique_id=1834141148]
 custom_minimum_size = Vector2(105, 52)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -387,7 +341,7 @@ theme_override_font_sizes/font_size = 18
 text = "钻地弹"
 alignment = 0
 
-[node name="Ammo7" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=227498944]
+[node name="Ammo7" type="Button" parent="GameHUD/Arsenal/Content/GridContainer1" unique_id=227498944]
 custom_minimum_size = Vector2(105, 52)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -396,7 +350,7 @@ theme_override_font_sizes/font_size = 18
 text = "造山弹"
 alignment = 0
 
-[node name="Ammo8" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=1316578095]
+[node name="Ammo8" type="Button" parent="GameHUD/Arsenal/Content/GridContainer1" unique_id=1316578095]
 custom_minimum_size = Vector2(105, 52)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -405,7 +359,7 @@ theme_override_font_sizes/font_size = 18
 text = "虹吸弹"
 alignment = 0
 
-[node name="Ammo9" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=687481084]
+[node name="Ammo9" type="Button" parent="GameHUD/Arsenal/Content/GridContainer1" unique_id=687481084]
 custom_minimum_size = Vector2(105, 52)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -414,7 +368,7 @@ theme_override_font_sizes/font_size = 18
 text = "滚地雷"
 alignment = 0
 
-[node name="Ammo10" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=1604029079]
+[node name="Ammo10" type="Button" parent="GameHUD/Arsenal/Content/GridContainer1" unique_id=1604029079]
 custom_minimum_size = Vector2(105, 52)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -423,7 +377,7 @@ theme_override_font_sizes/font_size = 18
 text = "空爆弹雨"
 alignment = 0
 
-[node name="Ammo11" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=1528632043]
+[node name="Ammo11" type="Button" parent="GameHUD/Arsenal/Content/GridContainer1" unique_id=1528632043]
 custom_minimum_size = Vector2(105, 52)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -432,7 +386,7 @@ theme_override_font_sizes/font_size = 18
 text = "燃烧弹"
 alignment = 0
 
-[node name="Ammo12" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=833603835]
+[node name="Ammo12" type="Button" parent="GameHUD/Arsenal/Content/GridContainer1" unique_id=833603835]
 custom_minimum_size = Vector2(105, 52)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -441,7 +395,7 @@ theme_override_font_sizes/font_size = 18
 text = "电磁脉冲"
 alignment = 0
 
-[node name="Ammo13" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=2047541741]
+[node name="Ammo13" type="Button" parent="GameHUD/Arsenal/Content/GridContainer1" unique_id=2047541741]
 custom_minimum_size = Vector2(105, 52)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -450,7 +404,7 @@ theme_override_font_sizes/font_size = 18
 text = "跃迁弹"
 alignment = 0
 
-[node name="Ammo14" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=1097965629]
+[node name="Ammo14" type="Button" parent="GameHUD/Arsenal/Content/GridContainer1" unique_id=1097965629]
 custom_minimum_size = Vector2(105, 52)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -459,7 +413,7 @@ theme_override_font_sizes/font_size = 18
 text = "连锁震爆"
 alignment = 0
 
-[node name="Ammo15" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=1603360318]
+[node name="Ammo15" type="Button" parent="GameHUD/Arsenal/Content/GridContainer1" unique_id=1603360318]
 custom_minimum_size = Vector2(105, 52)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -468,7 +422,7 @@ theme_override_font_sizes/font_size = 18
 text = "感应雷"
 alignment = 0
 
-[node name="Ammo16" type="Button" parent="GameHUD/Arsenal/GridContainer1" unique_id=1604343664]
+[node name="Ammo16" type="Button" parent="GameHUD/Arsenal/Content/GridContainer1" unique_id=1604343664]
 custom_minimum_size = Vector2(105, 52)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -476,6 +430,33 @@ focus_mode = 0
 theme_override_font_sizes/font_size = 18
 text = "护盾弹"
 alignment = 0
+
+[node name="Actions" type="HBoxContainer" parent="GameHUD/Arsenal/Content"]
+alignment = 2
+
+[node name="PassButton" type="Button" parent="GameHUD/Arsenal/Content/Actions" unique_id=943423675]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(105, 46)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 19
+text = "结束回合"
+
+[node name="ResetButton" type="Button" parent="GameHUD/Arsenal/Content/Actions" unique_id=885014474]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(105, 46)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 19
+text = "重置靶场"
+
+[node name="FinishButton" type="Button" parent="GameHUD/Arsenal/Content/Actions" unique_id=1931525404]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(105, 46)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 19
+text = "结束测试"
 
 [node name="TopStatus" type="VBoxContainer" parent="GameHUD" unique_id=1199755538]
 unique_name_in_owner = true
@@ -571,3 +552,65 @@ script = ExtResource("ammo_cards")
 
 [node name="ProtocolPages" parent="." instance=ExtResource("protocol_pages")]
 unique_name_in_owner = true
+
+[node name="TankStatus" type="VBoxContainer" parent="GameHUD"]
+unique_name_in_owner = true
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 28.0
+offset_right = 270.0
+offset_top = -132.0
+offset_bottom = -24.0
+mouse_filter = 2
+theme = ExtResource("2_8nvs8")
+
+[node name="HealthLabel" type="Label" parent="GameHUD/TankStatus"]
+unique_name_in_owner = true
+text = "血量"
+
+[node name="HealthBar" type="ProgressBar" parent="GameHUD/TankStatus"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 10)
+mouse_filter = 2
+show_percentage = false
+self_modulate = Color(0.29, 0.84, 0.59, 1)
+max_value = 200.0
+
+[node name="FuelLabel" type="Label" parent="GameHUD/TankStatus"]
+unique_name_in_owner = true
+text = "行动力"
+
+[node name="FuelBar" type="ProgressBar" parent="GameHUD/TankStatus"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 10)
+mouse_filter = 2
+show_percentage = false
+self_modulate = Color(0.27, 0.74, 0.94, 1)
+max_value = 180.0
+
+[node name="Hints" parent="GameHUD" instance=ExtResource("hints")]
+unique_name_in_owner = true
+side = 1
+follow_input_device = false
+
+[node name="Move" parent="GameHUD/Hints/Prompts" index="0"]
+action = &""
+description = "移动"
+keyboard_icons = Array[Texture2D]([ExtResource("key_a"), ExtResource("key_d")])
+
+[node name="Interact" parent="GameHUD/Hints/Prompts" index="1"]
+action = &""
+description = "开火"
+keyboard_icons = Array[Texture2D]([ExtResource("key_space")])
+
+[node name="Menu" parent="GameHUD/Hints/Prompts" index="2"]
+action = &""
+description = "俯仰"
+keyboard_icons = Array[Texture2D]([ExtResource("key_w"), ExtResource("key_s")])
+
+[node name="Power" parent="GameHUD/Hints/Prompts" index="3" instance=ExtResource("prompt")]
+action = &""
+description = "力度"
+keyboard_icons = Array[Texture2D]([ExtResource("key_q"), ExtResource("key_e")])
+
+[editable path="GameHUD/Hints"]

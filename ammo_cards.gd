@@ -10,6 +10,14 @@ var animation: Tween
 func update_state(snapshot: Dictionary, player_id: String) -> void:
 	if last_turn > int(snapshot.turn):
 		clear_cards()
+	if snapshot.turn != last_turn and snapshot.phase == "aim":
+		var turn_lines: Array[Dictionary] = []
+		for tank: Dictionary in snapshot.tanks:
+			if tank.hp <= 0 or (tank.team != snapshot.active_team if snapshot.mode == "teams" else tank != snapshot.tanks[snapshot.active]):
+				continue
+			turn_lines.append({"text": "轮到你了" if tank.id == player_id else "轮到%s了" % tank.name, "color": Color(tank.color)})
+		var number: int = snapshot.turn if snapshot.mode == "training" else snapshot.round
+		pages.push_front({"turn_lines": turn_lines, "round_text": "回合 %d/∞" % number})
 	last_turn = snapshot.turn
 	for event: Dictionary in snapshot.ammo_events:
 		if int(event.id) <= last_id:
@@ -46,6 +54,33 @@ func _remove_cards() -> void:
 
 func _show_page() -> void:
 	var page: Dictionary = pages.pop_front()
+	if page.has("turn_lines"):
+		var panel: PanelContainer = PanelContainer.new()
+		var column: VBoxContainer = VBoxContainer.new()
+		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		column.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		panel.add_child(column)
+		for line: Dictionary in page.turn_lines + [{"text": page.round_text, "color": Color.WHITE}]:
+			var label: Label = Label.new()
+			label.text = line.text
+			label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			label.add_theme_color_override("font_color", line.color)
+			column.add_child(label)
+		add_child(panel)
+	else:
+		_show_ammo(page)
+	modulate.a = 0.0
+	scale = Vector2(0.9, 0.9)
+	pivot_offset = size * 0.5
+	animation = create_tween()
+	animation.set_parallel(true)
+	animation.tween_property(self, "modulate:a", 1.0, 0.22)
+	animation.tween_property(self, "scale", Vector2.ONE, 0.28).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	animation.chain().tween_interval(hold_seconds)
+	animation.chain().tween_property(self, "modulate:a", 0.0, 0.3)
+	animation.chain().tween_callback(_page_finished)
+
+func _show_ammo(page: Dictionary) -> void:
 	for weapon: int in page:
 		var card: PanelContainer = PanelContainer.new()
 		card.custom_minimum_size = Vector2(148, 76)
@@ -65,17 +100,6 @@ func _show_page() -> void:
 		amount.add_theme_font_size_override("font_size", 24)
 		column.add_child(amount)
 		add_child(card)
-	modulate.a = 0.0
-	scale = Vector2(0.9, 0.9)
-	pivot_offset = size * 0.5
-	animation = create_tween()
-	animation.set_parallel(true)
-	animation.tween_property(self, "modulate:a", 1.0, 0.22)
-	animation.tween_property(self, "scale", Vector2.ONE, 0.28).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	animation.chain().tween_interval(hold_seconds)
-	animation.chain().tween_property(self, "modulate:a", 0.0, 0.3)
-	animation.chain().tween_callback(_page_finished)
-
 func _page_finished() -> void:
 	_remove_cards()
 	if not pages.is_empty():
