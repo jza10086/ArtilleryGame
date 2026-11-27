@@ -1,7 +1,6 @@
 [gd_scene format=3]
 
 [ext_resource type="PackedScene" path="res://games/protocols/GP_default_protocol/briefing/briefing_page.tscn" id="1"]
-
 [ext_resource type="PackedScene" path="res://core/ui/ambient_reveal/components/navigation/action_prompt.tscn" id="prompt"]
 [ext_resource type="Texture2D" path="res://core/ui/ambient_reveal/icons/kenney_input/keyboard_mouse/keyboard_a.svg" id="keyboard_a"]
 [ext_resource type="Texture2D" path="res://core/ui/ambient_reveal/icons/kenney_input/keyboard_mouse/keyboard_d.svg" id="keyboard_d"]
@@ -15,58 +14,56 @@
 
 [node name="Briefing" instance=ExtResource("1")]
 
-[node name="Title" parent="View/Layout/Center/Content" index="0"]
+[node name="Title" parent="View/Layout/Columns/LeftColumn/PreviewPanel/TitleInset" index="0"]
 text = "炮火争锋"
 
-[node name="Introduction" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information/Rules/InformationScroll" index="0"]
+[node name="Introduction" parent="View/Layout/Columns/RightColumn/InformationPanel/Information/Rules/InformationScroll" index="0"]
 text = "移动坦克，调整炮口角度与力度，击败对手。炮弹可以炸出掩体，也能穿过传送门。支持自由混战、团队对抗和单人试射。"
 
-[node name="PreviewPanel" parent="View/Layout/Center/Content/Columns/RightColumn" index="0"]
-custom_minimum_size = Vector2(0, 312)
+[node name="ControlsScroll" parent="View/Layout/Columns/RightColumn/InformationPanel/Information/ControlSection" index="1"]
+visible = false
 
-[node name="InformationPanel" parent="View/Layout/Center/Content/Columns/RightColumn" index="1"]
-custom_minimum_size = Vector2(0, 415)
-
-[node name="BriefingHints" type="VBoxContainer" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information"]
+[node name="BriefingHints" type="VBoxContainer" parent="View/Layout/Columns/RightColumn/InformationPanel/Information/ControlSection"]
 unique_name_in_owner = true
 size_flags_horizontal = 3
-theme_override_constants/separation = 4
+size_flags_vertical = 3
+theme_override_constants/separation = 10
 mouse_filter = 2
 
-[node name="Move" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information/BriefingHints" instance=ExtResource("prompt")]
+[node name="Move" parent="View/Layout/Columns/RightColumn/InformationPanel/Information/ControlSection/BriefingHints" instance=ExtResource("prompt")]
 action = &""
 description = "移动"
-icon_size = 32
+icon_size = 28
 keyboard_icons = Array[Texture2D]([ExtResource("keyboard_a"), ExtResource("keyboard_d")])
 
-[node name="Angle" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information/BriefingHints" instance=ExtResource("prompt")]
+[node name="Angle" parent="View/Layout/Columns/RightColumn/InformationPanel/Information/ControlSection/BriefingHints" instance=ExtResource("prompt")]
 action = &""
 description = "俯仰"
-icon_size = 32
+icon_size = 28
 keyboard_icons = Array[Texture2D]([ExtResource("keyboard_w"), ExtResource("keyboard_s")])
 
-[node name="Power" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information/BriefingHints" instance=ExtResource("prompt")]
+[node name="Power" parent="View/Layout/Columns/RightColumn/InformationPanel/Information/ControlSection/BriefingHints" instance=ExtResource("prompt")]
 action = &""
 description = "力度"
-icon_size = 32
+icon_size = 28
 keyboard_icons = Array[Texture2D]([ExtResource("keyboard_q"), ExtResource("keyboard_e")])
 
-[node name="artillery_fire" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information/BriefingHints" instance=ExtResource("prompt")]
+[node name="artillery_fire" parent="View/Layout/Columns/RightColumn/InformationPanel/Information/ControlSection/BriefingHints" instance=ExtResource("prompt")]
 action = &""
 description = "开火"
-icon_size = 32
+icon_size = 28
 keyboard_icons = Array[Texture2D]([ExtResource("keyboard_space")])
 
-[node name="Aim" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information/BriefingHints" instance=ExtResource("prompt")]
+[node name="Aim" parent="View/Layout/Columns/RightColumn/InformationPanel/Information/ControlSection/BriefingHints" instance=ExtResource("prompt")]
 action = &""
 description = "长按瞄准"
-icon_size = 32
+icon_size = 28
 keyboard_icons = Array[Texture2D]([ExtResource("mouse_left")])
 
-[node name="Zoom" parent="View/Layout/Center/Content/Columns/RightColumn/InformationPanel/InformationMargin/Information/BriefingHints" instance=ExtResource("prompt")]
+[node name="Zoom" parent="View/Layout/Columns/RightColumn/InformationPanel/Information/ControlSection/BriefingHints" instance=ExtResource("prompt")]
 action = &""
 description = "缩放视野"
-icon_size = 32
+icon_size = 28
 keyboard_icons = Array[Texture2D]([ExtResource("mouse_scroll")])
 
 [editable path="View"]
